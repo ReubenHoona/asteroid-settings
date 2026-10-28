@@ -27,7 +27,6 @@ import QtQuick
 import org.asteroid.controls
 import org.asteroid.utils
 import Connman
-import QtQuick.VirtualKeyboard
 
 Item {
     id: dialogItem
@@ -64,19 +63,6 @@ Item {
 
     property real rowHeight: Dims.h(25)
     property real rowMargin: Dims.w(15)
-
-    InputPanel {
-        id: inputPanel
-        z: 99
-        visible: active
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.topMargin: -Dims.h(25)
-        height: Dims.h(100)
-
-        width: Dims.w(100)
-        externalLanguageSwitchEnabled: false
-    }
 
     Connections {
         target: modelData
@@ -215,10 +201,17 @@ Item {
                 }
                 font.pixelSize: Dims.l(6)
             }
+            // a tap opens the full screen keyboard (qml-asteroid's
+            // WearKeyboard); a passphrase shows as dots there and here
             TextField {
                 id: fieldInput
-                text: modelData
+                // the agent's value for the field, if any (it was the
+                // network object's name as text: "NetworkService(0x...)")
+                text: fieldArgs && fieldArgs["Value"] ? fieldArgs["Value"] : ""
                 width: parent.width
+                echoMode: (fieldName === "Passphrase" || fieldName === "Password" || fieldName === "WPS")
+                          ? TextInput.Password : TextInput.Normal
+                previewText: fieldLabel.text
             }
         }
     }
