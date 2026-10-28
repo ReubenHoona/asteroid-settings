@@ -29,6 +29,7 @@ set(
 add_library(asteroid-settings ${SRC} ${HEADERS})
 asteroid_app_qml_module(asteroid-settings
 	qml/main.qml
+	qml/ChoiceList.qml
 	qml/LanguagePage.qml
 	qml/TimePage.qml
 	qml/DatePage.qml

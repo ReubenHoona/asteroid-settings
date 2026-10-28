@@ -27,47 +27,19 @@ Item {
 
     LanguageModel { id: langSettings }
 
-    Spinner {
-        id: langLV
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: title.bottom
-        height: Dims.h(60)
+    // Wear OS: the languages as a list, the current one ticked; a tap on
+    // another one switches to it
+    ChoiceList {
+        anchors.fill: parent
+        title: qsTrId("id-language-page")
         model: langSettings
-
-        delegate: SpinnerDelegate { text: langSettings.languageName(index) }
-
-        property bool _positioned: false
-        onContentHeightChanged: {
-            if (!_positioned && contentHeight > 0) {
-                _positioned = true;
-                var i = langSettings.currentIndex;
-                if (i !== -1) {
-                    positionViewAtIndex(i, ListView.SnapPosition);
-                    currentIndex = i;
-                }
-            }
-        }
-    }
-
-    IconButton {
-        iconName: "ios-checkmark-circle-outline"
-        anchors { 
-            bottom: parent.bottom
-            horizontalCenter: parent.horizontalCenter
-            bottomMargin: Dims.iconButtonMargin
-        }
-
-        onClicked: {
-            if(langLV.currentIndex == langSettings.currentIndex)
-                root.pop();
+        textOf: function (i) { return langSettings.languageName(i) }
+        currentIndex: langSettings.currentIndex
+        onChosen: (index) => {
+            if (index === langSettings.currentIndex)
+                root.pop()
             else
-                langSettings.setSystemLocale(langSettings.locale(langLV.currentIndex), LanguageModel.UpdateWithoutReboot)
+                langSettings.setSystemLocale(langSettings.locale(index), LanguageModel.UpdateWithoutReboot)
         }
-    }
-
-    PageHeader {
-        id: title
-        text: qsTrId("id-language-page")
     }
 }

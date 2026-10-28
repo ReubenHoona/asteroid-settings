@@ -52,7 +52,8 @@ Item {
     property var bipValues: [0.0, 1.0, 0.5, 0.25]
 
     // How bright the always-on screen is: the launcher hands it to the
-    // panel (its AOD brightness step: low 6, medium 12, high 24)
+    // panel (its AOD brightness step: low 6, medium 8, the image's default,
+    // high 12)
     ConfigurationValue {
         id: aodBrightness
         key: "/org/asteroidos/settings/always-on-brightness"

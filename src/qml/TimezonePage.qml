@@ -32,6 +32,8 @@ Item {
     property var timezoneList: []
     property int regionLevel: 0
     property string regionPath: ""
+    // the row of the current time zone (or of the region it is in)
+    property int currentRow: -1
 
     DateTimeSettings { id: dtSettings }
 
@@ -42,15 +44,15 @@ Item {
             var currentRegion = root.selectedTz.split("/")[0]
             var selectIdx = 5 // ---- default to Atlantic as visual center
             for (var a = 0; a < allowlist.length; a++) {
-                timezoneModel.append({"visualName": "  " + allowlist[a] + " ›", "name": allowlist[a], "fullPath": "", "bottomLevel": false});
+                timezoneModel.append({"visualName": allowlist[a], "name": allowlist[a], "fullPath": "", "bottomLevel": false});
                 if (allowlist[a] === currentRegion)
                     selectIdx = a
             }
             // ---- Zulu: flat single-component entry, no city subpage needed
             timezoneModel.append({"visualName": "Zulu", "name": "Zulu", "fullPath": "Zulu", "bottomLevel": true});
-            timezoneSpinner.forceLayout();
-            timezoneSpinner.positionViewAtIndex(selectIdx, ListView.SnapPosition);
-            timezoneSpinner.currentIndex = selectIdx;
+            if (root.selectedTz === "Zulu")
+                selectIdx = allowlist.length
+            root.currentRow = allowlist.indexOf(currentRegion) >= 0 || root.selectedTz === "Zulu" ? selectIdx : -1;
             return;
         }
         // ---- city level and below: existing dynamic loop unchanged
@@ -63,14 +65,14 @@ Item {
                 if (tzAsList.length > (regionLevel + 1)) {
                     if (processedRegionList.indexOf(tzAsList[regionLevel]) < 0) {
                         processedRegionList.push(tzAsList[regionLevel]);
-                        timezoneModel.append({"visualName": "  " + tzAsList[regionLevel].replace("_"," ") + " ›", "name": tzAsList[regionLevel],"fullPath": region, "bottomLevel": false});
+                        timezoneModel.append({"visualName": tzAsList[regionLevel].replace(/_/g, " "), "name": tzAsList[regionLevel],"fullPath": region, "bottomLevel": false});
                         if(selectedTz.includes(root.regionPath + tzAsList[regionLevel])) {
                             selectIdx = i;
                         }
                         i++;
                     }
                 } else {
-                    timezoneModel.append({"visualName": tzAsList[regionLevel].replace("_"," "), "name": tzAsList[regionLevel], "fullPath": region, "bottomLevel": true});
+                    timezoneModel.append({"visualName": tzAsList[regionLevel].replace(/_/g, " "), "name": tzAsList[regionLevel], "fullPath": region, "bottomLevel": true});
                     if(selectedTz.includes(root.regionPath + tzAsList[regionLevel])) {
                         selectIdx = i;
                     }
@@ -78,9 +80,7 @@ Item {
                 }
             }
         });
-        timezoneSpinner.forceLayout();
-        timezoneSpinner.positionViewAtIndex(selectIdx, ListView.SnapPosition);
-        timezoneSpinner.currentIndex = selectIdx;
+        root.currentRow = root.selectedTz.indexOf(root.regionPath) === 0 ? selectIdx : -1;
     }
 
     ListModel {
@@ -98,60 +98,34 @@ Item {
         }
     }
 
-    Spinner {
-        id: timezoneSpinner
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: title.bottom
-        height: Dims.h(60)
+    // Wear OS: the regions, then their zones, as lists; the current one
+    // ticked ("›" on a region); a tap on a zone sets it and goes back to
+    // the settings
+    ChoiceList {
+        anchors.fill: parent
+        title: qsTrId("id-timezone-page")
         model: timezoneModel
-
-        delegate: SpinnerDelegate {
-            text: visualName
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    if(!model.bottomLevel) {
-                        layerStack.push(timezoneLayer,{"regionLevel": root.regionLevel + 1, "regionPath": root.regionPath + model.name + "/", "selectedTz": root.selectedTz, "timezoneList": root.timezoneList})
-                    }
-                }
+        textOf: function (i) { return timezoneModel.get(i).visualName }
+        opensMore: function (i) { return !timezoneModel.get(i).bottomLevel }
+        currentIndex: root.currentRow
+        onChosen: (index) => {
+            var row = timezoneModel.get(index)
+            if (!row.bottomLevel) {
+                layerStack.push(timezoneLayer, {"regionLevel": root.regionLevel + 1, "regionPath": root.regionPath + row.name + "/",
+                                                "selectedTz": root.selectedTz, "timezoneList": root.timezoneList})
+                return
             }
-        }
-    }
-
-    IconButton {
-        iconName: "ios-checkmark-circle-outline"
-        anchors { 
-            bottom: parent.bottom
-            horizontalCenter: parent.horizontalCenter
-            bottomMargin: Dims.iconButtonMargin
-        }
-
-        onClicked: {
-            if((root.regionPath + timezoneModel.get(timezoneSpinner.currentIndex).name) == root.selectedTz) {
-                app.backToMainMenu();
-            } else {
-                if(timezoneModel.get(timezoneSpinner.currentIndex).bottomLevel) {
-                    var tzname = timezoneModel.get(timezoneSpinner.currentIndex).fullPath;
-                    console.log("Attempting to set timezone to ",tzname);
-                    timedateDbus.typedCall("SetTimezone", [
-                            { "type":"s", "value": tzname },
-                            { "type":"b", "value": false }
-                        ],
-                        function(result) { console.log('call completed with:', result) },
-                    function(error, message) { console.log('call failed', error, 'message:', message) }
-                    );
-                    root.selectedTz = timezoneModel.get(timezoneSpinner.currentIndex).fullPath;
-                } else {
-                    layerStack.push(timezoneLayer,{"regionLevel": root.regionLevel + 1, "regionPath": root.regionPath + timezoneModel.get(timezoneSpinner.currentIndex).name + "/", "selectedTz": root.selectedTz})
-                }
+            if (row.fullPath !== root.selectedTz) {
+                timedateDbus.typedCall("SetTimezone", [
+                        { "type": "s", "value": row.fullPath },
+                        { "type": "b", "value": false }
+                    ],
+                    function(result) { console.log('call completed with:', result) },
+                    function(error, message) { console.log('call failed', error, 'message:', message) });
+                root.selectedTz = row.fullPath
             }
+            app.backToMainMenu()
         }
-    }
-
-    PageHeader {
-        id: title
-        text: qsTrId("id-timezone-page")
     }
 
     DBusInterface {

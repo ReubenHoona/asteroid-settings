@@ -35,30 +35,21 @@ Item {
         ListElement { title: qsTrId("id-adb-mode"); mode: "adb_mode" }
     }
 
-    Spinner {
-        id: usbModeLV
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: title.bottom
-        height: Dims.h(60)
+    property int currentMode: -1
+
+    // Wear OS: the modes as a list, the current one ticked; a tap applies
+    // it and goes back
+    ChoiceList {
+        anchors.fill: parent
+        title: qsTrId("id-usb-page")
         model: usbModesModel
-
-        delegate: SpinnerDelegate { text: title }
-    }
-
-    IconButton {
-        iconName: "ios-checkmark-circle-outline"
-        anchors { 
-            bottom: parent.bottom
-            horizontalCenter: parent.horizontalCenter
-            bottomMargin: Dims.iconButtonMargin
-        }
-
-        onClicked: {
-            usbmodedDbus.call("set_mode", [usbModesModel.get(usbModeLV.currentIndex).mode])
-            usbmodedDbus.call("set_config", [usbModesModel.get(usbModeLV.currentIndex).mode])
-
-            root.pop();
+        textOf: function (i) { return usbModesModel.get(i).title }
+        currentIndex: root.currentMode
+        onChosen: (index) => {
+            var mode = usbModesModel.get(index).mode
+            usbmodedDbus.call("set_mode", [mode])
+            usbmodedDbus.call("set_config", [mode])
+            root.pop()
         }
     }
 
@@ -71,9 +62,7 @@ Item {
                     break;
                 }
             }
-            usbModeLV.forceLayout();
-            usbModeLV.positionViewAtIndex(idx, ListView.SnapPosition);
-            usbModeLV.currentIndex = idx;
+            root.currentMode = idx
         });
     }
 
@@ -84,10 +73,4 @@ Item {
         path: "/com/meego/usb_moded"
         iface: "com.meego.usb_moded"
     }
-
-    PageHeader {
-        id: title
-        text: qsTrId("id-usb-page")
-    }
 }
-
