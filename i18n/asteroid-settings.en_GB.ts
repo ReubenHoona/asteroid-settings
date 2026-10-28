@@ -561,5 +561,9 @@
         <source>Qt version</source>
         <translation>Qt version</translation>
     </message>
+    <message id="id-always-on-brightness">
+        <source>Always-on brightness</source>
+        <translation>Always-on brightness</translation>
+    </message>
 </context>
 </TS>

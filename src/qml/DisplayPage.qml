@@ -51,6 +51,23 @@ Item {
 
     property var bipValues: [0.0, 1.0, 0.5, 0.25]
 
+    // How bright the always-on screen is: the launcher hands it to the
+    // panel (its AOD brightness step: low 6, medium 12, high 24)
+    ConfigurationValue {
+        id: aodBrightness
+        key: "/org/asteroidos/settings/always-on-brightness"
+        defaultValue: "medium"
+    }
+    property var aodLabels: [
+        //% "Low"
+        qsTrId("id-low"),
+        //% "Medium"
+        qsTrId("id-medium"),
+        //% "High"
+        qsTrId("id-high")
+    ]
+    property var aodValues: ["low", "medium", "high"]
+
     ConfigurationValue {
         id: alwaysOnDisplay
         key: "/org/asteroidos/settings/always-on-display"
@@ -129,6 +146,19 @@ Item {
                         displaySettings.lowPowerModeEnabled = checked
                     }
                 }
+            }
+
+            RowSeparator { visible: alwaysOnDisplay.value }
+
+            OptionCycler {
+                height: rowHeight
+                width: parent.width
+                visible: alwaysOnDisplay.value
+                //% "Always-on brightness"
+                text: qsTrId("id-always-on-brightness")
+                valueArray: aodLabels
+                currentValue: aodLabels[Math.max(0, aodValues.indexOf(aodBrightness.value))]
+                onValueChanged: (value) => aodBrightness.value = aodValues[aodLabels.indexOf(value)]
             }
 
             RowSeparator {}
