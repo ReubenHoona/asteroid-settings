@@ -202,4 +202,31 @@ Application {
             layerStack.pop(layerStack.currentLayer)
         }
     }
+
+    // Settings > System update on request (the Open button of a system update notification,
+    // through /usr/lib/eos-update/open-settings): the launcher starts or raises this app
+    // without arguments, so the page comes in this dconf key, "updates@<time in ms>", read at
+    // start and whenever it changes; a request older than a minute (the app started later
+    // some other way) is ignored, as the Health app's tile request
+    ConfigurationValue {
+        id: openRequest
+        key: "/org/asteroidos/settings/ui/open"
+        defaultValue: ""
+        onValueChanged: Qt.callLater(app.openRequested)
+    }
+    function openRequested() {
+        var request = String(openRequest.value || "")
+        if (request === "")
+            return
+        openRequest.value = ""
+        var at = request.lastIndexOf("@")
+        var age = Date.now() - Number(request.substring(at + 1))
+        if (at < 0 || !(age > -5000 && age < 60000))
+            return
+        if (request.substring(0, at) === "updates") {
+            backToMainMenu()
+            layerStack.push(updatesLayer)
+        }
+    }
+    Component.onCompleted: Qt.callLater(openRequested)
 }
