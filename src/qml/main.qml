@@ -56,6 +56,7 @@ Application {
     Component { id: launcherLayer;              LauncherPage   { } }
     Component { id: usbLayer;                   USBPage        { } }
     Component { id: powerLayer;                 PowerPage      { } }
+    Component { id: updatesLayer;               UpdatesPage    { } }
     Component { id: aboutLayer;                 AboutPage      { } }
 
     TiltToWake { id: tiltToWake }
@@ -178,6 +179,12 @@ Application {
                     title: qsTrId("id-power-page")
                     iconName: "ios-power-outline"
                     onClicked: layerStack.push(powerLayer)
+                }
+                ListItem {
+                    //% "System update"
+                    title: qsTrId("id-update-page")
+                    iconName: "ios-cloud-download-outline"
+                    onClicked: layerStack.push(updatesLayer)
                 }
                 ListItem {
                     //% "About"

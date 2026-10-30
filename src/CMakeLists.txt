@@ -49,6 +49,7 @@ asteroid_app_qml_module(asteroid-settings
 	qml/LauncherPage.qml
 	qml/USBPage.qml
 	qml/PowerPage.qml
+	qml/UpdatesPage.qml
 	qml/AboutPage.qml
 )
 message(${CMAKE_CURRENT_BINARY_DIR})

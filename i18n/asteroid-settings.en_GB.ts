@@ -565,5 +565,61 @@
         <source>Always-on brightness</source>
         <translation>Always-on brightness</translation>
     </message>
+    <message id="id-update-page">
+        <source>System update</source>
+        <translation>System update</translation>
+    </message>
+    <message id="id-update-ready">
+        <source>Version %1 is ready to install</source>
+        <translation>Version %1 is ready to install</translation>
+    </message>
+    <message id="id-update-ready-hint">
+        <source>It installs while your watch charges</source>
+        <translation>It installs while your watch charges</translation>
+    </message>
+    <message id="id-update-installing">
+        <source>Installing the update</source>
+        <translation>Installing the update</translation>
+    </message>
+    <message id="id-update-trial">
+        <source>Finishing the update</source>
+        <translation>Finishing the update</translation>
+    </message>
+    <message id="id-update-failed">
+        <source>The update couldn&apos;t be installed</source>
+        <translation>The update couldn&apos;t be installed</translation>
+    </message>
+    <message id="id-update-broken">
+        <source>The update needs attention. Connect your watch to the computer.</source>
+        <translation>The update needs attention. Connect your watch to the computer.</translation>
+    </message>
+    <message id="id-update-current">
+        <source>Your watch is up to date</source>
+        <translation>Your watch is up to date</translation>
+    </message>
+    <message id="id-update-version">
+        <source>Version %1</source>
+        <translation>Version %1</translation>
+    </message>
+    <message id="id-update-checked">
+        <source>Last checked %1</source>
+        <translation>Last checked %1</translation>
+    </message>
+    <message id="id-update-install">
+        <source>Install now</source>
+        <translation>Install now</translation>
+    </message>
+    <message id="id-update-checking">
+        <source>Checking for updates</source>
+        <translation>Checking for updates</translation>
+    </message>
+    <message id="id-update-check">
+        <source>Check for update</source>
+        <translation>Check for update</translation>
+    </message>
+    <message id="id-update-restarting">
+        <source>Restarting to install</source>
+        <translation>Restarting to install</translation>
+    </message>
 </context>
 </TS>
