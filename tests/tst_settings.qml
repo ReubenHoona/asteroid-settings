@@ -124,7 +124,7 @@ SettingsHarness {
             compare(problems, [])
             var expected = ["mainPage", "connectivityPage", "bluetoothPage", "wifiPage", "wifiAddPage", "wifiSavedPage",
                             "displayPage", "brightnessPage", "nightstandPage", "stylePage", "gesturesPage", "appsPage",
-                            "dndPage", "soundPage", "vibrationPage", "batteryPage", "generalPage", "systemPage",
+                            "dndPage", "assistantPage", "soundPage", "vibrationPage", "batteryPage", "generalPage", "systemPage",
                             "dateTimePage", "aboutPage", "versionsPage", "developerPage"]
             for (var i = 0; i < expected.length; i++)
                 verify(visited.indexOf(expected[i]) >= 0, expected[i] + " reached")
@@ -163,33 +163,73 @@ SettingsHarness {
         }
 
         function test_04_display() {
+            var dim = "/system/osso/dsm/display/display_dim_timeout"
+            var blank = "/system/osso/dsm/display/display_blank_timeout"
             open(["displayItem"])
+            // the screen is on for dim + blank: 10 + 5 s is stock's 15 s
             var timeout = h.find(h.current(), "timeoutItem")
-            compare(timeout.summary, "30 seconds")
-            // a shorter timeout: at once
+            compare(timeout.summary, "15 seconds")
+            // a shorter timeout: at once, dim = T - 5; blank is 5 already
             h.tap(this, timeout)
             h.settle(this)
             var list = h.find(h.current(), "choiceList")
             compare(list.count, 3)
-            compare(list.currentIndex, 2)
+            compare(list.currentIndex, 1)
+            compare(h.listItem(this, list, 1).children[0].title, "15 seconds (recommended)")
             h.tap(this, h.listItem(this, list, 0))
             h.settle(this)
-            compare(last("mce", "/system/osso/dsm/display/display_dim_timeout").args, [10])
+            compare(last("mce", dim).args, [5])
+            compare(last("mce", blank), null)
             compare(h.current().objectName, "displayPage")
             compare(timeout.summary, "10 seconds")
             // longer than the recommended 15 s: asks first
             h.tap(this, timeout)
             h.settle(this)
             list = h.find(h.current(), "choiceList")
-            compare(list.itemAtIndex(1).children[0].title, "15 seconds (recommended)")
             h.tap(this, h.listItem(this, list, 2))
             verify(dialog().visible)
             compare(dialog().title, "Change screen timeout")
             compare(dialog().message, "30 seconds reduces battery life")
             accept()
             h.settle(this)
-            compare(last("mce", "/system/osso/dsm/display/display_dim_timeout").args, [30])
+            compare(last("mce", dim).args, [25])
+            compare(timeout.summary, "30 seconds")
             compare(h.current().objectName, "displayPage")
+        }
+
+        // a timeout set some other way (eos-cool): the nearest choice shows,
+        // nothing is written until one is chosen; then blank becomes 5 s
+        function test_04b_odd_timeouts() {
+            var dim = "/system/osso/dsm/display/display_dim_timeout"
+            var blank = "/system/osso/dsm/display/display_blank_timeout"
+            Backend.mce[dim] = 20
+            Backend.mce[blank] = 30
+            open(["displayItem"])
+            var timeout = h.find(h.current(), "timeoutItem")
+            compare(timeout.summary, "30 seconds")
+            h.tap(this, timeout)
+            h.settle(this)
+            compare(h.find(h.current(), "choiceList").currentIndex, 2)
+            h.back(this)
+            compare(last("mce", dim), null)
+            compare(last("mce", blank), null)
+            // 15 s is shorter than the 50 s it is: no question
+            h.tap(this, timeout)
+            h.settle(this)
+            h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 1))
+            h.settle(this)
+            verify(!dialog().visible)
+            compare(last("mce", blank).args, [5])
+            compare(last("mce", dim).args, [10])
+            compare(timeout.summary, "15 seconds")
+            // 3 + 3 = 6 s shows as 10 s
+            Backend.mceSet(dim, 3)
+            Backend.mceSet(blank, 3)
+            compare(timeout.summary, "10 seconds")
+        }
+
+        function test_04c_display_more() {
+            open(["displayItem"])
             // always-on: off at once, on after the stock question
             h.tapName(this, "aodSwitch")
             compare(conf("/org/asteroidos/settings/always-on-display"), false)
@@ -291,6 +331,40 @@ SettingsHarness {
             compare(conf("/org/asteroidos/notifications/quiet-on-charger"), false)
             h.tapName(this, "hapticsSwitch")
             compare(conf("/desktop/asteroid/vibration"), false)
+        }
+
+        function test_06b_voice_recognition() {
+            var key = "/org/asteroidos/voice/recognition"
+            open(["appsItem", "assistantItem"])
+            // unset: the watch's own, as the assistant and btsyncd read it
+            var item = h.find(h.current(), "recognitionItem")
+            compare(item.summary, "On the watch")
+            Backend.confSet(key, "auto")
+            compare(item.summary, "Phone when connected")
+            h.tap(this, item)
+            h.settle(this)
+            var list = h.find(h.current(), "choiceList")
+            compare(list.count, 3)
+            compare(list.currentIndex, 1)
+            compare(h.listItem(this, list, 0).children[0].summary, "Works without the phone")
+            // no choice is cut off
+            for (var i = 0; i < list.count; i++) {
+                var labels = h.findAll(h.listItem(this, list, i), function (o) { return o.hasOwnProperty("truncated") })
+                for (var l = 0; l < labels.length; l++)
+                    verify(!labels[l].truncated, "cut off: " + labels[l].text)
+            }
+            h.tap(this, h.listItem(this, list, 2))
+            h.settle(this)
+            compare(conf(key), "phone")
+            compare(item.summary, "Phone only")
+            h.tap(this, item)
+            h.settle(this)
+            h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 0))
+            h.settle(this)
+            compare(conf(key), "watch")
+            // anything else counts as the watch's
+            Backend.confSet(key, "bogus")
+            compare(item.summary, "On the watch")
         }
 
         function test_07_battery_general() {

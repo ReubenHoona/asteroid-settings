@@ -56,6 +56,7 @@ asteroid_app_qml_module(asteroid-settings
 	qml/GesturesPage.qml
 	qml/AppsPage.qml
 	qml/DndPage.qml
+	qml/AssistantPage.qml
 	qml/SoundPage.qml
 	qml/VibrationPage.qml
 	qml/BatteryPage.qml

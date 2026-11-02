@@ -56,6 +56,7 @@ Application {
     Component { id: gesturesLayer;              GesturesPage   { } }
     Component { id: appsLayer;                  AppsPage       { } }
     Component { id: dndLayer;                   DndPage        { } }
+    Component { id: assistantLayer;             AssistantPage  { } }
     Component { id: soundLayer;                 SoundPage      { } }
     Component { id: vibrationLayer;             VibrationPage  { } }
     Component { id: batteryLayer;               BatteryPage    { } }

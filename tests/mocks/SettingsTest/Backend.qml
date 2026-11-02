@@ -72,7 +72,9 @@ QtObject {
 
     function reset() {
         conf = {}
-        mce = { "/system/osso/dsm/display/display_dim_timeout": 30 }
+        // the watch today: dim 10 s + blank 5 s, the screen on for 15 s
+        mce = { "/system/osso/dsm/display/display_dim_timeout": 10,
+                "/system/osso/dsm/display/display_blank_timeout": 5 }
         brightness = 60; als = true; lpm = true; tilt = true; tiltAvailable = true; tap = true
         batteryPercent = 57; batteryState = 2; chargerType = 0
         volume = 70

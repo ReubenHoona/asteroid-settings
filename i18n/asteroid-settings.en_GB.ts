@@ -874,6 +874,38 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Forget network %1?</source>
         <translation>Forget network %1?</translation>
     </message>
+    <message id="id-assistant-page">
+        <source>Assistant</source>
+        <translation>Assistant</translation>
+    </message>
+    <message id="id-recognition-watch">
+        <source>On the watch</source>
+        <translation>On the watch</translation>
+    </message>
+    <message id="id-recognition-auto">
+        <source>Phone when connected</source>
+        <translation>Phone when connected</translation>
+    </message>
+    <message id="id-recognition-phone">
+        <source>Phone only</source>
+        <translation>Phone only</translation>
+    </message>
+    <message id="id-recognition-watch-explain">
+        <source>Works without the phone</source>
+        <translation>Works without the phone</translation>
+    </message>
+    <message id="id-recognition-auto-explain">
+        <source>The watch when the phone is away</source>
+        <translation>The watch when the phone is away</translation>
+    </message>
+    <message id="id-recognition-phone-explain">
+        <source>Needs the phone</source>
+        <translation>Needs the phone</translation>
+    </message>
+    <message id="id-voice-recognition">
+        <source>Voice recognition</source>
+        <translation>Voice recognition</translation>
+    </message>
 </context>
 <context>
     <name>AboutPage</name>

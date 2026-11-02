@@ -62,7 +62,6 @@ SettingsHarness {
             h.tap(this, h.find(h.app, "dialogYes"))
             h.home(this)
 
-            Backend.mceSet("/system/osso/dsm/display/display_dim_timeout", 15)
             go(["displayItem"]); page("display")
             go(["brightnessItem"]); page("display-brightness"); h.back(this)
             go(["timeoutItem"]); page("display-screen-timeout")
@@ -87,7 +86,10 @@ SettingsHarness {
             h.home(this)
 
             go(["appsItem"]); page("apps")
-            go(["dndItem"]); page("apps-dnd")
+            go(["dndItem"]); page("apps-dnd"); h.back(this)
+            Backend.confSet("/org/asteroidos/voice/recognition", "auto")
+            go(["assistantItem"]); page("apps-assistant")
+            go(["recognitionItem"]); page("apps-assistant-voice-recognition")
             h.home(this)
 
             go(["soundItem"]); page("sound")

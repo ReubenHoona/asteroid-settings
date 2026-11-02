@@ -13,9 +13,12 @@ import Nemo.Mce
 // Settings > Display (stock prefs_display.xml, DisplaySettingsFragment):
 // Change watch face, Adjust brightness, Screen timeout, Always-on screen,
 // then this watch's own: Always-on brightness, Burn-in protection and
-// Nightstand. Screen timeout is mce's dim timeout (the screen dims, then
-// goes to the always-on screen), with the stock choices, 15 s recommended;
-// a longer one asks first, as stock.
+// Nightstand. Screen timeout is the whole time the screen stays on, as on
+// stock: mce turns it off (or to the always-on screen) after its dim timeout
+// plus its blank timeout. The stock choices, 15 s recommended, a longer one
+// asking first; a choice T sets the blank timeout to 5 s (stock's dim to
+// off) and the dim timeout to T - 5. Other values on the watch show as the
+// nearest choice and stay as they are until one is chosen.
 SettingsPage {
     id: page
     objectName: "displayPage"
@@ -26,6 +29,10 @@ SettingsPage {
     MceConfigValue {
         id: dimTimeout
         key: "/system/osso/dsm/display/display_dim_timeout"
+    }
+    MceConfigValue {
+        id: blankTimeout
+        key: "/system/osso/dsm/display/display_blank_timeout"
     }
     ConfigurationValue {
         id: alwaysOnDisplay
@@ -53,6 +60,23 @@ SettingsPage {
 
     readonly property var timeouts: [10, 15, 30]
     readonly property int recommendedTimeout: 15
+    // stock's dim to off
+    readonly property int blankSeconds: 5
+    readonly property bool timeoutKnown: dimTimeout.valid && blankTimeout.valid
+    // how long the screen stays on now, and the choice nearest to it
+    readonly property int screenOn: timeoutKnown ? Number(dimTimeout.value) + Number(blankTimeout.value) : 0
+    readonly property int timeoutIndex: {
+        var best = 0
+        for (var i = 1; i < timeouts.length; i++)
+            if (Math.abs(timeouts[i] - screenOn) < Math.abs(timeouts[best] - screenOn))
+                best = i
+        return best
+    }
+    function applyTimeout(s) {
+        if (Number(blankTimeout.value) !== blankSeconds)
+            blankTimeout.value = blankSeconds
+        dimTimeout.value = s - blankSeconds
+    }
     function timeoutLabel(s) {
         //% "%1 seconds"
         return qsTrId("id-seconds").arg(s)
@@ -77,18 +101,18 @@ SettingsPage {
                         //% "%1 seconds (recommended)"
                         ? qsTrId("id-seconds-recommended").arg(timeouts[i])
                         : timeoutLabel(timeouts[i]))
-        var chooser = app.choose(qsTrId("id-screen-timeout"), labels, timeouts.indexOf(Number(dimTimeout.value)),
+        var chooser = app.choose(qsTrId("id-screen-timeout"), labels, timeoutIndex,
                                  function (i) {
             var s = page.timeouts[i]
-            if (s <= page.recommendedTimeout || s <= Number(dimTimeout.value)) {
-                dimTimeout.value = s
+            if (s <= page.recommendedTimeout || s <= page.screenOn) {
+                page.applyTimeout(s)
                 return true
             }
             //% "Change screen timeout"
             confirm.ask(qsTrId("id-screen-timeout-confirm"),
                         //% "%1 reduces battery life"
                         qsTrId("id-reduces-battery").arg(page.timeoutLabel(s)),
-                        function () { dimTimeout.value = s; chooser.pop() })
+                        function () { page.applyTimeout(s); chooser.pop() })
             return false
         })
     }
@@ -107,10 +131,10 @@ SettingsPage {
     }
     SettingsChip {
         objectName: "timeoutItem"
-        visible: dimTimeout.valid
+        visible: page.timeoutKnown
         //% "Screen timeout"
         title: qsTrId("id-screen-timeout")
-        summary: dimTimeout.valid ? page.timeoutLabel(dimTimeout.value) : ""
+        summary: page.timeoutKnown ? page.timeoutLabel(page.timeouts[page.timeoutIndex]) : ""
         onClicked: page.chooseTimeout()
     }
     SettingsChip {
