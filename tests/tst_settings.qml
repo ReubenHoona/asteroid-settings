@@ -123,7 +123,7 @@ SettingsHarness {
             crawl(0)
             compare(problems, [])
             var expected = ["mainPage", "connectivityPage", "bluetoothPage", "wifiPage", "wifiAddPage", "wifiSavedPage",
-                            "displayPage", "brightnessPage", "nightstandPage", "stylePage", "gesturesPage", "appsPage",
+                            "displayPage", "brightnessPage", "extraDimPage", "nightstandPage", "stylePage", "gesturesPage", "appsPage",
                             "dndPage", "assistantPage", "soundPage", "vibrationPage", "batteryPage", "generalPage", "systemPage",
                             "dateTimePage", "aboutPage", "versionsPage", "developerPage"]
             for (var i = 0; i < expected.length; i++)
