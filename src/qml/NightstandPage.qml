@@ -1,8 +1,5 @@
 /*
  * Copyright (C) 2023 - Timo Könnecke <github.com/eLtMosen>
- * Copyright (C) 2022 - Ed Beroset <github.com/beroset>
- * Copyright (C) 2020 - Darrel Griët <idanlcontact@gmail.com>
- * Copyright (C) 2015 - Florent Revest <revestflo@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,180 +16,120 @@
  */
 
 import QtQuick
-import QtQuick.Layouts
 import org.asteroid.controls
-import org.asteroid.utils
 import org.asteroid.settings
 import Nemo.Configuration
 import Nemo.Mce
 
-Item {
-    property int depth
-    property var pop
+// Display > Nightstand, the watch face the launcher shows on the charger,
+// as a stock settings list: the switch, its brightness (slider), how long
+// it waits (a list), its always-on screen, and its own watch face.
+SettingsPage {
+    id: page
+    objectName: "nightstandPage"
+    title: qsTrId("id-nightstand-page")
+
     ConfigurationValue {
         id: nightstandBrightness
         key: "/desktop/asteroid/nightstand/brightness"
         defaultValue: 30
     }
-
     ConfigurationValue {
         id: nightstandDelay
         key: "/desktop/asteroid/nightstand/delay"
         defaultValue: 5
     }
-
     ConfigurationValue {
         id: nightstandEnabled
         key: "/desktop/asteroid/nightstand/enabled"
         defaultValue: true
     }
-
     ConfigurationValue {
         id: nightstandUseCustomWatchface
         key: "/desktop/asteroid/nightstand/use-custom-watchface"
         defaultValue: false
     }
-
     ConfigurationValue {
         id: nightstandAlwaysOnDisplay
         key: "/desktop/asteroid/nightstand/always-on-display"
         defaultValue: true
     }
+    DisplaySettings { id: displaySettings }
+    MceChargerType { id: mceChargerType }
 
-    DisplaySettings {
-        id: displaySettings
+    readonly property var delays: [0, 5, 10, 15, 20, 25, 30]
+    function delayLabel(s) {
+        return s === 0
+            //% "Immediately"
+            ? qsTrId("id-immediately")
+            //% "After %1 seconds"
+            : qsTrId("id-after-seconds").arg(s)
     }
 
-    MceChargerType {
-        id: mceChargerType
+    SettingsChip {
+        objectName: "nightstandSwitch"
+        title: qsTrId("id-nightstand-page")
+        control: "toggle"
+        checked: nightstandEnabled.value
+        onClicked: nightstandEnabled.value = !nightstandEnabled.value
     }
-
-
-    property string rowHeight: Dims.h(25)
-
-    Flickable {
-        anchors.fill: parent
-        contentHeight: onOffSettings.implicitHeight
-        boundsBehavior: Flickable.DragOverBounds
-        flickableDirection: Flickable.VerticalFlick
-
-        Column {
-            id: onOffSettings
-
-            anchors.fill: parent
-
-            Item { width: parent.width; height: Dims.l(15) }
-
-            LabeledSwitch {
-                //% "Enable"
-                text: qsTrId("id-nightstand-enable")
-                width: parent.width
-                height: rowHeight
-                checked: nightstandEnabled.value
-                onCheckedChanged: nightstandEnabled.value = checked
-            }
-
-            Column {
-                width: parent.width
-                opacity: nightstandEnabled.value ? 1.0 : 0.4
-                enabled: nightstandEnabled.value
-
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 200;
-                        easing.type: Easing.OutQuad
-                    }
-                }
-
-                Label {
-                    //% "Brightness"
-                    text: qsTrId("id-nightstand-brightness")
-                    width: parent.width
-                    height: Dims.l(12)
-                    font.pixelSize: Dims.l(6)
-                    verticalAlignment: Text.AlignBottom
-                    horizontalAlignment: Text.AlignHCenter
-                    wrapMode: Text.Wrap
-                }
-
-                IntSelector {
-                    width: parent.width
-                    height: rowHeight
-                    stepSize: 10
-                    value: nightstandBrightness.value
-                    onValueChanged: nightstandBrightness.value = value
-                }
-
-                Label {
-                    //% "Delay"
-                    text: qsTrId("id-nightstand-delay")
-                    width: parent.width
-                    height: Dims.l(12)
-                    font.pixelSize: Dims.l(6)
-                    verticalAlignment: Text.AlignBottom
-                    horizontalAlignment: Text.AlignHCenter
-                    wrapMode: Text.Wrap
-                }
-
-                IntSelector {
-                    width: parent.width
-                    height: rowHeight
-                    stepSize: 5
-                    max: 30
-                    unitMarker: "s"
-                    value: nightstandDelay.value
-                    onValueChanged: nightstandDelay.value = value
-                }
-
-                LabeledSwitch {
-                    height: rowHeight
-                    width: parent.width
-                    //% "Always on Display"
-                    text: qsTrId("id-always-on-display")
-                    checked: nightstandAlwaysOnDisplay.value
-                    onCheckedChanged: {
-                        if (nightstandAlwaysOnDisplay.value === checked)
-                            return
-                        nightstandAlwaysOnDisplay.value = checked
-                        // only alter displaySettings if Nightstand mode is
-                        // active and we're currently on a charger
-                        if (nightstandEnabled.value && mceChargerType.type != MceChargerType.None) {
-                            displaySettings.lowPowerModeEnabled = checked
-                        }
-                    }
-                }
-            }
-
-            Item { width: parent.width; height: Dims.h(6) }
-
-            LabeledSwitch {
-                width: parent.width
-                height: rowHeight
-                //% "Custom watchface"
-                text: qsTrId("id-nightstand-custom-watchface")
-                checked: nightstandUseCustomWatchface.value
-                opacity: nightstandEnabled.value ? 1.0 : 0.4
-                onCheckedChanged: nightstandUseCustomWatchface.value = checked
-                enabled: nightstandEnabled.value
-            }
-
-            LabeledActionButton {
-                width: parent.width
-                height: rowHeight
-                //% "Select watchface"
-                text: qsTrId("id-nightstand-watchface")
-                icon: "ios-arrow-dropright"
-                opacity: nightstandEnabled.value && nightstandUseCustomWatchface.value ? 1.0 : 0.4
-                enabled: nightstandEnabled.value && nightstandUseCustomWatchface.value
-                onClicked: function() { layerStack.push(nightstandWatchfaceLayer) }
-            }
-
-            Item { width: parent.width; height: Dims.l(15) }
+    SettingsText {
+        //% "A watch face for the night while the watch charges"
+        text: qsTrId("id-nightstand-explain")
+    }
+    SettingsCategory {
+        text: qsTrId("id-nightstand-brightness")
+        opacity: nightstandEnabled.value ? 1.0 : 0.38
+    }
+    SettingsSlider {
+        objectName: "nightstandBrightness"
+        active: nightstandEnabled.value
+        from: 0
+        to: 100
+        stepSize: 10
+        value: nightstandBrightness.value
+        onMoved: (newValue) => nightstandBrightness.value = newValue
+    }
+    SettingsChip {
+        objectName: "nightstandDelay"
+        active: nightstandEnabled.value
+        title: qsTrId("id-nightstand-delay")
+        summary: page.delayLabel(Number(nightstandDelay.value))
+        onClicked: {
+            var labels = []
+            for (var i = 0; i < page.delays.length; i++)
+                labels.push(page.delayLabel(page.delays[i]))
+            app.choose(qsTrId("id-nightstand-delay"), labels, page.delays.indexOf(Number(nightstandDelay.value)),
+                       function (i) { nightstandDelay.value = page.delays[i] })
         }
     }
-
-    PageHeader {
-        id: title
-        text: qsTrId("id-nightstand-page")
+    SettingsChip {
+        objectName: "nightstandAod"
+        active: nightstandEnabled.value
+        title: qsTrId("id-always-on-screen")
+        control: "toggle"
+        checked: nightstandAlwaysOnDisplay.value
+        onClicked: {
+            var on = !nightstandAlwaysOnDisplay.value
+            nightstandAlwaysOnDisplay.value = on
+            // only alter displaySettings if Nightstand mode is
+            // active and we're currently on a charger
+            if (nightstandEnabled.value && mceChargerType.type != MceChargerType.None)
+                displaySettings.lowPowerModeEnabled = on
+        }
+    }
+    SettingsChip {
+        objectName: "nightstandCustom"
+        active: nightstandEnabled.value
+        title: qsTrId("id-nightstand-custom-watchface")
+        control: "toggle"
+        checked: nightstandUseCustomWatchface.value
+        onClicked: nightstandUseCustomWatchface.value = !nightstandUseCustomWatchface.value
+    }
+    SettingsChip {
+        objectName: "nightstandWatchface"
+        active: nightstandEnabled.value && nightstandUseCustomWatchface.value
+        title: qsTrId("id-nightstand-watchface")
+        onClicked: layerStack.push(nightstandWatchfaceLayer)
     }
 }

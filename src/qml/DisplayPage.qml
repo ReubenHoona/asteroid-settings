@@ -1,56 +1,42 @@
 /*
- * Copyright (C) 2026 - Timo Könnecke <github.com/moWerk>
- * Copyright (C) 2020 - Darrel Griët <idanlcontact@gmail.com>
- * Copyright (C) 2015 - Florent Revest <revestflo@gmail.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2026 Reuben Horner <reubarb.scons@gmail.com>
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import QtQuick
-import QtQuick.Layouts
 import org.asteroid.controls
 import org.asteroid.utils
-import org.asteroid.settings
 import org.asteroid.settings
 import Nemo.Configuration
 import Nemo.Mce
 
-Item {
-    property int depth
-    property var pop
-    TapToWake { id: tapToWake }
-    TiltToWake { id: tiltToWake }
+// Settings > Display (stock prefs_display.xml, DisplaySettingsFragment):
+// Change watch face, Adjust brightness, Screen timeout, Always-on screen,
+// then this watch's own: Always-on brightness, Burn-in protection and
+// Nightstand. Screen timeout is mce's dim timeout (the screen dims, then
+// goes to the always-on screen), with the stock choices, 15 s recommended;
+// a longer one asks first, as stock.
+SettingsPage {
+    id: page
+    objectName: "displayPage"
+    title: qsTrId("id-display-page")
+
     DisplaySettings { id: displaySettings }
-    ConfigurationValue {
-        id: bipLevel
-        key: "/org/asteroidos/settings/burn-in-protection-level"
-        defaultValue: DeviceSpecs.needsBurnInProtection ? 1.0 : 0.0
+    MceChargerType { id: mceChargerType }
+    MceConfigValue {
+        id: dimTimeout
+        key: "/system/osso/dsm/display/display_dim_timeout"
     }
-
-    property var bipLabels: [
-        //% "Off"
-        qsTrId("id-off"),
-        //% "High"
-        qsTrId("id-high"),
-        //% "Medium"
-        qsTrId("id-medium"),
-        //% "Low"
-        qsTrId("id-low")
-    ]
-
-    property var bipValues: [0.0, 1.0, 0.5, 0.25]
-
+    ConfigurationValue {
+        id: alwaysOnDisplay
+        key: "/org/asteroidos/settings/always-on-display"
+        defaultValue: true
+    }
+    ConfigurationValue {
+        id: nightstandEnabled
+        key: "/desktop/asteroid/nightstand/enabled"
+        defaultValue: true
+    }
     // How bright the always-on screen is: the launcher hands it to the
     // panel (its AOD brightness step: low 6, medium 8, the image's default,
     // high 12)
@@ -59,153 +45,117 @@ Item {
         key: "/org/asteroidos/settings/always-on-brightness"
         defaultValue: "medium"
     }
-    property var aodLabels: [
-        //% "Low"
-        qsTrId("id-low"),
-        //% "Medium"
-        qsTrId("id-medium"),
-        //% "High"
-        qsTrId("id-high")
-    ]
-    property var aodValues: ["low", "medium", "high"]
-
     ConfigurationValue {
-        id: alwaysOnDisplay
-        key: "/org/asteroidos/settings/always-on-display"
-        defaultValue: true
+        id: bipLevel
+        key: "/org/asteroidos/settings/burn-in-protection-level"
+        defaultValue: DeviceSpecs.needsBurnInProtection ? 1.0 : 0.0
     }
 
-    ConfigurationValue {
-        id: nightstandEnabled
-        key: "/desktop/asteroid/nightstand/enabled"
-        defaultValue: true
+    readonly property var timeouts: [10, 15, 30]
+    readonly property int recommendedTimeout: 15
+    function timeoutLabel(s) {
+        //% "%1 seconds"
+        return qsTrId("id-seconds").arg(s)
+    }
+    readonly property var aodLabels: [qsTrId("id-low"), qsTrId("id-medium"), qsTrId("id-high")]
+    readonly property var aodValues: ["low", "medium", "high"]
+    readonly property var bipLabels: [qsTrId("id-off"), qsTrId("id-low"), qsTrId("id-medium"), qsTrId("id-high")]
+    readonly property var bipValues: [0.0, 0.25, 0.5, 1.0]
+
+    // the always-on screen as the switch sets it: the intent in dconf, and
+    // mce's low power mode unless Nightstand holds it on the charger
+    function setAlwaysOn(on) {
+        alwaysOnDisplay.value = on
+        if (!nightstandEnabled.value || mceChargerType.type == MceChargerType.None)
+            displaySettings.lowPowerModeEnabled = on
     }
 
-    MceChargerType {
-        id: mceChargerType
+    function chooseTimeout() {
+        var labels = []
+        for (var i = 0; i < timeouts.length; i++)
+            labels.push(timeouts[i] === recommendedTimeout
+                        //% "%1 seconds (recommended)"
+                        ? qsTrId("id-seconds-recommended").arg(timeouts[i])
+                        : timeoutLabel(timeouts[i]))
+        var chooser = app.choose(qsTrId("id-screen-timeout"), labels, timeouts.indexOf(Number(dimTimeout.value)),
+                                 function (i) {
+            var s = page.timeouts[i]
+            if (s <= page.recommendedTimeout || s <= Number(dimTimeout.value)) {
+                dimTimeout.value = s
+                return true
+            }
+            //% "Change screen timeout"
+            confirm.ask(qsTrId("id-screen-timeout-confirm"),
+                        //% "%1 reduces battery life"
+                        qsTrId("id-reduces-battery").arg(page.timeoutLabel(s)),
+                        function () { dimTimeout.value = s; chooser.pop() })
+            return false
+        })
     }
 
-    property string rowHeight: Dims.h(25)
-
-    Flickable {
-        anchors.fill: parent
-        contentHeight: contentColumn.implicitHeight
-
-        Column {
-            id: contentColumn
-            anchors.fill: parent
-
-            Item { width: parent.width; height: Dims.l(15) }
-
-            Label {
-                id: brightnessLabel
-                width: parent.width
-                height: Dims.l(12)
-                //% "Brightness"
-                text: qsTrId("id-brightness")
-                font.pixelSize: Dims.l(6)
-                verticalAlignment: Text.AlignBottom
-                horizontalAlignment: Text.AlignHCenter
-                wrapMode: Text.Wrap
+    SettingsChip {
+        objectName: "watchfaceItem"
+        //% "Change watch face"
+        title: qsTrId("id-change-watchface")
+        onClicked: layerStack.push(watchfaceLayer)
+    }
+    SettingsChip {
+        objectName: "brightnessItem"
+        //% "Adjust brightness"
+        title: qsTrId("id-adjust-brightness")
+        onClicked: layerStack.push(brightnessLayer)
+    }
+    SettingsChip {
+        objectName: "timeoutItem"
+        visible: dimTimeout.valid
+        //% "Screen timeout"
+        title: qsTrId("id-screen-timeout")
+        summary: dimTimeout.valid ? page.timeoutLabel(dimTimeout.value) : ""
+        onClicked: page.chooseTimeout()
+    }
+    SettingsChip {
+        objectName: "aodSwitch"
+        //% "Always-on screen"
+        title: qsTrId("id-always-on-screen")
+        control: "toggle"
+        checked: alwaysOnDisplay.value
+        onClicked: {
+            if (alwaysOnDisplay.value) {
+                page.setAlwaysOn(false)
+                return
             }
-
-            IntSelector {
-                width: parent.width
-                height: rowHeight
-                stepSize: 10
-                min: 10
-                value: displaySettings.brightness
-                onValueChanged: displaySettings.brightness = value
-            }
-
-            RowSeparator {}
-
-            LabeledSwitch {
-                height: rowHeight
-                width: parent.width
-                //% "Automatic brightness"
-                text: qsTrId("id-automatic-brightness")
-                checked: displaySettings.ambientLightSensorEnabled
-                onCheckedChanged: displaySettings.ambientLightSensorEnabled = checked
-            }
-
-            RowSeparator {}
-
-            LabeledSwitch {
-                height: rowHeight
-                width: parent.width
-                //% "Always on Display"
-                text: qsTrId("id-always-on-display")
-                checked: alwaysOnDisplay.value
-                onCheckedChanged: {
-                    if (alwaysOnDisplay.value === checked)
-                        return
-                    alwaysOnDisplay.value = checked
-                    // alter displaySettings unless NightStand mode is active
-                    // and we are on a charger
-                    if (!nightstandEnabled.value || mceChargerType.type == MceChargerType.None) {
-                        displaySettings.lowPowerModeEnabled = checked
-                    }
-                }
-            }
-
-            RowSeparator { visible: alwaysOnDisplay.value }
-
-            OptionCycler {
-                height: rowHeight
-                width: parent.width
-                visible: alwaysOnDisplay.value
-                //% "Always-on brightness"
-                text: qsTrId("id-always-on-brightness")
-                valueArray: aodLabels
-                currentValue: aodLabels[Math.max(0, aodValues.indexOf(aodBrightness.value))]
-                onValueChanged: (value) => aodBrightness.value = aodValues[aodLabels.indexOf(value)]
-            }
-
-            RowSeparator {}
-
-            OptionCycler {
-                height: rowHeight
-                width: parent.width
-                visible: DeviceSpecs.needsBurnInProtection
-                //% "Burn-in Protection"
-                text: qsTrId("id-burn-in-protection")
-                valueArray: bipLabels
-                currentValue: bipLabels[bipValues.indexOf(bipLevel.value)] || bipLabels[0]
-                onValueChanged: (value) => bipLevel.value = bipValues[bipLabels.indexOf(value)]
-            }
-
-            RowSeparator {}
-
-            LabeledSwitch {
-                height: rowHeight
-                width: parent.width
-                opacity: !tiltToWake.available ? 0.6 : 1.0
-                enabled: tiltToWake.available
-                //% "Tilt-to-wake"
-                text: qsTrId("id-tilt-to-wake")
-                checked: tiltToWake.enabled
-                onCheckedChanged: tiltToWake.enabled = checked
-            }
-
-            RowSeparator {}
-
-            LabeledSwitch {
-                height: rowHeight
-                width: parent.width
-                //% "Tap-to-wake"
-                text: qsTrId("id-tap-to-wake")
-                checked: tapToWake.enabled
-                onCheckedChanged: tapToWake.enabled = checked
-            }
-
-            Item { width: parent.width; height: Dims.l(15) }
+            //% "Always-on screen reduces battery life."
+            confirm.ask(qsTrId("id-aod-confirm"),
+                        //% "Turn on?"
+                        qsTrId("id-turn-on"),
+                        function () { page.setAlwaysOn(true) })
         }
     }
-
-    PageHeader {
-        id: title
-        text: qsTrId("id-display-page")
+    SettingsChip {
+        objectName: "aodBrightnessItem"
+        visible: alwaysOnDisplay.value
+        title: qsTrId("id-always-on-brightness")
+        summary: page.aodLabels[Math.max(0, page.aodValues.indexOf(aodBrightness.value))]
+        onClicked: app.choose(qsTrId("id-always-on-brightness"), page.aodLabels,
+                              Math.max(0, page.aodValues.indexOf(aodBrightness.value)),
+                              function (i) { aodBrightness.value = page.aodValues[i] })
+    }
+    SettingsChip {
+        objectName: "burnInItem"
+        visible: DeviceSpecs.needsBurnInProtection
+        //% "Burn-in protection"
+        title: qsTrId("id-burn-in")
+        summary: page.bipLabels[Math.max(0, page.bipValues.indexOf(Number(bipLevel.value)))]
+        onClicked: app.choose(qsTrId("id-burn-in"), page.bipLabels,
+                              page.bipValues.indexOf(Number(bipLevel.value)),
+                              function (i) { bipLevel.value = page.bipValues[i] })
+    }
+    SettingsChip {
+        objectName: "nightstandItem"
+        title: qsTrId("id-nightstand-page")
+        //% "On"
+        summary: nightstandEnabled.value ? qsTrId("id-on")
+                 : qsTrId("id-off")
+        onClicked: layerStack.push(nightstandLayer)
     }
 }
-

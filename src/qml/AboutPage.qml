@@ -1,134 +1,147 @@
 /*
- * Copyright (C) 2022 - Ed Beroset <beroset@ieee.org>
- * Copyright (C) 2015 - Florent Revest <revestflo@gmail.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2026 Reuben Horner <reubarb.scons@gmail.com>
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import QtQuick
-import org.asteroid.utils
 import org.asteroid.controls
+import org.asteroid.utils
 import org.asteroid.settings
-import org.asteroid.settings
+import Nemo.Configuration
+import Nemo.Mce
 
-Flickable {
-    property int depth
-    property var pop
-    AboutSettings {
-        id: about
-    }
-    SysInfo {
-        id: info
-    }
+// System > About (stock prefs_device_info.xml): one row per fact, the title
+// and its value (SettingsDataPreference): the system and its version,
+// Model, Device name, Versions ("Tap to view": build, kernel, Qt), Serial
+// number, Connection, Battery, then this watch's own: the Wi-Fi address,
+// and its uptime, load and memory under "Status".
+SettingsPage {
+    id: page
+    objectName: "aboutPage"
+    title: qsTrId("id-about-page")
 
-    Item {
-        id: uptimeCounter
-        readonly property int secondsPerDay: 60 * 60 * 24
-
-        Timer {
-            interval: 1000
-            repeat: true
-            triggeredOnStart: true
-            running: true
-            onTriggered: info.refresh()
-        }
-        function days() {
-            return Math.floor(info.uptime / secondsPerDay)
-        }
-        function asString() {
-            var now = info.uptime
-            var days = Math.floor(now / secondsPerDay)
-            var date = new Date(1000 * (now - days * secondsPerDay))
-            return date.toISOString().substring(11, 19);
-        }
+    AboutSettings { id: about }
+    SysInfo { id: info }
+    BluetoothStatus { id: btStatus }
+    MceBatteryLevel { id: batteryLevel }
+    MceChargerType { id: chargerType }
+    ConfigurationValue {
+        id: eosVersion
+        key: "/org/asteroidos/eos-update/version"
+        defaultValue: ""
     }
 
-    contentHeight: contentcolumn.implicitHeight
-    Column {
-        id: contentcolumn
-        anchors.fill: parent
-        Item { //this acts as a spacer to put the logo in the middle of the screen.
-            height: parent.width*0.1
-            width: height
-        }
-        Icon {
-            name: "logo-asteroidos"
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: parent.width*0.4
-            height: width
-        }
-        Label {
-            id: osLabel
-            text: about.operatingSystemName
-            anchors.horizontalCenter: parent.horizontalCenter
-        }
-        Label {
-            id: releaseLabel
-            text: about.softwareVersion
-            opacity: 0.8
-            anchors.horizontalCenter: parent.horizontalCenter
-        }
-        Repeater {
-            model: [
-                { label: qsTr("Build ID"), text: DeviceSpecs.buildID },
-                { label: qsTr("Codename"), text: DeviceSpecs.machineName },
-                { label: qsTr("Host name"), text: DeviceSpecs.hostname },
-                { label: qsTr("WLAN MAC"), text: about.wlanMacAddress },
-                { label: qsTr("IMEI"), text: about.imei },
-                { label: qsTr("Serial number"), text: about.serial },
-                { label: qsTr("Display size"), text: qsTr("%L1W x %L2H").arg(Dims.w(100)).arg(Dims.h(100)) },
-                { label: qsTr("Kernel version"), text: kernelVersion },
-                { label: qsTr("Qt version"), text: qtVersion },
-                { label: qsTr("Uptime"), text: qsTr("%L1 days %L2").
-                    arg(uptimeCounter.days()).
-                    arg(uptimeCounter.asString())
-                },
-                { label: qsTr("Threads"), text: qsTr("%L1").arg(info.threads) },
-                { label: qsTr("1,5,15 Minute loads"), text: qsTr("%L1, %L2, %L3").
-                    arg(info.loads[0].toFixed(2)).
-                    arg(info.loads[1].toFixed(2)).
-                    arg(info.loads[2].toFixed(2))
-                },
-                { label: qsTr("Total memory"), text: qsTr("%L1 MB").arg(Math.round(info.totalRam * info.memUnit / 1e6)) },
-                { label: qsTr("Free memory"), text: qsTr("%L1 MB (%L2 %)").
-                    arg(Math.round(info.freeRam * info.memUnit / 1e6)).
-                    arg((100.0 * info.freeRam / info.totalRam).toFixed(0))
-                }
-            ]
-            delegate: Column {
-                width: contentcolumn.width
-                anchors.horizontalCenter: contentcolumn.horizontalCenter
-                visible: modelData.text
-                Item {
-                    height: parent.width*0.05
-                    width: height
-                }
-                Label {
-                    text: modelData.label
-                    font.bold: true
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
-                Label {
-                    text: modelData.text
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
-            }
-        }
-        Item {
-            id: bottomSpacer
-            height: parent.width*0.1
-            width: height
-        }
+    Timer {
+        interval: 1000
+        repeat: true
+        triggeredOnStart: true
+        running: true
+        onTriggered: info.refresh()
+    }
+    readonly property int secondsPerDay: 60 * 60 * 24
+    function uptimeText() {
+        var now = info.uptime
+        var days = Math.floor(now / secondsPerDay)
+        var date = new Date(1000 * (now - days * secondsPerDay))
+        return qsTr("%L1 days %L2").arg(days).arg(date.toISOString().substring(11, 19))
+    }
+
+    SettingsChip {
+        objectName: "aboutSystem"
+        clickable: false
+        title: about.operatingSystemName
+        summary: about.softwareVersion
+        visible: title !== ""
+    }
+    SettingsChip {
+        objectName: "aboutEos"
+        clickable: false
+        //% "System version"
+        title: qsTrId("id-about-system-version")
+        summary: eosVersion.value
+        visible: summary !== ""
+    }
+    SettingsChip {
+        clickable: false
+        //% "Model"
+        title: qsTrId("id-about-model")
+        summary: DeviceSpecs.machineName
+        visible: summary !== ""
+    }
+    SettingsChip {
+        clickable: false
+        //% "Device name"
+        title: qsTrId("id-about-device-name")
+        summary: DeviceSpecs.hostname
+        visible: summary !== ""
+    }
+    SettingsChip {
+        objectName: "versionsItem"
+        //% "Versions"
+        title: qsTrId("id-about-versions")
+        //% "Tap to view"
+        summary: qsTrId("id-about-tap-to-view")
+        onClicked: layerStack.push(versionsLayer)
+    }
+    SettingsChip {
+        clickable: false
+        title: qsTr("Serial number")
+        summary: about.serial
+        visible: summary !== ""
+    }
+    SettingsChip {
+        objectName: "aboutConnection"
+        clickable: false
+        //% "Connection"
+        title: qsTrId("id-about-connection")
+        summary: btStatus.connected ? qsTrId("id-connected") : qsTrId("id-disconnected")
+    }
+    SettingsChip {
+        objectName: "aboutBattery"
+        clickable: false
+        title: qsTrId("id-battery-page")
+        //% "%1% - plugged in"
+        summary: !batteryLevel.valid ? "" : chargerType.type != MceChargerType.None
+                 ? qsTrId("id-battery-percent-plugged").arg(batteryLevel.percent)
+                 : qsTrId("id-battery-percent").arg(batteryLevel.percent)
+    }
+    SettingsChip {
+        clickable: false
+        //% "Wi-Fi MAC address"
+        title: qsTrId("id-about-wifi-mac")
+        summary: about.wlanMacAddress
+        visible: summary !== ""
+    }
+    //% "Status"
+    SettingsCategory { text: qsTrId("id-about-status") }
+    SettingsChip {
+        clickable: false
+        title: qsTr("Uptime")
+        summary: page.uptimeText()
+    }
+    SettingsChip {
+        clickable: false
+        title: qsTr("1,5,15 Minute loads")
+        summary: qsTr("%L1, %L2, %L3").arg(info.loads[0].toFixed(2)).arg(info.loads[1].toFixed(2)).arg(info.loads[2].toFixed(2))
+    }
+    SettingsChip {
+        clickable: false
+        title: qsTr("Free memory")
+        summary: qsTr("%L1 MB (%L2 %)").arg(Math.round(info.freeRam * info.memUnit / 1e6)).arg((100.0 * info.freeRam / info.totalRam).toFixed(0))
+    }
+    SettingsChip {
+        clickable: false
+        title: qsTr("Total memory")
+        summary: qsTr("%L1 MB").arg(Math.round(info.totalRam * info.memUnit / 1e6))
+    }
+    SettingsChip {
+        clickable: false
+        title: qsTr("Threads")
+        summary: qsTr("%L1").arg(info.threads)
+    }
+    SettingsChip {
+        clickable: false
+        title: qsTr("Display size")
+        summary: qsTr("%L1W x %L2H").arg(Dims.w(100)).arg(Dims.h(100))
     }
 }

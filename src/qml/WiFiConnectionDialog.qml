@@ -30,6 +30,8 @@ import Connman
 
 Item {
     id: dialogItem
+    property int depth
+    property var pop
     property string servicePath
     property NetworkService modelData: NetworkService {path: dialogItem.servicePath}
     UserAgent {
@@ -61,8 +63,6 @@ Item {
         }
     }
 
-    property real rowHeight: Dims.h(25)
-    property real rowMargin: Dims.w(15)
 
     Connections {
         target: modelData
@@ -78,101 +78,79 @@ Item {
         }
     }
 
-    Flickable {
+    // A network as the stock Wi-Fi pages show one: its name as the title,
+    // the fields the network asks for (with Connect), then the IP address
+    // and Disconnect while connected, Autoconnect, and Forget, which asks
+    // first ("Forget network %1?", ✕ / ✓)
+    SettingsPage {
+        id: networkPage
         anchors.fill: parent
-        contentHeight: contentColumn.implicitHeight
+        //% "Hidden network"
+        title: modelData.name ? modelData.name : qsTrId("id-wifi-hiddennetwork")
+
         Column {
-            id: contentColumn
+            id: loginFieldsColumn
             width: parent.width
-            Item {height: Dims.h(15); width: parent.width}
-            Marquee {
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    leftMargin: dialogItem.rowMargin
-                    rightMargin: dialogItem.rowMargin
+        }
+        SettingsChip {
+            objectName: "wifiConnect"
+            // easiest way to check if we've got some active agent fields
+            visible: loginFieldsColumn.children.length > 0 && !modelData.connected
+            //% "Connect"
+            title: qsTrId("id-wifi-connect")
+            iconName: "ios-checkmark"
+            onClicked: {
+                var reply = {}
+                for (const [field, args] of Object.entries(sourceFields)) {
+                    if(loginFields[field].text != "" && args["Requirement"] != "informational")
+                        reply[field] = loginFields[field].text
                 }
-                text: modelData.name
-                font.pixelSize: Dims.l(6)
-                height: Dims.l(8)
-            }
-
-            Column {
-                id: loginFieldsColumn
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    leftMargin: dialogItem.rowMargin
-                    rightMargin: dialogItem.rowMargin
-                }
-            }
-            Column {
-                visible: modelData.connected
-                width: parent.width
-                Label {
-                    anchors {
-                        left: parent.left
-                        right: parent.right
-                        leftMargin: dialogItem.rowMargin
-                        rightMargin: dialogItem.rowMargin
-                    }
-                    text: "IP: " + modelData.ipv4["Address"]
-                    horizontalAlignment: Text.AlignHCenter
-                    font.pixelSize: Dims.l(6)
-                }
-                LabeledActionButton {
-                    width: parent.width
-                    height: dialogItem.rowHeight
-                    //% "Disconnect"
-                    text: qsTrId("id-wifi-disconnect")
-                    icon: "ios-close-circle-outline"
-                    onClicked: {
-                        modelData.requestDisconnect()
-                        layerStack.pop(layerStack.currentLayer)
-                    }
-                }
-            }
-            LabeledSwitch {
-                id: autoConnectCheckBox
-                width: parent.width
-                height: dialogItem.rowHeight
-                //% "Autoconnect"
-                text: qsTrId("id-wifi-autoconnect")
-                checked: modelData.autoConnect
-                onClicked: modelData.autoConnect = checked
-            }
-            LabeledActionButton {
-                visible: modelData.connected || modelData.favorite
-                width: parent.width
-                height: dialogItem.rowHeight
-                //% "Forget network"
-                text: qsTrId("id-wifi-removenetwork")
-                icon: "ios-trash-circle"
-                onClicked: {
-                    modelData.remove()
-                    layerStack.pop(layerStack.currentLayer)
-                }
-            }
-
-            IconButton {
-                visible: loginFieldsColumn.children.length // easiest way to check if we've got some active agent fields
-                iconName: "ios-checkmark-circle-outline"
-                height: width
-                width: Dims.w(20)
-                anchors.horizontalCenter: parent.horizontalCenter
-                onClicked: () => {
-                    if(!modelData.connected) {
-                        var reply = {}
-                        for (const [field, args] of Object.entries(sourceFields)) {
-                            if(loginFields[field].text != "" && args["Requirement"] != "informational")
-                                reply[field] = loginFields[field].text
-                        }
-                        userAgent.sendUserReply(reply)
-                    }
-                }
+                userAgent.sendUserReply(reply)
             }
         }
+        SettingsChip {
+            objectName: "wifiIp"
+            visible: modelData.connected
+            clickable: false
+            //% "IP address"
+            title: qsTrId("id-wifi-ip")
+            summary: modelData.ipv4 && modelData.ipv4["Address"] ? modelData.ipv4["Address"] : ""
+        }
+        SettingsChip {
+            objectName: "wifiDisconnect"
+            visible: modelData.connected
+            //% "Disconnect"
+            title: qsTrId("id-wifi-disconnect")
+            iconName: "ios-close-circle-outline"
+            onClicked: {
+                modelData.requestDisconnect()
+                layerStack.pop(layerStack.currentLayer)
+            }
+        }
+        SettingsChip {
+            objectName: "wifiAutoconnect"
+            //% "Autoconnect"
+            title: qsTrId("id-wifi-autoconnect")
+            control: "toggle"
+            checked: modelData.autoConnect
+            onClicked: modelData.autoConnect = !modelData.autoConnect
+        }
+        SettingsChip {
+            objectName: "wifiForget"
+            visible: modelData.connected || modelData.favorite
+            //% "Forget network"
+            title: qsTrId("id-wifi-removenetwork")
+            iconName: "ios-trash-outline"
+            onClicked: confirm.ask(
+                           //% "Forget network %1?"
+                           qsTrId("id-wifi-forget-confirm").arg(networkPage.title), "",
+                           function () {
+                               modelData.remove()
+                               layerStack.pop(layerStack.currentLayer)
+                           })
+        }
     }
+
     Component {
         id: loginField
 

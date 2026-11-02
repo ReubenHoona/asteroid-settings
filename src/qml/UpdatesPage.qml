@@ -27,6 +27,7 @@ import Nemo.DBus
 // to eos-update, which decides as root.
 Item {
     id: page
+    objectName: "updatesPage"
     property int depth
     property var pop
     property bool checking: false

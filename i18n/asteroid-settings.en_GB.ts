@@ -458,6 +458,350 @@
         <source>Available</source>
         <translation>Available</translation>
     </message>
+    <message id="id-about-system-version">
+        <source>System version</source>
+        <translation>System version</translation>
+    </message>
+    <message id="id-about-model">
+        <source>Model</source>
+        <translation>Model</translation>
+    </message>
+    <message id="id-about-device-name">
+        <source>Device name</source>
+        <translation>Device name</translation>
+    </message>
+    <message id="id-about-versions">
+        <source>Versions</source>
+        <translation>Versions</translation>
+    </message>
+    <message id="id-about-tap-to-view">
+        <source>Tap to view</source>
+        <translation>Tap to view</translation>
+    </message>
+    <message id="id-about-connection">
+        <source>Connection</source>
+        <translation>Connection</translation>
+    </message>
+    <message id="id-battery-page">
+        <source>Battery</source>
+        <translation>Battery</translation>
+    </message>
+    <message id="id-battery-percent-plugged">
+        <source>%1% - plugged in</source>
+        <translation>%1% - plugged in</translation>
+    </message>
+    <message id="id-battery-percent">
+        <source>%1%</source>
+        <translation>%1%</translation>
+    </message>
+    <message id="id-about-wifi-mac">
+        <source>Wi-Fi MAC address</source>
+        <translation>Wi-Fi MAC address</translation>
+    </message>
+    <message id="id-about-status">
+        <source>Status</source>
+        <translation>Status</translation>
+    </message>
+    <message id="id-apps-page">
+        <source>Apps &amp; notifications</source>
+        <translation>Apps &amp; notifications</translation>
+    </message>
+    <message id="id-dnd-page">
+        <source>Do Not Disturb</source>
+        <translation>Do Not Disturb</translation>
+    </message>
+    <message id="id-on">
+        <source>On</source>
+        <translation>On</translation>
+    </message>
+    <message id="id-battery-charging">
+        <source>Charging</source>
+        <translation>Charging</translation>
+    </message>
+    <message id="id-battery-charged">
+        <source>Charged</source>
+        <translation>Charged</translation>
+    </message>
+    <message id="id-battery-not-charging-plugged">
+        <source>Connected, not charging</source>
+        <translation>Connected, not charging</translation>
+    </message>
+    <message id="id-battery-discharging">
+        <source>Not charging</source>
+        <translation>Not charging</translation>
+    </message>
+    <message id="id-bluetooth-phone">
+        <source>Phone</source>
+        <translation>Phone</translation>
+    </message>
+    <message id="id-bluetooth-phone-battery">
+        <source>Connected, %1% battery</source>
+        <translation>Connected, %1% battery</translation>
+    </message>
+    <message id="id-bluetooth-turning-on">
+        <source>Turning on...</source>
+        <translation>Turning on...</translation>
+    </message>
+    <message id="id-bluetooth-off-title">
+        <source>Turn off Bluetooth?</source>
+        <translation>Turn off Bluetooth?</translation>
+    </message>
+    <message id="id-bluetooth-off-message">
+        <source>Watch will be disconnected from the phone. Turning off Bluetooth for extended periods of time will use more battery power.</source>
+        <translation>Watch will be disconnected from the phone. Turning off Bluetooth for extended periods of time will use more battery power.</translation>
+    </message>
+    <message id="id-adaptive-brightness">
+        <source>Adaptive brightness</source>
+        <translation>Adaptive brightness</translation>
+    </message>
+    <message id="id-aod-confirm">
+        <source>Always-on screen reduces battery life.</source>
+        <translation>Always-on screen reduces battery life.</translation>
+    </message>
+    <message id="id-turn-on">
+        <source>Turn on?</source>
+        <translation>Turn on?</translation>
+    </message>
+    <message id="id-connectivity-page">
+        <source>Connectivity</source>
+        <translation>Connectivity</translation>
+    </message>
+    <message id="id-wifi-title">
+        <source>Wi-Fi</source>
+        <translation>Wi-Fi</translation>
+    </message>
+    <message id="id-date-time-page">
+        <source>Date &amp; time</source>
+        <translation>Date &amp; time</translation>
+    </message>
+    <message id="id-24h-format">
+        <source>Use 24-hour format</source>
+        <translation>Use 24-hour format</translation>
+    </message>
+    <message id="id-set-date">
+        <source>Set date</source>
+        <translation>Set date</translation>
+    </message>
+    <message id="id-set-time">
+        <source>Set time</source>
+        <translation>Set time</translation>
+    </message>
+    <message id="id-set-timezone">
+        <source>Set time zone</source>
+        <translation>Set time zone</translation>
+    </message>
+    <message id="id-developer-page">
+        <source>Developer options</source>
+        <translation>Developer options</translation>
+    </message>
+    <message id="id-restart-bootloader">
+        <source>Restart to bootloader</source>
+        <translation>Restart to bootloader</translation>
+    </message>
+    <message id="id-are-you-sure">
+        <source>Are you sure?</source>
+        <translation>Are you sure?</translation>
+    </message>
+    <message id="id-seconds">
+        <source>%1 seconds</source>
+        <translation>%1 seconds</translation>
+    </message>
+    <message id="id-seconds-recommended">
+        <source>%1 seconds (recommended)</source>
+        <translation>%1 seconds (recommended)</translation>
+    </message>
+    <message id="id-screen-timeout">
+        <source>Screen timeout</source>
+        <translation>Screen timeout</translation>
+    </message>
+    <message id="id-screen-timeout-confirm">
+        <source>Change screen timeout</source>
+        <translation>Change screen timeout</translation>
+    </message>
+    <message id="id-reduces-battery">
+        <source>%1 reduces battery life</source>
+        <translation>%1 reduces battery life</translation>
+    </message>
+    <message id="id-change-watchface">
+        <source>Change watch face</source>
+        <translation>Change watch face</translation>
+    </message>
+    <message id="id-adjust-brightness">
+        <source>Adjust brightness</source>
+        <translation>Adjust brightness</translation>
+    </message>
+    <message id="id-always-on-screen">
+        <source>Always-on screen</source>
+        <translation>Always-on screen</translation>
+    </message>
+    <message id="id-burn-in">
+        <source>Burn-in protection</source>
+        <translation>Burn-in protection</translation>
+    </message>
+    <message id="id-dnd-explain">
+        <source>Notifications arrive quietly, without a banner or vibration. Alarms still ring. Your phone's Do Not Disturb follows it.</source>
+        <translation>Notifications arrive quietly, without a banner or vibration. Alarms still ring. Your phone's Do Not Disturb follows it.</translation>
+    </message>
+    <message id="id-general-page">
+        <source>General</source>
+        <translation>General</translation>
+    </message>
+    <message id="id-app-view-list">
+        <source>List view</source>
+        <translation>List view</translation>
+    </message>
+    <message id="id-unread-dot">
+        <source>Show unread notification dot</source>
+        <translation>Show unread notification dot</translation>
+    </message>
+    <message id="id-app-view">
+        <source>App view</source>
+        <translation>App view</translation>
+    </message>
+    <message id="id-quick-settings">
+        <source>Quick settings</source>
+        <translation>Quick settings</translation>
+    </message>
+    <message id="id-temperature">
+        <source>Temperature</source>
+        <translation>Temperature</translation>
+    </message>
+    <message id="id-fahrenheit-unit">
+        <source>Fahrenheit (°F)</source>
+        <translation>Fahrenheit (°F)</translation>
+    </message>
+    <message id="id-celsius-unit">
+        <source>Celsius (°C)</source>
+        <translation>Celsius (°C)</translation>
+    </message>
+    <message id="id-gestures-page">
+        <source>Gestures</source>
+        <translation>Gestures</translation>
+    </message>
+    <message id="id-tilt-confirm">
+        <source>Tilt-to-wake reduces battery life.</source>
+        <translation>Tilt-to-wake reduces battery life.</translation>
+    </message>
+    <message id="id-touch-to-wake">
+        <source>Touch-to-wake</source>
+        <translation>Touch-to-wake</translation>
+    </message>
+    <message id="id-immediately">
+        <source>Immediately</source>
+        <translation>Immediately</translation>
+    </message>
+    <message id="id-after-seconds">
+        <source>After %1 seconds</source>
+        <translation>After %1 seconds</translation>
+    </message>
+    <message id="id-nightstand-explain">
+        <source>A watch face for the night while the watch charges</source>
+        <translation>A watch face for the night while the watch charges</translation>
+    </message>
+    <message id="id-media-volume">
+        <source>Media volume</source>
+        <translation>Media volume</translation>
+    </message>
+    <message id="id-style-page">
+        <source>Watch face &amp; style</source>
+        <translation>Watch face &amp; style</translation>
+    </message>
+    <message id="id-system-page">
+        <source>System</source>
+        <translation>System</translation>
+    </message>
+    <message id="id-system-updates">
+        <source>System updates</source>
+        <translation>System updates</translation>
+    </message>
+    <message id="id-power-off">
+        <source>Power off</source>
+        <translation>Power off</translation>
+    </message>
+    <message id="id-restart">
+        <source>Restart</source>
+        <translation>Restart</translation>
+    </message>
+    <message id="id-about-build">
+        <source>Build number</source>
+        <translation>Build number</translation>
+    </message>
+    <message id="id-dev-already">
+        <source>No need, you are already a developer.</source>
+        <translation>No need, you are already a developer.</translation>
+    </message>
+    <message id="id-dev-on">
+        <source>You are now a developer!</source>
+        <translation>You are now a developer!</translation>
+    </message>
+    <message id="id-dev-one-step">
+        <source>You are now 1 step away from being a developer.</source>
+        <translation>You are now 1 step away from being a developer.</translation>
+    </message>
+    <message id="id-dev-steps">
+        <source>You are now %1 steps away from being a developer.</source>
+        <translation>You are now %1 steps away from being a developer.</translation>
+    </message>
+    <message id="id-vibration-page">
+        <source>Vibration</source>
+        <translation>Vibration</translation>
+    </message>
+    <message id="id-quiet-on-charger">
+        <source>Silence watch while charging</source>
+        <translation>Silence watch while charging</translation>
+    </message>
+    <message id="id-quiet-on-charger-explain">
+        <source>Notifications won't sound or vibrate while the watch is charging</source>
+        <translation>Notifications won't sound or vibrate while the watch is charging</translation>
+    </message>
+    <message id="id-interactive-haptics">
+        <source>Interactive haptics</source>
+        <translation>Interactive haptics</translation>
+    </message>
+    <message id="id-touch-feedback">
+        <source>Touch &amp; crown feedback</source>
+        <translation>Touch &amp; crown feedback</translation>
+    </message>
+    <message id="id-wifi-saved-networks">
+        <source>Saved networks</source>
+        <translation>Saved networks</translation>
+    </message>
+    <message id="id-wifi-add">
+        <source>Add network</source>
+        <translation>Add network</translation>
+    </message>
+    <message id="id-wifi-none-saved">
+        <source>No saved networks</source>
+        <translation>No saved networks</translation>
+    </message>
+    <message id="id-wifi-none">
+        <source>No networks found</source>
+        <translation>No networks found</translation>
+    </message>
+    <message id="id-wifi-about">
+        <source>About Wi-Fi</source>
+        <translation>About Wi-Fi</translation>
+    </message>
+    <message id="id-wifi-about-message">
+        <source>When Wi-Fi is on, your watch turns it off to save battery while it is connected to your phone, and back on when it needs it: 
+
+• The phone is away
+• An app needs the internet
+• A lot of data is moving
+
+If you turn Wi-Fi off here, it stays off.</source>
+        <translation>When Wi-Fi is on, your watch turns it off to save battery while it is connected to your phone, and back on when it needs it: 
+
+• The phone is away
+• An app needs the internet
+• A lot of data is moving
+
+If you turn Wi-Fi off here, it stays off.</translation>
+    </message>
+    <message id="id-settings-title">
+        <source>Settings</source>
+        <translation>Settings</translation>
+    </message>
     <message id="id-always-on-brightness">
         <source>Always-on brightness</source>
         <translation>Always-on brightness</translation>
@@ -517,6 +861,18 @@
     <message id="id-update-restarting">
         <source>Restarting to install</source>
         <translation>Restarting to install</translation>
+    </message>
+    <message id="id-wifi-connect">
+        <source>Connect</source>
+        <translation>Connect</translation>
+    </message>
+    <message id="id-wifi-ip">
+        <source>IP address</source>
+        <translation>IP address</translation>
+    </message>
+    <message id="id-wifi-forget-confirm">
+        <source>Forget network %1?</source>
+        <translation>Forget network %1?</translation>
     </message>
 </context>
 <context>

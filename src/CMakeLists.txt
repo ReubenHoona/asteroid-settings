@@ -31,28 +31,47 @@ set(
 add_library(asteroid-settings ${SRC} ${HEADERS})
 asteroid_app_qml_module(asteroid-settings
 	qml/main.qml
+	qml/SettingsPage.qml
+	qml/SettingsChip.qml
+	qml/SettingsCategory.qml
+	qml/SettingsText.qml
+	qml/SettingsSlider.qml
+	qml/ConfirmDialog.qml
+	qml/Toast.qml
 	qml/ChoiceList.qml
-	qml/LanguagePage.qml
-	qml/TimePage.qml
-	qml/DatePage.qml
-	qml/TimezonePage.qml
+	qml/ChoicePage.qml
+	qml/ConnectivityPage.qml
 	qml/BluetoothPage.qml
+	qml/WiFiPage.qml
+	qml/WiFiNetworksPage.qml
+	qml/WiFiConnectionDialog.qml
 	qml/DisplayPage.qml
-	qml/SoundPage.qml
+	qml/BrightnessPage.qml
 	qml/NightstandPage.qml
 	qml/NightstandWatchfacePage.qml
-	qml/UnitsPage.qml
-	qml/QuickPanelPage.qml
+	qml/StylePage.qml
 	qml/WallpaperPage.qml
 	qml/WatchfacePage.qml
 	qml/WatchfaceSelector.qml
-	qml/WiFiConnectionDialog.qml
-	qml/WiFiPage.qml
+	qml/GesturesPage.qml
+	qml/AppsPage.qml
+	qml/DndPage.qml
+	qml/SoundPage.qml
+	qml/VibrationPage.qml
+	qml/BatteryPage.qml
+	qml/GeneralPage.qml
+	qml/QuickPanelPage.qml
 	qml/LauncherPage.qml
-	qml/USBPage.qml
-	qml/PowerPage.qml
+	qml/SystemPage.qml
 	qml/UpdatesPage.qml
+	qml/DateTimePage.qml
+	qml/TimePage.qml
+	qml/DatePage.qml
+	qml/TimezonePage.qml
+	qml/LanguagePage.qml
 	qml/AboutPage.qml
+	qml/VersionsPage.qml
+	qml/DeveloperPage.qml
 )
 message(${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(

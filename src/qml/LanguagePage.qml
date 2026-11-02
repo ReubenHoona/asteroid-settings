@@ -27,7 +27,7 @@ Item {
 
     LanguageModel { id: langSettings }
 
-    // Wear OS: the languages as a list, the current one ticked; a tap on
+    // Wear OS: the languages as a list, the current one marked; a tap on
     // another one switches to it
     ChoiceList {
         anchors.fill: parent

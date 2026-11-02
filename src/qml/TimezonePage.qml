@@ -27,6 +27,7 @@ import Nemo.DBus
 Item {
     property int depth
     id: root
+    objectName: "timezonePage"
     property var pop
     property string selectedTz: ""
     property var timezoneList: []
@@ -34,6 +35,8 @@ Item {
     property string regionPath: ""
     // the row of the current time zone (or of the region it is in)
     property int currentRow: -1
+    // called once a zone is set (Date & time shows it)
+    property var done: null
 
     DateTimeSettings { id: dtSettings }
 
@@ -99,8 +102,8 @@ Item {
     }
 
     // Wear OS: the regions, then their zones, as lists; the current one
-    // ticked ("›" on a region); a tap on a zone sets it and goes back to
-    // the settings
+    // marked (none on a region); a tap on a zone sets it and goes back to
+    // Date & time
     ChoiceList {
         anchors.fill: parent
         title: qsTrId("id-timezone-page")
@@ -112,19 +115,28 @@ Item {
             var row = timezoneModel.get(index)
             if (!row.bottomLevel) {
                 layerStack.push(timezoneLayer, {"regionLevel": root.regionLevel + 1, "regionPath": root.regionPath + row.name + "/",
-                                                "selectedTz": root.selectedTz, "timezoneList": root.timezoneList})
+                                                "selectedTz": root.selectedTz, "timezoneList": root.timezoneList,
+                                                "done": root.done})
                 return
             }
+            var done = root.done
             if (row.fullPath !== root.selectedTz) {
                 timedateDbus.typedCall("SetTimezone", [
                         { "type": "s", "value": row.fullPath },
                         { "type": "b", "value": false }
                     ],
-                    function(result) { console.log('call completed with:', result) },
+                    function(result) { if (done) done() },
                     function(error, message) { console.log('call failed', error, 'message:', message) });
                 root.selectedTz = row.fullPath
             }
-            app.backToMainMenu()
+            // back to the page that opened the zones (Date & time): the
+            // region pages above the first go at once, the first slides away
+            var stack = layerStack
+            Qt.callLater(function () {
+                while (stack.layers.length > 1 && stack.layers[stack.layers.length - 2].objectName === "timezonePage")
+                    stack.pop(stack.currentLayer)
+                stack.popAnim()
+            })
         }
     }
 

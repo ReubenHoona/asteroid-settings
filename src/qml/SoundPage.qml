@@ -1,19 +1,6 @@
 /*
- * Copyright (C) 2023 - Timo Könnecke <github.com/eLtMosen>
- * Copyright (C) 2017 - Florent Revest <revestflo@gmail.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2026 Reuben Horner <reubarb.scons@gmail.com>
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import QtQuick
@@ -21,79 +8,33 @@ import org.asteroid.controls
 import org.asteroid.settings
 import Nemo.Configuration
 
+// Settings > Sound (stock prefs_sound.xml): "Media volume" and its inline
+// slider, the watch's one volume (PulseAudio's main volume; each step plays
+// the notification sound). Muted from the quick panel the volume is zero;
+// a step up clears the mute, as the quick panel's slider does.
+SettingsPage {
+    objectName: "soundPage"
+    title: qsTrId("id-sound-page")
 
-Item {
-    property int depth
-    property var pop
     VolumeControl { id: volumeControl }
-
     ConfigurationValue {
         id: preMuteLevel
-
         key: "/desktop/asteroid/pre-mute-level"
         defaultValue: 80
     }
 
-    Rectangle {
-        id: soundBackground
-        anchors.centerIn: parent
-        anchors.verticalCenterOffset: -Dims.h(24)
-        color: "black"
-        radius: width/2
-        opacity: preMuteLevel.value > 0 ? 0.2 : 0.4
-        width: Dims.w(27)
-        height: width
-
-        MouseArea {
-            id: muteButton
-
-            anchors.fill: parent
-            onClicked: [ volumeControl.volume, preMuteLevel.value ] = [ preMuteLevel.value, volumeControl.volume ]
-        }
-    }
-
-    Icon {
-        anchors.fill: soundBackground
-        anchors.margins: Dims.l(3)
-        name: preMuteLevel.value > 0 ? "ios-sound-indicator-mute" :
-              volumeControl.volume > "70" ? "ios-sound-indicator-high" :
-              volumeControl.volume > "30" ? "ios-sound-indicator-mid" :
-              volumeControl.volume > "0" ? "ios-sound-indicator-low" : "ios-sound-indicator-off"
-    }
-
-    Column {
-        width: parent.width
-        anchors {
-            top: soundBackground.bottom
-            topMargin: Dims.h(5)
-        }
-
-        Label {
-            //% "Volume"
-            text: qsTrId("id-sound-percentage")
-            width: parent.width
-            height: Dims.l(12)
-            font.pixelSize: Dims.l(6)
-            verticalAlignment: Text.AlignBottom
-            horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.Wrap
-        }
-
-        IntSelector {
-            width: parent.width
-            height: Dims.h(25)
-            stepSize: 10
-            property bool initialized: false
-            valueLabelVisible: preMuteLevel.value == 0
-            onValueChanged: {
-                if (initialized) {
-                    [ volumeControl.volume, preMuteLevel.value ] = [ value, 0 ]
-                } else {
-                    initialized = true
-                }
-            }
-            Component.onCompleted: value = Math.max(volumeControl.volume, preMuteLevel.value)
+    //% "Media volume"
+    SettingsCategory { text: qsTrId("id-media-volume") }
+    SettingsSlider {
+        objectName: "volumeSlider"
+        from: 0
+        to: 100
+        stepSize: 10
+        value: volumeControl.volume
+        onMoved: (newValue) => {
+            if (newValue > 0 && preMuteLevel.value > 0)
+                preMuteLevel.value = 0
+            volumeControl.volume = newValue
         }
     }
 }
-
