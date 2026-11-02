@@ -1,0 +1,5 @@
+module Connman
+NetworkTechnology 0.2 NetworkTechnology.qml
+TechnologyModel 0.2 TechnologyModel.qml
+NetworkService 0.2 NetworkService.qml
+UserAgent 0.2 UserAgent.qml

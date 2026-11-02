@@ -1,0 +1,129 @@
+/*
+ * Copyright (C) 2026 Reuben Horner <reubarb.scons@gmail.com>
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * A screenshot of every page of Settings at 384x384 inside the round mask
+ * of the display (with a second one at the end of the long lists), and of
+ * the dialogs and a choice list, on the mocks of tests/mocks. The runner
+ * (settings-stock/run-tests.sh) moves them to settings-stock/shots/.
+ */
+
+import QtQuick
+import QtTest
+import SettingsTest
+import Connman
+
+SettingsHarness {
+    id: h
+
+    Component { id: netComponent; NetworkService { } }
+
+    TestCase {
+        name: "Screens"
+        when: windowShown
+
+        property int n: 0
+        function snap(name) {
+            n++
+            h.shot(this, (n < 10 ? "0" : "") + n + "-" + name)
+        }
+        // the page at the top and, when it is longer, at its end
+        function page(name) {
+            snap(name)
+            if (h.scrollToEnd(this))
+                snap(name + "-end")
+        }
+        function go(names) {
+            for (var i = 0; i < names.length; i++) {
+                h.tapName(this, names[i])
+                h.settle(this)
+            }
+        }
+
+        function test_screens() {
+            h.start(this)
+            Backend.wifiServices = [netComponent.createObject(h, { name: "Home", connected: true, favorite: true }),
+                                    netComponent.createObject(h, { name: "Office", favorite: true }),
+                                    netComponent.createObject(h, { name: "Cafe", favorite: false }),
+                                    netComponent.createObject(h, { name: "Library guest", favorite: false })]
+            Backend.confSet("/org/asteroidos/settings/developer-options", true)
+            page("settings")
+            h.home(this)
+
+            go(["connectivityItem"]); page("connectivity")
+            go(["bluetoothItem"]); page("bluetooth")
+            h.tapName(this, "bluetoothSwitch"); snap("bluetooth-off-dialog")
+            h.tap(this, h.find(h.app, "dialogNo")); h.back(this)
+            go(["wifiItem"]); page("wifi")
+            go(["wifiAdd"]); page("wifi-add-network"); h.back(this)
+            go(["wifiSaved"]); page("wifi-saved-networks"); h.back(this)
+            go(["wifiCurrent"]); page("wifi-network"); h.back(this)
+            h.tapName(this, "wifiAbout"); snap("wifi-about-dialog")
+            h.tap(this, h.find(h.app, "dialogYes"))
+            h.home(this)
+
+            Backend.mceSet("/system/osso/dsm/display/display_dim_timeout", 15)
+            go(["displayItem"]); page("display")
+            go(["brightnessItem"]); page("display-brightness"); h.back(this)
+            go(["timeoutItem"]); page("display-screen-timeout")
+            h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 2)); snap("display-screen-timeout-dialog")
+            h.tap(this, h.find(h.app, "dialogNo")); h.back(this)
+            Backend.confSet("/org/asteroidos/settings/always-on-display", false)
+            h.tapName(this, "aodSwitch"); snap("display-aod-dialog")
+            h.tap(this, h.find(h.app, "dialogYes"))
+            go(["aodBrightnessItem"]); page("display-aod-brightness"); h.back(this)
+            go(["burnInItem"]); page("display-burn-in"); h.back(this)
+            go(["nightstandItem"]); page("display-nightstand")
+            go(["nightstandDelay"]); page("display-nightstand-delay"); h.back(this)
+            h.back(this)
+            go(["watchfaceItem"]); page("display-watch-face")
+            h.home(this)
+
+            go(["styleItem"]); page("style")
+            go(["wallpaperItem"]); page("style-wallpaper")
+            h.home(this)
+
+            go(["gesturesItem"]); page("gestures")
+            h.home(this)
+
+            go(["appsItem"]); page("apps")
+            go(["dndItem"]); page("apps-dnd")
+            h.home(this)
+
+            go(["soundItem"]); page("sound")
+            h.home(this)
+            go(["vibrationItem"]); page("vibration")
+            h.home(this)
+            Backend.batteryState = 1
+            Backend.chargerType = 1
+            go(["batteryItem"]); page("battery")
+            h.home(this)
+
+            go(["generalItem"]); page("general")
+            go(["appViewItem"]); page("general-app-view"); h.back(this)
+            go(["quickPanelItem"]); page("general-quick-settings"); h.back(this)
+            go(["temperatureItem"]); page("general-temperature"); h.back(this)
+            h.home(this)
+
+            go(["systemItem"]); page("system")
+            go(["updatesItem"]); page("system-updates"); h.back(this)
+            h.tapName(this, "powerOffItem"); snap("system-power-off-dialog")
+            h.tap(this, h.find(h.app, "dialogNo"))
+            go(["dateTimeItem"]); page("system-date-time")
+            go(["setDateItem"]); page("system-set-date"); h.back(this)
+            go(["setTimeItem"]); page("system-set-time"); h.back(this)
+            go(["setZoneItem"]); wait(200); page("system-time-zone")
+            h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 7)); h.settle(this)
+            page("system-time-zone-europe")
+            h.back(this); h.back(this); h.back(this)
+            go(["languageItem"]); page("system-language"); h.back(this)
+            go(["aboutItem"]); page("system-about")
+            go(["versionsItem"]); page("system-about-versions")
+            h.home(this)
+
+            go(["developerItem"]); page("developer")
+            h.home(this)
+            verify(n > 40)
+        }
+    }
+}
