@@ -12,6 +12,7 @@ qt_add_dbus_interfaces(
 set(
 	SRC
 	main.cpp
+	mceconfigvalue.cpp
 	sysinfo.cpp
 	taptowake.cpp
 	tilttowake.cpp
@@ -20,6 +21,7 @@ set(
 )
 set(
 	HEADERS
+	mceconfigvalue.h
 	sysinfo.h
 	taptowake.h
 	tilttowake.h

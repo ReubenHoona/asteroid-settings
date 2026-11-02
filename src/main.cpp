@@ -27,6 +27,7 @@
 #include "tilttowake.h"
 #include "taptowake.h"
 #include "sysinfo.h"
+#include "mceconfigvalue.h"
 
 int main(int argc, char *argv[])
 {
@@ -38,6 +39,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<TiltToWake>("org.asteroid.settings", 1, 0, "TiltToWake");
     qmlRegisterType<TapToWake>("org.asteroid.settings", 1, 0, "TapToWake");
     qmlRegisterType<SysInfo>("org.asteroid.settings", 1, 0, "SysInfo");
+    qmlRegisterType<MceConfigValue>("org.asteroid.settings", 1, 0, "MceConfigValue");
     view->setSource(QUrl("qrc:/Settings/qml/main.qml"));
     view->rootContext()->setContextProperty("qtVersion", QString(qVersion()));
     view->rootContext()->setContextProperty("kernelVersion", QString(buf.release));
