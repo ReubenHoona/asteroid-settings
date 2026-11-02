@@ -9,7 +9,9 @@ import org.asteroid.settings
 
 // Settings > Gestures (stock prefs_gestures.xml): Tilt-to-wake (mce's wrist
 // gesture; turning it on asks first, as stock) and Touch-to-wake (mce's
-// tap gesture action, the touch panel's wake taps).
+// tap gesture action, the touch panel's wake taps). Bedtime, Theater and
+// Battery saver hold tilt-to-wake off, Bedtime and Theater touch-to-wake:
+// greyed out, off, with the mode as the summary, as stock.
 SettingsPage {
     objectName: "gesturesPage"
     title: qsTrId("id-gestures-page")
@@ -19,10 +21,11 @@ SettingsPage {
 
     SettingsChip {
         objectName: "tiltSwitch"
-        active: tiltToWake.available
+        active: tiltToWake.available && modeState.tiltHolder === ""
         title: qsTrId("id-tilt-to-wake")
+        summary: modeState.summary(modeState.tiltHolder)
         control: "toggle"
-        checked: tiltToWake.enabled
+        checked: tiltToWake.enabled && modeState.tiltHolder === ""
         onClicked: {
             if (tiltToWake.enabled) {
                 tiltToWake.enabled = false
@@ -37,8 +40,10 @@ SettingsPage {
         objectName: "touchSwitch"
         //% "Touch-to-wake"
         title: qsTrId("id-touch-to-wake")
+        active: modeState.touchHolder === ""
+        summary: modeState.summary(modeState.touchHolder)
         control: "toggle"
-        checked: tapToWake.enabled
+        checked: tapToWake.enabled && modeState.touchHolder === ""
         onClicked: tapToWake.enabled = !tapToWake.enabled
     }
 }

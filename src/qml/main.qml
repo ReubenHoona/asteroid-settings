@@ -48,6 +48,7 @@ Application {
     Component { id: wifiLayer;                  WiFiPage       { } }
     Component { id: displayLayer;               DisplayPage    { } }
     Component { id: brightnessLayer;            BrightnessPage { } }
+    Component { id: extraDimLayer;              ExtraDimPage   { } }
     Component { id: nightstandLayer;            NightstandPage { } }
     Component { id: nightstandWatchfaceLayer;   NightstandWatchfacePage { } }
     Component { id: styleLayer;                 StylePage      { } }
@@ -84,6 +85,21 @@ Application {
     }
 
     MceBatteryLevel { id: batteryLevel }
+    MceChargerType { id: chargerType }
+
+    // the modes (Bedtime, Theater, Battery saver, Extra dim, Do Not
+    // Disturb): which setting a mode holds, and its summary
+    ModeState { id: modeState }
+
+    // Battery saver on, asking first as stock (the Battery page and the
+    // suggestion at low battery)
+    function turnOnBatterySaver() {
+        //% "Turn on Battery Saver?"
+        confirm.ask(qsTrId("id-saver-confirm-title"),
+                    //% "Turns off Always-on screen and Tilt-to-wake to extend battery life"
+                    qsTrId("id-saver-explain"),
+                    function () { modeState.batterySaver = true })
+    }
 
     LayerStack {
         id: layerStack
@@ -112,6 +128,20 @@ Application {
             //% "Settings"
             title: qsTrId("id-settings-title")
 
+            // stock: at the top when the battery is low (at most
+            // low_power_trigger_level, 15 %), off the charger
+            SettingsChip {
+                objectName: "batterySaverSuggestion"
+                visible: batteryLevel.valid && batteryLevel.percent <= 15 && chargerType.type == MceChargerType.None
+                         && !modeState.batterySaver
+                //% "Battery saver"
+                title: qsTrId("id-battery-saver")
+                //% "Suggested"
+                summary: qsTrId("id-suggested")
+                control: "toggle"
+                checked: false
+                onClicked: app.turnOnBatterySaver()
+            }
             SettingsChip {
                 objectName: "connectivityItem"
                 //% "Connectivity"

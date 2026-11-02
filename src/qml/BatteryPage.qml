@@ -9,8 +9,10 @@ import Nemo.Mce
 
 // Settings > Battery (stock prefs_battery_saver.xml): the charge in large
 // letters (BatteryPercentPreference) and under it what the charger does
-// (the stock battery_info_status words), from mce. No battery saver here:
-// this watch has none yet.
+// (the stock battery_info_status words), from mce; then Battery saver
+// (the launcher's modes engine: always-on screen and tilt-to-wake off; it
+// goes off on the charger and comes back when unplugged), unchecked and
+// greyed out while plugged in, asking before it turns on, as stock.
 SettingsPage {
     id: page
     objectName: "batteryPage"
@@ -45,5 +47,22 @@ SettingsPage {
               ? qsTrId("id-battery-not-charging-plugged")
               //% "Not charging"
               : qsTrId("id-battery-discharging")
+    }
+    SettingsChip {
+        objectName: "batterySaverSwitch"
+        title: qsTrId("id-battery-saver")
+        control: "toggle"
+        active: !page.plugged
+        checked: modeState.batterySaver && !page.plugged
+        onClicked: {
+            if (modeState.batterySaver) {
+                modeState.batterySaver = false
+                return
+            }
+            app.turnOnBatterySaver()
+        }
+    }
+    SettingsText {
+        text: qsTrId("id-saver-explain")
     }
 }

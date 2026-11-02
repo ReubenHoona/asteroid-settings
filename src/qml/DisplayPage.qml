@@ -12,8 +12,10 @@ import Nemo.Mce
 
 // Settings > Display (stock prefs_display.xml, DisplaySettingsFragment):
 // Change watch face, Adjust brightness, Screen timeout, Always-on screen,
-// then this watch's own: Always-on brightness, Burn-in protection and
-// Nightstand. Screen timeout is the whole time the screen stays on, as on
+// then this watch's own: Extra dim (after Adjust brightness), Always-on
+// brightness, Burn-in protection and Nightstand. A mode that holds the
+// brightness or the always-on screen greys it out with the mode as its
+// summary ("Bedtime mode is on"), the switch showing it off, as stock. Screen timeout is the whole time the screen stays on, as on
 // stock: mce turns it off (or to the always-on screen) after its dim timeout
 // plus its blank timeout. The stock choices, 15 s recommended, a longer one
 // asking first; a choice T sets the blank timeout to 5 s (stock's dim to
@@ -127,7 +129,16 @@ SettingsPage {
         objectName: "brightnessItem"
         //% "Adjust brightness"
         title: qsTrId("id-adjust-brightness")
+        active: modeState.brightnessHolder === ""
+        summary: modeState.summary(modeState.brightnessHolder)
         onClicked: layerStack.push(brightnessLayer)
+    }
+    SettingsChip {
+        objectName: "extraDimItem"
+        //% "Extra dim"
+        title: qsTrId("id-extra-dim")
+        summary: modeState.extraDim ? qsTrId("id-on") : qsTrId("id-off")
+        onClicked: layerStack.push(extraDimLayer)
     }
     SettingsChip {
         objectName: "timeoutItem"
@@ -142,7 +153,9 @@ SettingsPage {
         //% "Always-on screen"
         title: qsTrId("id-always-on-screen")
         control: "toggle"
-        checked: alwaysOnDisplay.value
+        active: modeState.alwaysOnHolder === ""
+        summary: modeState.summary(modeState.alwaysOnHolder)
+        checked: alwaysOnDisplay.value && active
         onClicked: {
             if (alwaysOnDisplay.value) {
                 page.setAlwaysOn(false)
@@ -157,7 +170,7 @@ SettingsPage {
     }
     SettingsChip {
         objectName: "aodBrightnessItem"
-        visible: alwaysOnDisplay.value
+        visible: alwaysOnDisplay.value && modeState.alwaysOnHolder === ""
         title: qsTrId("id-always-on-brightness")
         summary: page.aodLabels[Math.max(0, page.aodValues.indexOf(aodBrightness.value))]
         onClicked: app.choose(qsTrId("id-always-on-brightness"), page.aodLabels,

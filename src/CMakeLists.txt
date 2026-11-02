@@ -38,6 +38,7 @@ asteroid_app_qml_module(asteroid-settings
 	qml/SettingsSlider.qml
 	qml/ConfirmDialog.qml
 	qml/Toast.qml
+	qml/ModeState.qml
 	qml/ChoiceList.qml
 	qml/ChoicePage.qml
 	qml/ConnectivityPage.qml
@@ -47,6 +48,7 @@ asteroid_app_qml_module(asteroid-settings
 	qml/WiFiConnectionDialog.qml
 	qml/DisplayPage.qml
 	qml/BrightnessPage.qml
+	qml/ExtraDimPage.qml
 	qml/NightstandPage.qml
 	qml/NightstandWatchfacePage.qml
 	qml/StylePage.qml

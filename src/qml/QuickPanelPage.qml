@@ -47,7 +47,11 @@ Item {
             "hapticsToggle",
             "wifiToggle",
             "soundToggle",
+            "bedtimeToggle",
+            "dndToggle",
             "cinemaToggle",
+            "batterySaverToggle",
+            "extraDimToggle",
             "aodToggle",
             "powerOffToggle",
             "rebootToggle",
@@ -68,6 +72,10 @@ Item {
             "wifiToggle": true,
             "soundToggle": true,
             "cinemaToggle": true,
+            "bedtimeToggle": true,
+            "dndToggle": true,
+            "batterySaverToggle": true,
+            "extraDimToggle": true,
             "aodToggle": true,
             "powerOffToggle": true,
             "rebootToggle": true,
@@ -123,8 +131,15 @@ Item {
             //% "Mute Sound"
             toggleOptions["soundToggle"] = ({ name: qsTrId("id-toggle-sound"), icon: "ios-sound-indicator-high"});
         }
-        //% "Cinema Mode"
-        toggleOptions["cinemaToggle"] = ({ name: qsTrId("id-toggle-cinema"), icon: "ios-film-outline"});
+        //% "Bedtime mode"
+        toggleOptions["bedtimeToggle"] = ({ name: qsTrId("id-bedtime-mode"), icon: "ios-moon"});
+        //% "Do Not Disturb"
+        toggleOptions["dndToggle"] = ({ name: qsTrId("id-dnd-page"), icon: "ios-remove-circle"});
+        // Theater mode (the tile keeps its old id)
+        //% "Theater mode"
+        toggleOptions["cinemaToggle"] = ({ name: qsTrId("id-toggle-cinema"), icon: "ios-film"});
+        toggleOptions["batterySaverToggle"] = ({ name: qsTrId("id-battery-saver"), icon: "ios-leaf"});
+        toggleOptions["extraDimToggle"] = ({ name: qsTrId("id-extra-dim"), icon: "ios-contrast"});
         //% "AoD Toggle"
         toggleOptions["aodToggle"] = ({ name: qsTrId("id-always-on-display"), icon: "ios-watch-aod-on"});
         //% "Poweroff"

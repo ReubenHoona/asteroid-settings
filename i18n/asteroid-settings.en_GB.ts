@@ -288,8 +288,8 @@
     </message>
     <message id="id-toggle-cinema">
         <location filename="../src/qml/QuickPanelPage.qml" line="127"/>
-        <source>Cinema Mode</source>
-        <translation>Cinema Mode</translation>
+        <source>Theater mode</source>
+        <translation>Theater mode</translation>
     </message>
     <message id="id-toggle-power-off">
         <location filename="../src/qml/QuickPanelPage.qml" line="131"/>
@@ -905,6 +905,62 @@ If you turn Wi-Fi off here, it stays off.</translation>
     <message id="id-voice-recognition">
         <source>Voice recognition</source>
         <translation>Voice recognition</translation>
+    </message>
+    <message id="id-mode-bedtime-on">
+        <source>Bedtime mode is on</source>
+        <translation>Bedtime mode is on</translation>
+    </message>
+    <message id="id-mode-theater-on">
+        <source>Theater mode is on</source>
+        <translation>Theater mode is on</translation>
+    </message>
+    <message id="id-mode-saver-on">
+        <source>Battery saver mode is on</source>
+        <translation>Battery saver mode is on</translation>
+    </message>
+    <message id="id-mode-extra-dim-on">
+        <source>Extra dim is on</source>
+        <translation>Extra dim is on</translation>
+    </message>
+    <message id="id-extra-dim">
+        <source>Extra dim</source>
+        <translation>Extra dim</translation>
+    </message>
+    <message id="id-extra-dim-use">
+        <source>Use Extra dim</source>
+        <translation>Use Extra dim</translation>
+    </message>
+    <message id="id-extra-dim-intensity">
+        <source>Intensity</source>
+        <translation>Intensity</translation>
+    </message>
+    <message id="id-extra-dim-explain">
+        <source>Dims the screen below the lowest brightness, for dark rooms. Extra dim turns off when the watch restarts.</source>
+        <translation>Dims the screen below the lowest brightness, for dark rooms. Extra dim turns off when the watch restarts.</translation>
+    </message>
+    <message id="id-bedtime-mode">
+        <source>Bedtime mode</source>
+        <translation>Bedtime mode</translation>
+    </message>
+    <message id="id-bedtime-explain">
+        <source>Watch screen, tilt-to-wake, and touch are turned off. Only alarms and timers will notify you.</source>
+        <translation>Watch screen, tilt-to-wake, and touch are turned off. Only alarms and timers will notify you.</translation>
+    </message>
+    <message id="id-battery-saver">
+        <source>Battery saver</source>
+        <translation>Battery saver</translation>
+    </message>
+    <message id="id-suggested">
+        <source>Suggested</source>
+        <translation>Suggested</translation>
+    </message>
+    <message id="id-saver-confirm-title">
+        <source>Turn on Battery Saver?</source>
+        <translation>Turn on Battery Saver?</translation>
+    </message>
+    <message id="id-saver-explain">
+        <source>Turns off Always-on screen and Tilt-to-wake to extend battery life</source>
+        <translation>Turns off Always-on screen and Tilt-to-wake to extend battery life</translation>
     </message>
 </context>
 <context>

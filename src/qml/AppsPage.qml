@@ -14,17 +14,12 @@ SettingsPage {
     objectName: "appsPage"
     title: qsTrId("id-apps-page")
 
-    ConfigurationValue {
-        id: doNotDisturb
-        key: "/org/asteroidos/notifications/do-not-disturb"
-        defaultValue: false
-    }
-
     SettingsChip {
         objectName: "dndItem"
         //% "Do Not Disturb"
         title: qsTrId("id-dnd-page")
-        summary: doNotDisturb.value ? qsTrId("id-on") : qsTrId("id-off")
+        summary: modeState.bedtime ? qsTrId("id-mode-bedtime-on")
+                 : modeState.doNotDisturb ? qsTrId("id-on") : qsTrId("id-off")
         onClicked: layerStack.push(dndLayer)
     }
     SettingsChip {
