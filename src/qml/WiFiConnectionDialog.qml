@@ -34,6 +34,14 @@ Item {
     property var pop
     property string servicePath
     property NetworkService modelData: NetworkService {path: dialogItem.servicePath}
+    // false: a new secured network (stock's configure page: "Network password
+    // required", Enter on watch); true: a connect that failed (Retry, Open on
+    // watch, and Forget unless it was the password)
+    property bool failed: false
+    readonly property bool authFailure: modelData.error === "invalid-key"
+    // Enter on watch / Open on watch: connect, so that connman asks this
+    // agent for the passphrase, then the fields and Connect
+    property bool entering: false
     UserAgent {
         id: userAgent
         onUserInputRequested: (requestServicePath, fields) => {
@@ -68,25 +76,79 @@ Item {
         target: modelData
         function onConnectRequestFailed(error) {
             console.log(error)
-            layerStack.push(errorPopup, {networkService: modelData, text: qsTrId("id-wifi-connectionError")})
+            dialogItem.failed = true
+            dialogItem.entering = false
+            sourceFields = {}
         }
 
         function onConnectedChanged(connected) {
             if(connected) {
                 sourceFields = {}
+                layerStack.pop(layerStack.currentLayer)
             }
         }
     }
 
-    // A network as the stock Wi-Fi pages show one: its name as the title,
-    // the fields the network asks for (with Connect), then the IP address
-    // and Disconnect while connected, Autoconnect, and Forget, which asks
-    // first ("Forget network %1?", ✕ / ✓)
+    // Stock's configure page (prefs_wifi_configure.xml, WifiConfigureNetworkFragment).
+    // A new secured network: its name as the title, "Network password
+    // required", Enter on watch (stock's Enter on phone needs the phone's
+    // Wear OS app: not here). A failed connect: "Wrong password" or "Wi-Fi
+    // connection failure" as the title, Retry, Open on watch, and Forget
+    // ("Forget network %1?") unless the password was wrong. Enter/Open on
+    // watch shows the field connman asks for (the full screen keyboard) and
+    // Connect.
     SettingsPage {
         id: networkPage
+        objectName: "wifiConnectPage"
         anchors.fill: parent
-        //% "Hidden network"
-        title: modelData.name ? modelData.name : qsTrId("id-wifi-hiddennetwork")
+        title: !dialogItem.failed
+               //% "Hidden network"
+               ? (modelData.name ? modelData.name : qsTrId("id-wifi-hiddennetwork"))
+               : dialogItem.authFailure
+                 ? qsTrId("id-wifi-wrong-password")
+                 //% "Wi-Fi connection failure"
+                 : qsTrId("id-wifi-failure")
+
+        SettingsChip {
+            objectName: "wifiPasswordRequired"
+            visible: !dialogItem.failed && !dialogItem.entering
+            clickable: false
+            //% "Network password required"
+            title: qsTrId("id-wifi-password-required")
+        }
+        SettingsChip {
+            objectName: "wifiRetry"
+            visible: dialogItem.failed && !dialogItem.entering
+            //% "Retry"
+            title: qsTrId("id-wifi-retry")
+            onClicked: {
+                modelData.requestConnect()
+                layerStack.pop(layerStack.currentLayer)
+            }
+        }
+        SettingsChip {
+            objectName: "wifiEnterOnWatch"
+            visible: !dialogItem.entering
+            title: dialogItem.failed
+                   //% "Open on watch"
+                   ? qsTrId("id-wifi-open-on-watch")
+                   //% "Enter on watch"
+                   : qsTrId("id-wifi-enter-on-watch")
+            onClicked: {
+                dialogItem.entering = true
+                modelData.requestConnect()
+            }
+        }
+        SettingsChip {
+            objectName: "wifiForget"
+            visible: dialogItem.failed && !dialogItem.authFailure && !dialogItem.entering
+            title: qsTrId("id-wifi-forget-confirm").arg(modelData.name)
+            onClicked: confirm.ask(qsTrId("id-wifi-forget-confirm").arg(modelData.name), "",
+                                   function () {
+                                       modelData.remove()
+                                       layerStack.pop(layerStack.currentLayer)
+                                   })
+        }
 
         Column {
             id: loginFieldsColumn
@@ -107,47 +169,6 @@ Item {
                 }
                 userAgent.sendUserReply(reply)
             }
-        }
-        SettingsChip {
-            objectName: "wifiIp"
-            visible: modelData.connected
-            clickable: false
-            //% "IP address"
-            title: qsTrId("id-wifi-ip")
-            summary: modelData.ipv4 && modelData.ipv4["Address"] ? modelData.ipv4["Address"] : ""
-        }
-        SettingsChip {
-            objectName: "wifiDisconnect"
-            visible: modelData.connected
-            //% "Disconnect"
-            title: qsTrId("id-wifi-disconnect")
-            iconName: "ios-close-circle-outline"
-            onClicked: {
-                modelData.requestDisconnect()
-                layerStack.pop(layerStack.currentLayer)
-            }
-        }
-        SettingsChip {
-            objectName: "wifiAutoconnect"
-            //% "Autoconnect"
-            title: qsTrId("id-wifi-autoconnect")
-            control: "toggle"
-            checked: modelData.autoConnect
-            onClicked: modelData.autoConnect = !modelData.autoConnect
-        }
-        SettingsChip {
-            objectName: "wifiForget"
-            visible: modelData.connected || modelData.favorite
-            //% "Forget network"
-            title: qsTrId("id-wifi-removenetwork")
-            iconName: "ios-trash-outline"
-            onClicked: confirm.ask(
-                           //% "Forget network %1?"
-                           qsTrId("id-wifi-forget-confirm").arg(networkPage.title), "",
-                           function () {
-                               modelData.remove()
-                               layerStack.pop(layerStack.currentLayer)
-                           })
         }
     }
 
@@ -191,16 +212,6 @@ Item {
                           ? TextInput.Password : TextInput.Normal
                 previewText: fieldLabel.text
             }
-        }
-    }
-
-    Component {
-        id: errorPopup
-        StatusPage {
-            icon: "ios-remove-circle"
-            anchors.fill: undefined
-            property NetworkService networkService
-            Component.onDestruction: networkService.requestConnect()
         }
     }
 }

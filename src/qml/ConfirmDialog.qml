@@ -40,8 +40,8 @@ Item {
         flick.contentY = 0
         fadeIn.restart()
     }
-    function tell(title, message) {
-        ask(title, message)
+    function tell(title, message, onAccept) {
+        ask(title, message, onAccept)
         infoOnly = true
     }
     function accept() {

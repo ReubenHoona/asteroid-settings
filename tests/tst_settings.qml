@@ -97,6 +97,11 @@ SettingsHarness {
                 var wrote = Backend.calls.length > calls
                 if (!(pushed || asked || toasted || wrote))
                     problems.push(name + ": dead entry: " + c.title)
+                if (asked && dialog().infoOnly) {
+                    // a notice with only the check (About Wi-Fi, Bluetooth first): read it, then as any row
+                    accept()
+                    asked = false
+                }
                 if (asked) {
                     reject()
                 } else if (pushed) {
@@ -152,6 +157,7 @@ SettingsHarness {
             h.settle(this)
             verify(last("connman", "requestScan") !== null, "a scan when the page opens")
             h.tapName(this, "wifiSwitch")
+            accept()
             compare(last("connman", "wifi.Powered").args, [false])
             verify(!h.shown(h.find(h.current(), "wifiAdd")), "no Add network with Wi-Fi off")
             h.tapName(this, "wifiSwitch")
@@ -160,6 +166,97 @@ SettingsHarness {
             verify(dialog().visible)
             verify(!h.shown(h.find(h.app, "dialogNo")), "About Wi-Fi has only the check")
             accept()
+        }
+
+        function chipTitled(page, t) {
+            var c = chipsOf(page)
+            for (var i = 0; i < c.length; i++)
+                if (h.shown(c[i]) && c[i].title === t)
+                    return c[i]
+            return null
+        }
+        // Wi-Fi as stock: the current network shows only its addresses, Add network lists every
+        // network in range (the connected one first, no 802.1X), a tap connects or asks for the
+        // password, Forget is under Saved networks, and there is no Disconnect or Autoconnect
+        function test_03a_wifi_as_stock() {
+            Backend.wifiServices = [netComponent.createObject(h, { name: "Home", connected: true, favorite: true }),
+                                    netComponent.createObject(h, { name: "Cafe" }),
+                                    netComponent.createObject(h, { name: "Library", security: ["none"] }),
+                                    netComponent.createObject(h, { name: "Office", security: ["ieee8021x"] })]
+            var seen = []
+            open(["connectivityItem", "wifiItem"])
+            var p = h.current()
+            compare(h.find(p, "wifiSwitch").summary, "Automatic")
+            verify(Number(conf("/org/asteroidos/eos-wifi/settings-open")) > 0, "Wi-Fi held up while the page is open")
+            compare(titlesShown(p), ["Wi-Fi", "Home", "Add network", "Saved networks", "About Wi-Fi"])
+            compare(conf("/org/asteroidos/eos-wifi/last-used"), "Home")
+            seen = seen.concat(titlesShown(p))
+            h.tapName(this, "wifiCurrent")
+            h.settle(this)
+            compare(h.current().objectName, "wifiCurrentPage")
+            compare(titlesShown(h.current()), ["IP address", "IPv6 addresses", "MAC address"])
+            compare(h.find(h.current(), "wifiIp").summary, "192.0.2.10")
+            h.back(this)
+            h.tapName(this, "wifiAdd")
+            h.settle(this)
+            var add = h.current()
+            compare(titlesShown(add), ["Home", "Cafe", "Library"])
+            compare(chipTitled(add, "Home").summary, "Connected")
+            compare(chipTitled(add, "Cafe").summary, "")
+            seen = seen.concat(titlesShown(add))
+            // an open network connects at once, from the list
+            h.tap(this, chipTitled(add, "Library"))
+            compare(last("connman", "requestConnect").args, ["Library"])
+            compare(h.current(), add)
+            // a new secured one asks for its password first
+            h.tap(this, chipTitled(add, "Cafe"))
+            h.settle(this)
+            var cfg = h.find(h.current(), "wifiConnectPage")
+            verify(cfg !== null, "the password page")
+            compare(cfg.title, "Cafe")
+            compare(titlesShown(cfg), ["Network password required", "Enter on watch"])
+            seen = seen.concat(titlesShown(cfg))
+            h.back(this)
+            h.back(this)
+            h.tapName(this, "wifiSaved")
+            h.settle(this)
+            compare(titlesShown(h.current()), ["Home"])
+            h.tap(this, chipTitled(h.current(), "Home"))
+            h.settle(this)
+            compare(h.current().objectName, "wifiSavedNetworkPage")
+            compare(titlesShown(h.current()), ["Forget"])
+            seen = seen.concat(titlesShown(h.current()))
+            h.tapName(this, "wifiForget")
+            compare(dialog().title, "Forget network Home?")
+            accept()
+            compare(last("connman", "remove").args, ["Home"])
+            verify(seen.indexOf("Disconnect") < 0 && seen.indexOf("Autoconnect") < 0, "no Disconnect or Autoconnect: " + seen)
+        }
+        // the switch: Automatic / Off is the setting the policy applies; off shows stock's
+        // "Bluetooth first" once; not connected, the last network used shows, with no tap
+        function test_03b_wifi_switch() {
+            Backend.confSet("/org/asteroidos/eos-wifi/last-used", "Home")
+            open(["connectivityItem", "wifiItem"])
+            var lastRow = h.find(h.current(), "wifiLastUsed")
+            verify(h.shown(lastRow), "Last used")
+            compare(lastRow.title, "Home")
+            compare(lastRow.summary, "Last used")
+            compare(lastRow.clickable, false)
+            h.tapName(this, "wifiSwitch")
+            verify(dialog().visible)
+            compare(dialog().title, "Bluetooth first")
+            verify(!h.shown(h.find(h.app, "dialogNo")), "only the check")
+            accept()
+            compare(conf("/org/asteroidos/eos-wifi/bluetooth-first-shown"), true)
+            compare(conf("/org/asteroidos/eos-wifi/enabled"), false)
+            compare(last("connman", "wifi.Powered").args, [false])
+            compare(h.find(h.current(), "wifiSwitch").summary, "Off")
+            compare(titlesShown(h.current()), ["Wi-Fi", "About Wi-Fi"])
+            h.tapName(this, "wifiSwitch")
+            verify(!dialog().visible, "no notice the second time")
+            compare(conf("/org/asteroidos/eos-wifi/enabled"), true)
+            compare(last("connman", "wifi.Powered").args, [true])
+            compare(h.find(h.current(), "wifiSwitch").summary, "Automatic")
         }
 
         function test_04_display() {

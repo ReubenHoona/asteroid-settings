@@ -5,16 +5,66 @@
 
 import QtQuick
 import org.asteroid.controls
+import org.asteroid.utils
 import Connman
+import Nemo.Configuration
 
-// Settings > Connectivity > Wi-Fi (stock prefs_wifi.xml): the switch, the
-// network the watch is on, Add network (the networks in range), Saved
-// networks and About Wi-Fi, which says what eos-wifi-policy does with it
-// (the stock text lists when Wi-Fi turns itself on and off).
+// Settings > Connectivity > Wi-Fi as stock (prefs_wifi.xml, WifiSettingsImpl).
+// The switch is the setting, Automatic or Off, not the radio: with Automatic
+// eos-wifi-policy turns the radio on and off as Wear OS does (off while the
+// phone is connected over Bluetooth), with Off it stays off. The setting is
+// /org/asteroidos/eos-wifi/enabled, which the policy applies and keeps in step
+// with the quick panel; until it is written it follows the policy's own mark.
+// While the setting is Automatic: the network the watch is on ("Connected", a
+// tap shows its addresses) or else the last one it used ("Last used", no
+// tap), Add network and Saved networks. About Wi-Fi says what the policy does.
+// While this page is open the radio stays up, as stock's setWifiHoldUp: a
+// time stamp in /org/asteroidos/eos-wifi/settings-open every 20 s, which the
+// policy takes as a reason for Wi-Fi for 45 s.
 SettingsPage {
     id: page
     objectName: "wifiPage"
     title: qsTrId("id-wifi-title")
+
+    readonly property bool on: wifiEnabled.value === true || wifiEnabled.value === "true"
+    property string connectedName: ""
+    property int savedCount: 0
+
+    function serviceName(s) {
+        //% "Hidden network"
+        return s.name ? s.name : qsTrId("id-wifi-hiddennetwork")
+    }
+    function secured(s) {
+        return s.security && s.security.length > 0 && s.security[0] !== "none"
+    }
+    function recount() {
+        var name = "", saved = 0
+        for (var i = 0; i < services.count; i++) {
+            var it = services.itemAt(i)
+            if (!it)
+                continue
+            if (it.isConnected && name === "")
+                name = it.title
+            if (it.isFavorite)
+                saved++
+        }
+        connectedName = name
+        savedCount = saved
+        if (name !== "" && lastUsed.value !== name)
+            lastUsed.value = name
+    }
+    function setOn(v) {
+        wifiEnabled.value = v
+        // the radio at once, as stock's switch; the policy runs it from here
+        wifiStatus.powered = v
+        // stock shows this until its OK (show_wifi_bluetooth_alert)
+        if (!(btFirstShown.value === true || btFirstShown.value === "true"))
+            //% "Bluetooth first"
+            confirm.tell(qsTrId("id-wifi-bluetooth-first"),
+                         //% "To save battery, the watch chooses Bluetooth over Wi-Fi."
+                         qsTrId("id-wifi-bluetooth-first-message"),
+                         function () { btFirstShown.value = true })
+    }
 
     NetworkTechnology {
         id: wifiStatus
@@ -25,46 +75,97 @@ SettingsPage {
         id: wifiModel
         name: "wifi"
     }
+    ConfigurationValue {
+        id: wifiEnabled
+        key: "/org/asteroidos/eos-wifi/enabled"
+        defaultValue: !FileInfo.exists("/var/lib/eos/wifi-user-off")
+    }
+    ConfigurationValue {
+        id: settingsOpen
+        key: "/org/asteroidos/eos-wifi/settings-open"
+        defaultValue: "0"
+    }
+    ConfigurationValue {
+        id: lastUsed
+        key: "/org/asteroidos/eos-wifi/last-used"
+        defaultValue: ""
+    }
+    ConfigurationValue {
+        id: btFirstShown
+        key: "/org/asteroidos/eos-wifi/bluetooth-first-shown"
+        defaultValue: false
+    }
+    Timer {
+        interval: 20000
+        repeat: true
+        triggeredOnStart: true
+        running: page.on
+        onTriggered: settingsOpen.value = String(Math.floor(Date.now() / 1000))
+    }
     Component.onCompleted: if (wifiStatus.powered) wifiModel.requestScan()
+    Component.onDestruction: settingsOpen.value = "0"
 
-    Component { id: networksLayer; WiFiNetworksPage { } }
+    Component { id: addLayer; WiFiNetworksPage { } }
+    Component { id: savedLayer; WiFiSavedPage { } }
+    Component { id: currentLayer; WiFiCurrentNetworkPage { } }
     Component { id: connectionDialog; WiFiConnectionDialog { } }
 
     SettingsChip {
         objectName: "wifiSwitch"
         title: qsTrId("id-wifi-title")
+        summary: page.on
+                 //% "Automatic"
+                 ? qsTrId("id-wifi-automatic")
+                 //% "Off"
+                 : qsTrId("id-wifi-mode-off")
         control: "toggle"
-        checked: wifiStatus.powered
-        onClicked: wifiStatus.powered = !wifiStatus.powered
+        checked: page.on
+        onClicked: page.setOn(!page.on)
     }
     Repeater {
+        id: services
         model: wifiModel
+        onCountChanged: Qt.callLater(page.recount)
         delegate: SettingsChip {
             objectName: "wifiCurrent"
-            visible: wifiStatus.powered && modelData.connected
-            //% "Hidden network"
-            title: modelData.name ? modelData.name : qsTrId("id-wifi-hiddennetwork")
+            readonly property bool isConnected: modelData.connected
+            readonly property bool isFavorite: modelData.favorite
+            onIsConnectedChanged: Qt.callLater(page.recount)
+            onIsFavoriteChanged: Qt.callLater(page.recount)
+            visible: page.on && modelData.connected && page.serviceName(modelData) === page.connectedName
+            title: page.serviceName(modelData)
             //% "Connected"
             summary: qsTrId("id-wifi-connected")
-            iconName: "ios-wifi"
-            onClicked: layerStack.push(connectionDialog, { modelData: modelData })
+            iconName: page.secured(modelData) ? "ios-lock-outline" : "ios-wifi"
+            onClicked: layerStack.push(currentLayer, { service: modelData })
         }
     }
     SettingsChip {
+        objectName: "wifiLastUsed"
+        visible: page.on && page.connectedName === "" && lastUsed.value !== ""
+        title: lastUsed.value
+        //% "Last used"
+        summary: qsTrId("id-wifi-last-used")
+        iconName: "ios-wifi-outline"
+        clickable: false
+    }
+    SettingsChip {
         objectName: "wifiAdd"
-        visible: wifiStatus.powered
+        visible: page.on
         //% "Add network"
         title: qsTrId("id-wifi-add")
         iconName: "ios-add"
-        onClicked: layerStack.push(networksLayer, { model: wifiModel, saved: false, connectionDialog: connectionDialog })
+        onClicked: layerStack.push(addLayer, { model: wifiModel, connectionDialog: connectionDialog })
     }
     SettingsChip {
         objectName: "wifiSaved"
-        visible: wifiStatus.powered
+        visible: page.on
         //% "Saved networks"
         title: qsTrId("id-wifi-saved-networks")
+        //% "No saved networks"
+        summary: page.savedCount === 0 ? qsTrId("id-wifi-none-saved") : ""
         iconName: "ios-bookmark-outline"
-        onClicked: layerStack.push(networksLayer, { model: wifiModel, saved: true, connectionDialog: connectionDialog })
+        onClicked: layerStack.push(savedLayer, { model: wifiModel })
     }
     SettingsChip {
         objectName: "wifiAbout"

@@ -45,6 +45,9 @@ asteroid_app_qml_module(asteroid-settings
 	qml/BluetoothPage.qml
 	qml/WiFiPage.qml
 	qml/WiFiNetworksPage.qml
+	qml/WiFiSavedPage.qml
+	qml/WiFiSavedNetworkPage.qml
+	qml/WiFiCurrentNetworkPage.qml
 	qml/WiFiConnectionDialog.qml
 	qml/DisplayPage.qml
 	qml/BrightnessPage.qml

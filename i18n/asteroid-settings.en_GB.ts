@@ -962,6 +962,74 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Turns off Always-on screen and Tilt-to-wake to extend battery life</source>
         <translation>Turns off Always-on screen and Tilt-to-wake to extend battery life</translation>
     </message>
+    <message id="id-wifi-wrong-password">
+        <source>Wrong password</source>
+        <translation>Wrong password</translation>
+    </message>
+    <message id="id-wifi-failure">
+        <source>Wi-Fi connection failure</source>
+        <translation>Wi-Fi connection failure</translation>
+    </message>
+    <message id="id-wifi-password-required">
+        <source>Network password required</source>
+        <translation>Network password required</translation>
+    </message>
+    <message id="id-wifi-retry">
+        <source>Retry</source>
+        <translation>Retry</translation>
+    </message>
+    <message id="id-wifi-open-on-watch">
+        <source>Open on watch</source>
+        <translation>Open on watch</translation>
+    </message>
+    <message id="id-wifi-enter-on-watch">
+        <source>Enter on watch</source>
+        <translation>Enter on watch</translation>
+    </message>
+    <message id="id-wifi-unavailable">
+        <source>Unavailable</source>
+        <translation>Unavailable</translation>
+    </message>
+    <message id="id-wifi-ipv6">
+        <source>IPv6 addresses</source>
+        <translation>IPv6 addresses</translation>
+    </message>
+    <message id="id-wifi-mac">
+        <source>MAC address</source>
+        <translation>MAC address</translation>
+    </message>
+    <message id="id-wifi-connecting">
+        <source>Connecting…</source>
+        <translation>Connecting…</translation>
+    </message>
+    <message id="id-wifi-connection-failure">
+        <source>Connection failure</source>
+        <translation>Connection failure</translation>
+    </message>
+    <message id="id-wifi-bluetooth-first">
+        <source>Bluetooth first</source>
+        <translation>Bluetooth first</translation>
+    </message>
+    <message id="id-wifi-bluetooth-first-message">
+        <source>To save battery, the watch chooses Bluetooth over Wi-Fi.</source>
+        <translation>To save battery, the watch chooses Bluetooth over Wi-Fi.</translation>
+    </message>
+    <message id="id-wifi-automatic">
+        <source>Automatic</source>
+        <translation>Automatic</translation>
+    </message>
+    <message id="id-wifi-last-used">
+        <source>Last used</source>
+        <translation>Last used</translation>
+    </message>
+    <message id="id-wifi-forget">
+        <source>Forget</source>
+        <translation>Forget</translation>
+    </message>
+    <message id="id-wifi-mode-off">
+        <source>Off</source>
+        <translation>Off</translation>
+    </message>
 </context>
 <context>
     <name>AboutPage</name>
