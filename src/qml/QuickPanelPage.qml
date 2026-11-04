@@ -80,7 +80,7 @@ Item {
             "powerOffToggle": true,
             "rebootToggle": true,
             "musicButton": false,
-            "flashlightButton": false
+            "flashlightButton": true
         }
     }
 
@@ -149,7 +149,7 @@ Item {
         //% "Music"
         toggleOptions["musicButton"] = ({ name: qsTrId("id-toggle-music"), icon: "ios-musical-notes-outline"});
         //% "Flashlight"
-        toggleOptions["flashlightButton"] = ({ name: qsTrId("id-toggle-flashlight"), icon: "ios-bulb-outline"});
+        toggleOptions["flashlightButton"] = ({ name: qsTrId("id-toggle-flashlight"), icon: "gm-flashlight-on"});
     }
 
     ListModel {
