@@ -1030,6 +1030,38 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Off</source>
         <translation>Off</translation>
     </message>
+    <message id="id-buttons-page">
+        <source>Buttons</source>
+        <translation>Buttons</translation>
+    </message>
+    <message id="id-modes-page">
+        <source>Modes</source>
+        <translation>Modes</translation>
+    </message>
+    <message id="id-location-page">
+        <source>Location</source>
+        <translation>Location</translation>
+    </message>
+    <message id="id-accessibility-page">
+        <source>Accessibility</source>
+        <translation>Accessibility</translation>
+    </message>
+    <message id="id-security-page">
+        <source>Security</source>
+        <translation>Security</translation>
+    </message>
+    <message id="id-display-size-page">
+        <source>Display size &amp; text</source>
+        <translation>Display size &amp; text</translation>
+    </message>
+    <message id="id-health-profile-page">
+        <source>Health profile</source>
+        <translation>Health profile</translation>
+    </message>
+    <message id="id-safety-page">
+        <source>Safety &amp; Emergency</source>
+        <translation>Safety &amp; Emergency</translation>
+    </message>
 </context>
 <context>
     <name>AboutPage</name>

@@ -159,7 +159,7 @@ SettingsHarness {
             var sw = chip("batterySaverSwitch")
             verify(sw.active && !sw.checked)
             h.tap(this, sw)
-            verify(dialog().visible)
+            verify(dialog().shown)
             compare(dialog().title, "Turn on Battery Saver?")
             compare(dialog().message, "Turns off Always-on screen and Tilt-to-wake to extend battery life")
             h.shot(this, "modes-07-battery-saver-dialog")
@@ -169,7 +169,7 @@ SettingsHarness {
             h.shot(this, "modes-08-battery-saver")
             // off at once
             h.tap(this, sw)
-            verify(!dialog().visible)
+            verify(!dialog().shown)
             compare(conf(saverKey), false)
             // on the charger: unchecked, greyed out
             Backend.confSet(saverKey, true)

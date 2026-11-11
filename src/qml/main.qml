@@ -23,20 +23,36 @@ import org.asteroid.utils
 import org.asteroid.settings
 import Nemo.Configuration
 import Nemo.Mce
+import "PageReady.js" as PageReady
 
 /*
- * Settings as the stock Wear OS Settings app of the Pixel Watch 2
- * (ClockworkSettings, prefs_main.xml): the same top level list in the same
- * order, without what this watch cannot do (Google, Health Profile,
- * Location, Safety & Emergency, Accessibility, Security); Developer options
- * at the end once Build number was tapped seven times. Black, as the stock
- * app; the lists are Wear OS chips (SettingsPage, SettingsChip).
+ * Settings as the stock CP3A Settings app of the Pixel Watch 2: the paired
+ * main list in stock order (PixelWatchMainViewModel.getPreferenceFactories):
+ * Connectivity, Display, Gestures, Buttons, Apps & notifications, Modes,
+ * (Google), Sound, Vibration, Battery, General, (Health profile), Location,
+ * (Safety & Emergency), Accessibility, Security, (Passwords), System,
+ * Developer options once Build number was tapped seven times. Google and
+ * Passwords are out of reach and left out (DECISIONS Q62); Health profile,
+ * Location, Safety & Emergency, Accessibility and Security keep their stock
+ * places and show once their pages have rows (PageReady.js). No "Watch face & style": CP3A has none in the paired list
+ * (MainViewModel.standardPreferences; DECISIONS Q26 drops the Wallpaper page).
+ * Black, as the stock app, with the TimeText at the top of every screen
+ * (AppScaffold timeText); the rows are the M3 Settings rows (SettingsPage,
+ * SettingsChip), the lists open as selection dialogs (ChoicePage) and the
+ * questions as alert dialogs (ConfirmDialog).
  */
 Application {
     id: app
 
     centerColor: "#000000"
     outerColor: "#000000"
+    // stock AppScaffold: TimeText on every Settings screen (settings-a-06)
+    showTime: true
+
+    // the list icons drawn for Settings (src/icons, installed in
+    // /usr/share/asteroid-settings/icons), named for Icon, which looks in
+    // /usr/share/icons/asteroid
+    readonly property string iconDir: "../../asteroid-settings/icons/"
     // no swipe hints at the edges: Wear OS has none
     rightIndicVisible: false
     leftIndicVisible: false
@@ -51,8 +67,6 @@ Application {
     Component { id: extraDimLayer;              ExtraDimPage   { } }
     Component { id: nightstandLayer;            NightstandPage { } }
     Component { id: nightstandWatchfaceLayer;   NightstandWatchfacePage { } }
-    Component { id: styleLayer;                 StylePage      { } }
-    Component { id: wallpaperLayer;             WallpaperPage  { } }
     Component { id: watchfaceLayer;             WatchfacePage  { } }
     Component { id: gesturesLayer;              GesturesPage   { } }
     Component { id: appsLayer;                  AppsPage       { } }
@@ -74,7 +88,12 @@ Application {
     Component { id: aboutLayer;                 AboutPage      { } }
     Component { id: versionsLayer;              VersionsPage   { } }
     Component { id: developerLayer;             DeveloperPage  { } }
-    Component { id: choiceLayer;                ChoicePage     { } }
+    Component { id: buttonsLayer;               ButtonsPage    { } }
+    Component { id: modesLayer;                 ModesPage      { } }
+    Component { id: locationLayer;              LocationPage   { } }
+    Component { id: accessibilityLayer;         AccessibilityPage { } }
+    Component { id: securityLayer;              SecurityPage   { } }
+    Component { id: displaySizeLayer;           DisplaySizePage { } }
 
     // Developer options appear at the end of the list once Build number
     // (About > Versions) was tapped seven times, as on Wear OS
@@ -106,18 +125,31 @@ Application {
         firstPage: firstPageComponent
     }
 
-    // the stock settings' alert dialog (✕ / ✓), over every page
-    ConfirmDialog { id: confirm; objectName: "confirmDialog" }
+    // the stock selection dialog of the list settings (SelectionDialogKt):
+    // options are the labels, apply(index) applies one; it returns false
+    // to keep the dialog open (the caller then calls pop() on what choose()
+    // returned, e.g. after a confirmation); message is stock's optional line
+    // under the title ("When display will turn off after inactivity")
+    ChoicePage { id: chooser; behind: layerStack }
+    function choose(title, options, current, apply, summaries, message) {
+        return chooser.show(title, options, current, apply, summaries || [], message || "")
+    }
 
-    // a short line at the bottom, as Android's toast
-    Toast { id: toast; objectName: "toast" }
+    // the stock settings confirmation (X / check), over every page and the
+    // selection dialog
+    ConfirmDialog {
+        id: confirm
+        objectName: "confirmDialog"
+        // the screen under it: the selection dialog when it asks for one
+        behind: chooser.shown ? chooser : layerStack
+    }
 
-    // a list of choices on a page of its own (WearListPreference): options
-    // are the labels, choose(index) applies one; it returns false to keep
-    // the page open (it then pops the page itself, e.g. after a dialog)
-    function choose(title, options, current, apply, summaries) {
-        return layerStack.push(choiceLayer, { "title": title, "options": options, "currentIndex": current,
-                                              "apply": apply, "summaries": summaries || [] })
+    // the Android toast (org.asteroid.controls Toast: centred, 2 s)
+    Toast {
+        id: toast
+        objectName: "toast"
+        z: 1200
+        Component.onCompleted: toast.label.objectName = "toastText"
     }
 
     Component {
@@ -146,7 +178,7 @@ Application {
                 objectName: "connectivityItem"
                 //% "Connectivity"
                 title: qsTrId("id-connectivity-page")
-                iconName: "ios-swap"
+                iconName: app.iconDir + "eos-settings-connectivity"
                 onClicked: layerStack.push(connectivityLayer)
             }
             SettingsChip {
@@ -156,18 +188,18 @@ Application {
                 onClicked: layerStack.push(displayLayer)
             }
             SettingsChip {
-                objectName: "styleItem"
-                //% "Watch face & style"
-                title: qsTrId("id-style-page")
-                iconName: "ios-color-palette-outline"
-                onClicked: layerStack.push(styleLayer)
-            }
-            SettingsChip {
                 objectName: "gesturesItem"
                 //% "Gestures"
                 title: qsTrId("id-gestures-page")
-                iconName: "ios-hand-outline"
+                iconName: app.iconDir + "eos-settings-gestures"
                 onClicked: layerStack.push(gesturesLayer)
+            }
+            SettingsChip {
+                objectName: "buttonsItem"
+                //% "Buttons"
+                title: qsTrId("id-buttons-page")
+                iconName: app.iconDir + "eos-settings-buttons"
+                onClicked: layerStack.push(buttonsLayer)
             }
             SettingsChip {
                 objectName: "appsItem"
@@ -175,6 +207,13 @@ Application {
                 title: qsTrId("id-apps-page")
                 iconName: "ios-apps-outline"
                 onClicked: layerStack.push(appsLayer)
+            }
+            SettingsChip {
+                objectName: "modesItem"
+                //% "Modes"
+                title: qsTrId("id-modes-page")
+                iconName: app.iconDir + "eos-settings-modes"
+                onClicked: layerStack.push(modesLayer)
             }
             SettingsChip {
                 objectName: "soundItem"
@@ -196,7 +235,7 @@ Application {
                 title: qsTrId("id-battery-page")
                 //% "%1%"
                 summary: batteryLevel.valid ? qsTrId("id-battery-percent").arg(batteryLevel.percent) : ""
-                iconName: "ios-battery-full"
+                iconName: app.iconDir + "eos-settings-battery"
                 onClicked: layerStack.push(batteryLayer)
             }
             SettingsChip {
@@ -207,10 +246,52 @@ Application {
                 onClicked: layerStack.push(generalLayer)
             }
             SettingsChip {
+                objectName: "healthProfileItem"
+                visible: PageReady.healthProfile
+                //% "Health profile"
+                title: qsTrId("id-health-profile-page")
+                iconName: "ios-heart-outline"
+                // made when tapped: the page comes with its package
+                onClicked: layerStack.push(Qt.createComponent("HealthProfilePage.qml"))
+            }
+            SettingsChip {
+                objectName: "locationItem"
+                visible: PageReady.location
+                //% "Location"
+                title: qsTrId("id-location-page")
+                iconName: app.iconDir + "eos-settings-location"
+                onClicked: layerStack.push(locationLayer)
+            }
+            SettingsChip {
+                objectName: "safetyItem"
+                visible: PageReady.safety
+                //% "Safety & Emergency"
+                title: qsTrId("id-safety-page")
+                iconName: "ios-medkit-outline"
+                // made when tapped: the page comes with its package
+                onClicked: layerStack.push(Qt.createComponent("SafetyPage.qml"))
+            }
+            SettingsChip {
+                objectName: "accessibilityItem"
+                visible: PageReady.accessibility
+                //% "Accessibility"
+                title: qsTrId("id-accessibility-page")
+                iconName: app.iconDir + "eos-settings-accessibility"
+                onClicked: layerStack.push(accessibilityLayer)
+            }
+            SettingsChip {
+                objectName: "securityItem"
+                visible: PageReady.security
+                //% "Security"
+                title: qsTrId("id-security-page")
+                iconName: app.iconDir + "eos-settings-security"
+                onClicked: layerStack.push(securityLayer)
+            }
+            SettingsChip {
                 objectName: "systemItem"
                 //% "System"
                 title: qsTrId("id-system-page")
-                iconName: "ios-information-circle-outline"
+                iconName: app.iconDir + "eos-settings-system"
                 onClicked: layerStack.push(systemLayer)
             }
             SettingsChip {
@@ -230,18 +311,70 @@ Application {
         }
     }
 
-    // A page on request, "<page>@<time in ms>" in this dconf key: the Open
-    // button of a system update notification (eos-update's open-settings)
-    // asks for "updates" (System > System updates); "battery" opens Battery.
-    // The launcher starts or raises this app without arguments, so the
-    // request is read at start and whenever it changes; a request older
-    // than a minute (the app started later some other way) is ignored, as
-    // the Health app's tile request
+    // A page on request, "<page>@<time in ms>" in this dconf key, as the
+    // stock deep links (ClockworkDeepLinkRouteStore: an intent action to a
+    // route; one with no route opens the main list, NoMatch -> MAIN). Quick
+    // settings long press, the status tray, complications, notifications and
+    // dialogs ask for a page by its stock route name in lower case; the
+    // launcher writes the key with Date.now() and starts or raises this app
+    // without arguments, so the request is read at start and whenever it
+    // changes. A request older than a minute (the app started later some
+    // other way) is ignored, as the Health app's tile request. eos-update's
+    // open-settings asks for "updates".
     ConfigurationValue {
         id: openRequest
         key: "/org/asteroidos/settings/ui/open"
         defaultValue: ""
         onValueChanged: Qt.callLater(app.openRequested)
+    }
+    // route -> the pages pushed from the main list, in order
+    readonly property var deepLinks: ({
+        "main": [],
+        "connectivity": [connectivityLayer],
+        "wifi": [connectivityLayer, wifiLayer],
+        "bluetooth": [connectivityLayer, bluetoothLayer],
+        "display": [displayLayer],
+        "brightness": [displayLayer, brightnessLayer],
+        "gestures": [gesturesLayer],
+        "buttons": [buttonsLayer],
+        "apps": [appsLayer],
+        "modes": [modesLayer],
+        "mode_do_not_disturb": [modesLayer, dndLayer],
+        // Bedtime is on the Do Not Disturb page until it has its own
+        "mode_bedtime": [modesLayer, dndLayer],
+        "mode_bedtime_customize": [modesLayer, dndLayer],
+        "mode_theater": [modesLayer],
+        "sound": [soundLayer],
+        "vibration": [vibrationLayer],
+        "battery": [batteryLayer],
+        // Battery saver is on the Battery page until it has its own
+        "battery_saver": [batteryLayer],
+        "general": [generalLayer],
+        "system": [systemLayer],
+        "date_time": [systemLayer, dateTimeLayer],
+        "language": [systemLayer, languageLayer],
+        "device_info": [systemLayer, aboutLayer],
+        "updates": [systemLayer, updatesLayer],
+        "developer_options": [developerLayer]
+    })
+    // the pages a route opens: none (the main list) for an unknown route,
+    // Sound without a speaker, or Developer options while they are off
+    function routeOf(page) {
+        if (!deepLinks.hasOwnProperty(page))
+            return []
+        if (page === "sound" && !DeviceSpecs.hasSpeaker)
+            return []
+        if (page === "developer_options" && !developerOptions.value)
+            return []
+        return deepLinks[page]
+    }
+    function openPage(page) {
+        chooser.pop()
+        confirm.close()
+        backToMainMenu()
+        var route = routeOf(page)
+        for (var i = 0; i < route.length; i++)
+            layerStack.push(route[i])
     }
     function openRequested() {
         var request = String(openRequest.value || "")
@@ -252,15 +385,7 @@ Application {
         var age = Date.now() - Number(request.substring(at + 1))
         if (at < 0 || !(age > -5000 && age < 60000))
             return
-        var page = request.substring(0, at)
-        if (page === "updates") {
-            backToMainMenu()
-            layerStack.push(systemLayer)
-            layerStack.push(updatesLayer)
-        } else if (page === "battery") {
-            backToMainMenu()
-            layerStack.push(batteryLayer)
-        }
+        app.openPage(request.substring(0, at))
     }
     Component.onCompleted: Qt.callLater(openRequested)
 }

@@ -7,13 +7,24 @@ import QtQuick
 import org.asteroid.controls
 
 /*
- * A Wear OS settings screen (Wear Material's preference list): the title as
- * the first row, scrolling with the list, then the rows (SettingsChip,
- * SettingsCategory, SettingsText, SettingsSlider) 8 dp apart. The list
- * starts 16.8 % down, keeps 5.2 % off each side and ends with 35.6 % of
- * room, so its last row can come up to the middle of the circle. The crown
- * scrolls it (the controls' RotaryInput takes the Flickable under the
- * middle of the window).
+ * A stock CP3A Settings screen (ScreenScaffold around a ScalingLazyColumn,
+ * ItemLazyColumnKt.java:67,153-166): the title is the first list item, an
+ * M3 ListHeader that scrolls with the list, then the rows (SettingsChip,
+ * SettingsCategory, SettingsText, SettingsSlider) 4 dp (8 px) apart
+ * (ScalingLazyColumnKt.java:166-167). The list keeps 5.2 % of the width
+ * at each side, starts 16.64 % down and ends with 36.46 % of the height
+ * of room, so its last row can come up to the middle of the circle
+ * (CustomDimensions.java:22-24): 20, 64 and 140 px on the 384 px screen.
+ * The title: titleMedium (16 sp, 32 px, weight 550) in onBackground #FFFFFF,
+ * centred, at most 3 lines with an ellipsis, line height 1.1 em, 12 % of the
+ * width (46 px) at each side inside the list, 4 dp (8 px) above, 12 dp
+ * (24 px) below, at least 48 dp (96 px) tall (ListHeaderTokens.java:6-8,
+ * ListHeaderKt.java:58,84, CustomDimensions.java:25,
+ * PaddingDefaultValuesKt.java:156-158,
+ * ItemLazyColumnKt$$ExternalSyntheticLambda7.java:37).
+ * The crown scrolls it (the controls' RotaryInput takes the Flickable under
+ * the middle of the window); the TimeText at the top scrolls away with it
+ * (Application).
  *
  *   SettingsPage {
  *       title: qsTrId("id-display-page")
@@ -35,39 +46,33 @@ Item {
         objectName: "settingsFlickable"
         anchors.fill: parent
         contentWidth: width
-        contentHeight: column.y + column.height + Math.round(page.height * 0.356)
+        contentHeight: column.y + column.height + Math.round(page.height * 0.3646)
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.DragOverBounds
 
         Column {
             id: column
             objectName: "settingsColumn"
-            y: Math.round(page.height * 0.168)
+            y: Math.round(page.height * 0.1664)
             x: Math.round(page.width * 0.052)
             width: page.width - 2 * x
-            spacing: Dims.h(4)
+            spacing: Theme.space.xs
 
-            Label {
-                id: titleLabel
+            ListHeader {
+                id: titleHeader
                 objectName: "settingsTitle"
                 visible: page.title !== ""
-                width: parent.width
-                leftPadding: Math.round(page.width * 0.023)
-                rightPadding: leftPadding
-                bottomPadding: Dims.h(1)
                 text: page.title
-                horizontalAlignment: Text.AlignHCenter
-                wrapMode: Text.Wrap
-                maximumLineCount: 2
-                elide: Text.ElideRight
-                clip: false
-                font.pixelSize: Dims.l(7.8)
-                font.styleName: "SemiCondensed Medium"
-                EdgeEffect { id: titleEdge; item: titleLabel }
+                horizontalPadding: Math.round(page.width * 0.12)
+                topPadding: Theme.dp(4)
+                bottomPadding: Theme.space.l
+                // the Settings ListHeader text has a 1.1 em line
+                label.lineHeight: label.font.pixelSize * 1.1
+                EdgeEffect { id: titleEdge; item: titleHeader }
                 opacity: titleEdge.alpha
                 transform: Scale {
-                    origin.x: titleLabel.width / 2
-                    origin.y: titleLabel.height / 2
+                    origin.x: titleHeader.width / 2
+                    origin.y: titleHeader.height / 2
                     xScale: titleEdge.scale
                     yScale: titleEdge.scale
                 }

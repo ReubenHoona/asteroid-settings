@@ -7,18 +7,23 @@ import QtQuick
 import org.asteroid.controls
 
 /*
- * An explanation in a Wear OS settings list (WearTextBoxPreference): plain
- * text under the row it explains, not a chip, not selectable.
+ * An explanation in a stock CP3A Settings list (CaptionItem / TextItem):
+ * plain text under the row it explains, not a button, not selectable.
+ * bodySmall (12 sp, 24 px, weight 500, 14 sp line) in onSurfaceVariant
+ * #CECDD4, padding 14/6/14/6 dp (28/12/28/12 px) (CaptionItemKt.java:26,
+ * TextItemKt.java:60, ButtonDefaults.java:21, TypeScaleTokens.java:122-127).
  */
 Label {
     id: text
     width: parent ? parent.width : 0
-    leftPadding: Dims.w(2.3)
+    role: "bodySmall"
+    color: Theme.color.onSurfaceVariant
+    leftPadding: Theme.space.xl
     rightPadding: leftPadding
-    color: "#c4c7c5"
+    topPadding: Theme.space.s
+    bottomPadding: Theme.space.s
     wrapMode: Text.Wrap
     clip: false
-    font.pixelSize: Dims.l(6.3)
     EdgeEffect { id: edge; item: text }
     opacity: edge.alpha
     transform: Scale {

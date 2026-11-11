@@ -37,7 +37,6 @@ asteroid_app_qml_module(asteroid-settings
 	qml/SettingsText.qml
 	qml/SettingsSlider.qml
 	qml/ConfirmDialog.qml
-	qml/Toast.qml
 	qml/ModeState.qml
 	qml/ChoiceList.qml
 	qml/ChoicePage.qml
@@ -78,6 +77,13 @@ asteroid_app_qml_module(asteroid-settings
 	qml/AboutPage.qml
 	qml/VersionsPage.qml
 	qml/DeveloperPage.qml
+	qml/PageReady.js
+	qml/ButtonsPage.qml
+	qml/ModesPage.qml
+	qml/LocationPage.qml
+	qml/AccessibilityPage.qml
+	qml/SecurityPage.qml
+	qml/DisplaySizePage.qml
 )
 message(${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(
@@ -100,4 +106,21 @@ target_link_libraries(
 install(
 	TARGETS asteroid-settings
 	DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+# the Settings list icons (drawn for eos to the stock shapes, settings-a-07),
+# in the app's own data dir (packaged with it); main.qml names them for
+# org.asteroid.controls Icon relative to /usr/share/icons/asteroid
+install(
+	FILES
+		icons/eos-settings-accessibility.svg
+		icons/eos-settings-battery.svg
+		icons/eos-settings-buttons.svg
+		icons/eos-settings-connectivity.svg
+		icons/eos-settings-gestures.svg
+		icons/eos-settings-location.svg
+		icons/eos-settings-modes.svg
+		icons/eos-settings-security.svg
+		icons/eos-settings-system.svg
+	DESTINATION ${CMAKE_INSTALL_DATADIR}/asteroid-settings/icons
 )
