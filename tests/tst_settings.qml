@@ -339,7 +339,8 @@ SettingsHarness {
             compare(last("mce", "use_low_power_mode").args, [false])
             verify(!h.shown(h.find(h.current(), "aodBrightnessItem")))
             h.tapName(this, "aodSwitch")
-            compare(dialog().title, "Always-on screen reduces battery life.")
+            compare(dialog().title, "Turn on always-on screen?")
+            compare(dialog().message, "Always-on screen reduces battery life.")
             accept()
             compare(conf("/org/asteroidos/settings/always-on-display"), true)
             compare(last("mce", "use_low_power_mode").args, [true])
@@ -432,7 +433,7 @@ SettingsHarness {
             open(["vibrationItem"])
             h.tapName(this, "quietSwitch")
             compare(conf("/org/asteroidos/notifications/quiet-on-charger"), false)
-            h.tapName(this, "hapticsSwitch")
+            h.tapName(this, "vibrationSwitch")
             compare(conf("/desktop/asteroid/vibration"), false)
         }
 
@@ -514,7 +515,7 @@ SettingsHarness {
             h.settle(this)
             Backend.confSet("/org/asteroidos/settings/use-12h-format", true)
             compare(h.find(h.current(), "hourFormatSwitch").checked, false)
-            compare(h.find(h.current(), "setTimeItem").summary, "10:09 AM")
+            compare(h.find(h.current(), "setTimeItem").summary, "10:09 am")
             h.tapName(this, "hourFormatSwitch")
             compare(conf("/org/asteroidos/settings/use-12h-format"), false)
             compare(h.find(h.current(), "setTimeItem").summary, "10:09")

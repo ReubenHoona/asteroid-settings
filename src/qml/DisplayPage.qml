@@ -11,8 +11,9 @@ import Nemo.Configuration
 import Nemo.Mce
 
 // Settings > Display (stock prefs_display.xml, DisplaySettingsFragment):
-// Change watch face, Adjust brightness, Screen timeout, Always-on screen,
-// then this watch's own: Extra dim (after Adjust brightness), Always-on
+// Change watch face, Adjust brightness, Screen timeout, Always-on screen and
+// right under it Always-on when off wrist (the user's choice 3), then this
+// watch's own: Extra dim (after Adjust brightness), Always-on
 // brightness, Burn-in protection and Nightstand. A mode that holds the
 // brightness or the always-on screen greys it out with the mode as its
 // summary ("Bedtime mode is on"), the switch showing it off, as stock. Screen timeout is the whole time the screen stays on, as on
@@ -39,6 +40,13 @@ SettingsPage {
     ConfigurationValue {
         id: alwaysOnDisplay
         key: "/org/asteroidos/settings/always-on-display"
+        defaultValue: true
+    }
+    // Always-on when off wrist (choice 3): true, the user's "never off";
+    // false, stock's: ambient ends 60 s off the wrist or on the charger
+    ConfigurationValue {
+        id: alwaysOnOffWrist
+        key: "/org/asteroidos/settings/always-on-off-wrist"
         defaultValue: true
     }
     ConfigurationValue {
@@ -148,6 +156,13 @@ SettingsPage {
         summary: page.timeoutKnown ? page.timeoutLabel(page.timeouts[page.timeoutIndex]) : ""
         onClicked: page.chooseTimeout()
     }
+    // Always-on screen (choice 3; stock AlwaysOnScreenPreference): off at
+    // once; on after stock's question, title "Turn on always-on screen?" and
+    // text "Always-on screen reduces battery life." (enable_ambient_screen_
+    // dialog_title, enable_ambient_screen: AlwaysOnScreenPreference.java:
+    // 145-146). A mode holds it greyed, showing off, with the mode as its
+    // summary (:55-75). Stock has it after Go to watch face, which
+    // W2-settings-display adds above it.
     SettingsChip {
         objectName: "aodSwitch"
         //% "Always-on screen"
@@ -161,12 +176,35 @@ SettingsPage {
                 page.setAlwaysOn(false)
                 return
             }
-            //% "Always-on screen reduces battery life."
-            confirm.ask(qsTrId("id-aod-confirm"),
-                        //% "Turn on?"
-                        qsTrId("id-turn-on"),
+            //% "Turn on always-on screen?"
+            confirm.ask(qsTrId("id-aod-confirm-title"),
+                        //% "Always-on screen reduces battery life."
+                        qsTrId("id-aod-confirm"),
                         function () { page.setAlwaysOn(true) })
         }
+    }
+    // Always-on when off wrist (choice 3, DECISIONS Q9): one switch for off
+    // the wrist and on the charger, as stock ends ambient on one timer for
+    // both (60 s, ro.ambient.plugged_timeout_min 1). On, the user's value:
+    // the always-on screen never goes black. Off, stock's: the launcher ends
+    // ambient 60 s after the watch leaves the wrist or is plugged in
+    // (W2-launcher-ambient). Caption in the pattern of stock's "Silence when
+    // off wrist" caption. Greyed while Always-on screen is off; a mode holds
+    // it as it holds Always-on screen (greyed, showing off, the same summary).
+    SettingsChip {
+        objectName: "aodOffWristSwitch"
+        //% "Always-on when off wrist"
+        title: qsTrId("id-aod-off-wrist")
+        control: "toggle"
+        active: modeState.alwaysOnHolder === "" && !!alwaysOnDisplay.value
+        summary: modeState.summary(modeState.alwaysOnHolder)
+        checked: !!alwaysOnOffWrist.value && modeState.alwaysOnHolder === ""
+        onClicked: alwaysOnOffWrist.value = !alwaysOnOffWrist.value
+    }
+    SettingsText {
+        objectName: "aodOffWristCaption"
+        //% "Always-on screen stays on when watch is off wrist or charging"
+        text: qsTrId("id-aod-off-wrist-explain")
     }
     SettingsChip {
         objectName: "aodBrightnessItem"
