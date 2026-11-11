@@ -19,6 +19,9 @@ SettingsPage {
 
     SettingsSlider {
         objectName: "brightnessSlider"
+        // stock Brightness is a segmented slider
+        // (SliderController$Brightness$$ExternalSyntheticLambda0.java:44)
+        segmented: true
         from: 10
         to: 100
         stepSize: 10
