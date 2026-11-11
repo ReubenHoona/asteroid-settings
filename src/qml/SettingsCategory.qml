@@ -7,21 +7,46 @@ import QtQuick
 import org.asteroid.controls
 
 /*
- * A category header of a Wear OS settings list (wear_preference_category):
- * a small caption over the rows it heads, 12 dp above it, no chip.
+ * A category header of a stock CP3A Settings list (CategoryHeaderItem, an M3
+ * ListSubHeader): titleSmall (14 sp, 28 px, weight 550, 16 sp line) in
+ * onSurface #E8E7EE, start-aligned, at the bottom of a box at least 48 dp
+ * (96 px) tall; 4.16 % of the width (8 dp, 16 px) at each side, 12 dp
+ * (24 px) above (none when it is the first row of the page, under the
+ * title), 8 dp (16 px) below (ListSubHeaderTokens.java:6-8,
+ * ListHeaderKt.java:130,156, CategoryHeaderItemKt.java:46,55,
+ * CustomDimensions.java:26).
  */
 Label {
     id: header
+
+    /* the first row of its page (only the page title before it): no space above */
+    readonly property bool firstInPage: {
+        var p = parent
+        if (!p || !p.children)
+            return false
+        for (var i = 0; i < p.children.length; i++) {
+            var c = p.children[i]
+            if (c === header)
+                return true
+            if (c.visible && c.objectName !== "settingsTitle" && c.height > 0)
+                return false
+        }
+        return false
+    }
+
     width: parent ? parent.width : 0
-    leftPadding: Dims.w(2.3)
+    height: Math.max(Theme.size.listHeader, implicitHeight)
+    role: "titleSmall"
+    color: Theme.color.onSurface
+    leftPadding: Math.round(Theme.margin.subtitleSide)
     rightPadding: leftPadding
-    topPadding: Dims.h(3)
-    color: "#c4c7c5"
+    topPadding: firstInPage ? 0 : Theme.space.l
+    bottomPadding: Theme.space.m
+    verticalAlignment: Text.AlignBottom
     wrapMode: Text.Wrap
     maximumLineCount: 2
     clip: false
-    font.pixelSize: Dims.l(6.3)
-    font.styleName: "SemiCondensed Medium"
+    Accessible.role: Accessible.Heading
     EdgeEffect { id: edge; item: header }
     opacity: edge.alpha
     transform: Scale {

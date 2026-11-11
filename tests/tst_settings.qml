@@ -58,7 +58,7 @@ SettingsHarness {
         function test_01_top_level_in_stock_order() {
             compare(h.current().objectName, "mainPage")
             compare(titlesShown(h.current()),
-                    ["Connectivity", "Display", "Watch face & style", "Gestures", "Apps & notifications",
+                    ["Connectivity", "Display", "Gestures", "Buttons", "Apps & notifications", "Modes",
                      "Sound", "Vibration", "Battery", "General", "System"])
             compare(h.find(h.current(), "batteryItem").summary, "57%")
             verify(!h.shown(h.find(h.current(), "developerItem")), "Developer options hidden until the 7 taps")
@@ -92,9 +92,15 @@ SettingsHarness {
                 h.tap(this, c)
                 wait(50)
                 var pushed = h.stack.layers.length > layers
-                var asked = dialog().visible
+                var asked = dialog().shown
+                var chose = h.chooser().shown
                 var toasted = toast().visible
                 var wrote = Backend.calls.length > calls
+                if (chose) {
+                    // a list setting: its selection dialog, closed again
+                    h.back(this)
+                    continue
+                }
                 if (!(pushed || asked || toasted || wrote))
                     problems.push(name + ": dead entry: " + c.title)
                 if (asked && dialog().infoOnly) {
@@ -114,7 +120,7 @@ SettingsHarness {
                 } else if (c.control === "toggle" && c.checked !== before) {
                     // put the switch back (accepting what it asks)
                     h.tap(this, c)
-                    if (dialog().visible)
+                    if (dialog().shown)
                         accept()
                 }
             }
@@ -128,7 +134,7 @@ SettingsHarness {
             crawl(0)
             compare(problems, [])
             var expected = ["mainPage", "connectivityPage", "bluetoothPage", "wifiPage", "wifiAddPage", "wifiSavedPage",
-                            "displayPage", "brightnessPage", "extraDimPage", "nightstandPage", "stylePage", "gesturesPage", "appsPage",
+                            "displayPage", "brightnessPage", "extraDimPage", "nightstandPage", "gesturesPage", "buttonsPage", "appsPage", "modesPage",
                             "dndPage", "assistantPage", "soundPage", "vibrationPage", "batteryPage", "generalPage", "systemPage",
                             "dateTimePage", "aboutPage", "versionsPage", "developerPage"]
             for (var i = 0; i < expected.length; i++)
@@ -141,7 +147,7 @@ SettingsHarness {
             compare(h.find(h.current(), "phoneItem").summary, "Connected, 80% battery")
             // off asks first (stock words), ✕ keeps it on
             h.tapName(this, "bluetoothSwitch")
-            verify(dialog().visible)
+            verify(dialog().shown)
             compare(dialog().title, "Turn off Bluetooth?")
             reject()
             compare(Backend.btPowered, true)
@@ -163,7 +169,7 @@ SettingsHarness {
             h.tapName(this, "wifiSwitch")
             compare(last("connman", "wifi.Powered").args, [true])
             h.tapName(this, "wifiAbout")
-            verify(dialog().visible)
+            verify(dialog().shown)
             verify(!h.shown(h.find(h.app, "dialogNo")), "About Wi-Fi has only the check")
             accept()
         }
@@ -243,7 +249,7 @@ SettingsHarness {
             compare(lastRow.summary, "Last used")
             compare(lastRow.clickable, false)
             h.tapName(this, "wifiSwitch")
-            verify(dialog().visible)
+            verify(dialog().shown)
             compare(dialog().title, "Bluetooth first")
             verify(!h.shown(h.find(h.app, "dialogNo")), "only the check")
             accept()
@@ -253,7 +259,7 @@ SettingsHarness {
             compare(h.find(h.current(), "wifiSwitch").summary, "Off")
             compare(titlesShown(h.current()), ["Wi-Fi", "About Wi-Fi"])
             h.tapName(this, "wifiSwitch")
-            verify(!dialog().visible, "no notice the second time")
+            verify(!dialog().shown, "no notice the second time")
             compare(conf("/org/asteroidos/eos-wifi/enabled"), true)
             compare(last("connman", "wifi.Powered").args, [true])
             compare(h.find(h.current(), "wifiSwitch").summary, "Automatic")
@@ -284,7 +290,7 @@ SettingsHarness {
             h.settle(this)
             list = h.find(h.current(), "choiceList")
             h.tap(this, h.listItem(this, list, 2))
-            verify(dialog().visible)
+            verify(dialog().shown)
             compare(dialog().title, "Change screen timeout")
             compare(dialog().message, "30 seconds reduces battery life")
             accept()
@@ -315,7 +321,7 @@ SettingsHarness {
             h.settle(this)
             h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 1))
             h.settle(this)
-            verify(!dialog().visible)
+            verify(!dialog().shown)
             compare(last("mce", blank).args, [5])
             compare(last("mce", dim).args, [10])
             compare(timeout.summary, "15 seconds")
@@ -444,11 +450,12 @@ SettingsHarness {
             compare(list.count, 3)
             compare(list.currentIndex, 1)
             compare(h.listItem(this, list, 0).children[0].summary, "Works without the phone")
-            // no choice is cut off
+            // no choice is cut off; the second lines keep the stock limit of
+            // two lines (RadioButtonItemKt), which the wider stand-in font can reach
             for (var i = 0; i < list.count; i++) {
-                var labels = h.findAll(h.listItem(this, list, i), function (o) { return o.hasOwnProperty("truncated") })
-                for (var l = 0; l < labels.length; l++)
-                    verify(!labels[l].truncated, "cut off: " + labels[l].text)
+                var chip = h.listItem(this, list, i).children[0]
+                verify(!chip.button.label.truncated, "cut off: " + chip.title)
+                compare(chip.button.secondaryLabel.maximumLineCount, 2)
             }
             h.tap(this, h.listItem(this, list, 2))
             h.settle(this)

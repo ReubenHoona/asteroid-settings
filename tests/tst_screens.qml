@@ -78,8 +78,9 @@ SettingsHarness {
             go(["watchfaceItem"]); page("display-watch-face")
             h.home(this)
 
-            go(["styleItem"]); page("style")
-            go(["wallpaperItem"]); page("style-wallpaper")
+            go(["buttonsItem"]); page("buttons")
+            h.home(this)
+            go(["modesItem"]); page("modes")
             h.home(this)
 
             go(["gesturesItem"]); page("gestures")

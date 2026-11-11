@@ -104,7 +104,13 @@ Item {
         t.verify(stack !== null, "the LayerStack")
         t.wait(300)
     }
+    // the selection dialog while it is up (list settings open in it), else
+    // the page on top of the stack
+    function chooser() { return find(loader.item, "choiceDialog") }
     function current() {
+        var d = chooser()
+        if (d && d.shown)
+            return d
         return stack.layers.length > 0 ? stack.currentLayer : stack.firstPageItem
     }
     function flickableOf(item) {
@@ -125,7 +131,29 @@ Item {
         f.contentY = Math.max(lo, Math.min(hi, target))
         t.wait(50)
     }
+    // the dialogs (selection, confirmation) spring in: tap once they are still
+    function settleDialogs(t) {
+        var ds = [chooser(), find(loader.item, "confirmDialog")]
+        for (var i = 0; i < ds.length; i++) {
+            var d = ds[i]
+            if (!d)
+                continue
+            if (d.shown)
+                t.tryVerify(function () { return d.alpha > 0.99 && Math.abs(d.contentScale - 1) < 0.002 }, 3000,
+                            "the dialog has settled")
+            else if (d.active)
+                t.tryVerify(function () { return !d.active }, 3000, "the dialog has left")
+        }
+    }
     function tap(t, item) {
+        settleDialogs(t)
+        // an edge button shows once its list is scrolled to the end
+        if (item.hasOwnProperty("preferredHeight") && item.flickable) {
+            var ef = item.flickable
+            ef.contentY = Math.max(ef.originY - ef.topMargin, ef.originY + ef.contentHeight + ef.bottomMargin - ef.height)
+            t.tryVerify(function () { return item.visible }, 3000, "the edge button is revealed")
+            t.wait(400)
+        }
         bringIntoView(t, item)
         var p = item.mapToItem(harness, item.width / 2, item.height / 2)
         t.mouseClick(harness, p.x, p.y)
@@ -147,12 +175,21 @@ Item {
         return item
     }
     function back(t) {
+        var d = chooser()
+        if (d && d.shown) {
+            d.pop()
+            t.wait(400)
+            return
+        }
         var n = stack.layers.length
         stack.pop(stack.currentLayer)
         t.compare(stack.layers.length, n - 1)
         t.wait(50)
     }
     function home(t) {
+        var d = chooser()
+        if (d && d.shown)
+            d.pop()
         while (stack.layers.length > 0)
             stack.pop(stack.currentLayer)
         t.wait(50)
