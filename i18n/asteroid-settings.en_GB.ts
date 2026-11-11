@@ -759,8 +759,8 @@
         <translation>Interactive haptics</translation>
     </message>
     <message id="id-touch-feedback">
-        <source>Touch &amp; crown feedback</source>
-        <translation>Touch &amp; crown feedback</translation>
+        <source>Touch feedback</source>
+        <translation>Touch feedback</translation>
     </message>
     <message id="id-wifi-saved-networks">
         <source>Saved networks</source>
@@ -1061,6 +1061,74 @@ If you turn Wi-Fi off here, it stays off.</translation>
     <message id="id-safety-page">
         <source>Safety &amp; Emergency</source>
         <translation>Safety &amp; Emergency</translation>
+    </message>
+    <message id="id-vibration-haptics">
+        <source>Vibration &amp; haptics</source>
+        <translation>Vibration &amp; haptics</translation>
+    </message>
+    <message id="id-using-crown">
+        <source>Using crown</source>
+        <translation>Using crown</translation>
+    </message>
+    <message id="id-rotary-wake">
+        <source>Rotate crown to wake</source>
+        <translation>Rotate crown to wake</translation>
+    </message>
+    <message id="id-crown-fast">
+        <source>Faster crown scrolling</source>
+        <translation>Faster crown scrolling</translation>
+    </message>
+    <message id="id-crown-fast-explain">
+        <source>Lists move farther with each turn of the crown</source>
+        <translation>Lists move farther with each turn of the crown</translation>
+    </message>
+    <message id="id-side-button">
+        <source>Side button</source>
+        <translation>Side button</translation>
+    </message>
+    <message id="id-side-button-message">
+        <source>What the side button does</source>
+        <translation>What the side button does</translation>
+    </message>
+    <message id="id-side-button-assistant">
+        <source>Press &amp; hold for Assistant</source>
+        <translation>Press &amp; hold for Assistant</translation>
+    </message>
+    <message id="id-side-button-recents">
+        <source>Press for recent apps</source>
+        <translation>Press for recent apps</translation>
+    </message>
+    <message id="id-chord-press">
+        <source>Chord press</source>
+        <translation>Chord press</translation>
+    </message>
+    <message id="id-screenshot">
+        <source>Screenshot</source>
+        <translation>Screenshot</translation>
+    </message>
+    <message id="id-screenshot-explain">
+        <source>Take a screenshot by pressing the crown and side button at the same time</source>
+        <translation>Take a screenshot by pressing the crown and side button at the same time</translation>
+    </message>
+    <message id="id-aod-confirm-title">
+        <source>Turn on always-on screen?</source>
+        <translation>Turn on always-on screen?</translation>
+    </message>
+    <message id="id-aod-off-wrist">
+        <source>Always-on when off wrist</source>
+        <translation>Always-on when off wrist</translation>
+    </message>
+    <message id="id-aod-off-wrist-explain">
+        <source>Always-on screen stays on when watch is off wrist or charging</source>
+        <translation>Always-on screen stays on when watch is off wrist or charging</translation>
+    </message>
+    <message id="id-auto-time-format">
+        <source>Automatic time format</source>
+        <translation>Automatic time format</translation>
+    </message>
+    <message id="id-hour-format-explain">
+        <source>Time format managed by phone&apos;s settings</source>
+        <translation>Time format managed by phone&apos;s settings</translation>
     </message>
 </context>
 <context>
