@@ -1130,6 +1130,158 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Time format managed by phone&apos;s settings</source>
         <translation>Time format managed by phone&apos;s settings</translation>
     </message>
+    <message id="id-bedtime-row">
+        <source>Bedtime</source>
+        <translation>Bedtime</translation>
+    </message>
+    <message id="id-theater-row">
+        <source>Theater</source>
+        <translation>Theater</translation>
+    </message>
+    <message id="id-theater-mode">
+        <source>Theater mode</source>
+        <translation>Theater mode</translation>
+    </message>
+    <message id="id-dnd-caption">
+        <source>Silences watch to minimize interruptions</source>
+        <translation>Silences watch to minimize interruptions</translation>
+    </message>
+    <message id="id-customize">
+        <source>Customize</source>
+        <translation>Customize</translation>
+    </message>
+    <message id="id-bedtime-caption">
+        <source>Settle in for sleep</source>
+        <translation>Settle in for sleep</translation>
+    </message>
+    <message id="id-theater-caption">
+        <source>Turns off screen and sounds completely</source>
+        <translation>Turns off screen and sounds completely</translation>
+    </message>
+    <message id="id-auto-enter">
+        <source>Auto enter</source>
+        <translation>Auto enter</translation>
+    </message>
+    <message id="id-auto-exit">
+        <source>Auto exit</source>
+        <translation>Auto exit</translation>
+    </message>
+    <message id="id-auto-bedtime-caption">
+        <source>Bedtime will turn on and exit automatically based on sleep sensing</source>
+        <translation>Bedtime will turn on and exit automatically based on sleep sensing</translation>
+    </message>
+    <message id="id-what-can-notify">
+        <source>What can notify you</source>
+        <translation>What can notify you</translation>
+    </message>
+    <message id="id-starred-callers">
+        <source>Starred callers</source>
+        <translation>Starred callers</translation>
+    </message>
+    <message id="id-repeat-callers">
+        <source>Repeat callers</source>
+        <translation>Repeat callers</translation>
+    </message>
+    <message id="id-media-sounds">
+        <source>Media sounds</source>
+        <translation>Media sounds</translation>
+    </message>
+    <message id="id-alarms-and-timers">
+        <source>Alarms and Timers</source>
+        <translation>Alarms and Timers</translation>
+    </message>
+    <message id="id-alarm-sound">
+        <source>Sound</source>
+        <translation>Sound</translation>
+    </message>
+    <message id="id-alarm-vibrate">
+        <source>Vibrate</source>
+        <translation>Vibrate</translation>
+    </message>
+    <message id="id-alarms-caption-on">
+        <source>Individual app settings for sound and vibration still apply</source>
+        <translation>Individual app settings for sound and vibration still apply</translation>
+    </message>
+    <message id="id-alarms-caption-off">
+        <source>Alarms will activate silently</source>
+        <translation>Alarms will activate silently</translation>
+    </message>
+    <message id="id-display-options">
+        <source>Display options</source>
+        <translation>Display options</translation>
+    </message>
+    <message id="id-display-default">
+        <source>No color filter</source>
+        <translation>No color filter</translation>
+    </message>
+    <message id="id-display-grayscale">
+        <source>Grayscale</source>
+        <translation>Grayscale</translation>
+    </message>
+    <message id="id-display-nightlight">
+        <source>Nightlight</source>
+        <translation>Nightlight</translation>
+    </message>
+    <message id="id-display-nightlight-summary">
+        <source>Reduce blue light</source>
+        <translation>Reduce blue light</translation>
+    </message>
+    <message id="id-mute-ring-notifications">
+        <source>Mute ring &amp; notifications</source>
+        <translation>Mute ring &amp; notifications</translation>
+    </message>
+    <message id="id-ring-volume">
+        <source>Ring volume</source>
+        <translation>Ring volume</translation>
+    </message>
+    <message id="id-notification-volume">
+        <source>Notification volume</source>
+        <translation>Notification volume</translation>
+    </message>
+    <message id="id-alarm-volume">
+        <source>Alarm volume</source>
+        <translation>Alarm volume</translation>
+    </message>
+    <message id="id-mute-alarm">
+        <source>Mute alarm</source>
+        <translation>Mute alarm</translation>
+    </message>
+    <message id="id-mute-alarm-explain">
+        <source>Silences alarm when Mute ring is enabled while worn. Watch will still vibrate</source>
+        <translation>Silences alarm when Mute ring is enabled while worn. Watch will still vibrate</translation>
+    </message>
+    <message id="id-call-volume">
+        <source>Call volume</source>
+        <translation>Call volume</translation>
+    </message>
+    <message id="id-screen-unlock-sound">
+        <source>Screen unlocking sound</source>
+        <translation>Screen unlocking sound</translation>
+    </message>
+    <message id="id-charging-sounds">
+        <source>Charging sounds</source>
+        <translation>Charging sounds</translation>
+    </message>
+    <message id="id-ring-vibration">
+        <source>Ring vibration</source>
+        <translation>Ring vibration</translation>
+    </message>
+    <message id="id-notification-vibration">
+        <source>Notification vibration</source>
+        <translation>Notification vibration</translation>
+    </message>
+    <message id="id-alarm-vibration">
+        <source>Alarm vibration</source>
+        <translation>Alarm vibration</translation>
+    </message>
+    <message id="id-silence-off-wrist">
+        <source>Silence when off wrist</source>
+        <translation>Silence when off wrist</translation>
+    </message>
+    <message id="id-silence-off-wrist-explain">
+        <source>Notifications won't sound or vibrate when watch is off wrist or charging</source>
+        <translation>Notifications won't sound or vibrate when watch is off wrist or charging</translation>
+    </message>
 </context>
 <context>
     <name>AboutPage</name>

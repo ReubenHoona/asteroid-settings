@@ -292,9 +292,9 @@ SettingsHarness {
 
         // controls-components-11, -12: category header and caption
         function test_09_category_and_caption() {
-            open(["appsItem", "dndItem"])
+            open(["modesItem", "modesDndItem", "dndCustomize"])
             var cats = h.findAll(h.current(), function (o) { return h.typeName(o) === "SettingsCategory" })
-            verify(cats.length >= 2, "the Do Not Disturb page has categories")
+            verify(cats.length >= 2, "the Do Not Disturb customize page has categories")
             var first = cats[0], second = cats[1]
             compare(first.font.pixelSize, 28)
             compare(first.font.weight, 550)
@@ -553,7 +553,7 @@ SettingsHarness {
             open(["modesItem"])
             compare(h.current().objectName, "modesPage")
             compare(h.find(h.current(), "settingsTitle").text, "Modes")
-            compare(titlesShown(h.current()), ["Do Not Disturb"])
+            compare(titlesShown(h.current()), ["Do Not Disturb", "Bedtime", "Theater"])
             open(["modesDndItem"])
             compare(h.current().objectName, "dndPage")
             h.home(this)
@@ -584,9 +584,14 @@ SettingsHarness {
                 "apps": ["appsPage"],
                 "modes": ["modesPage"],
                 "mode_do_not_disturb": ["modesPage", "dndPage"],
-                "mode_bedtime": ["modesPage", "dndPage"],
-                "mode_bedtime_customize": ["modesPage", "dndPage"],
-                "mode_theater": ["modesPage"],
+                "mode_do_not_disturb_customize": ["modesPage", "dndPage", "dndCustomizePage"],
+                "mode_bedtime": ["modesPage", "bedtimePage"],
+                "mode_bedtime_customize": ["modesPage", "bedtimePage", "bedtimeCustomizePage"],
+                "mode_theater": ["modesPage", "theaterPage"],
+                "mode_theater_customize": ["modesPage", "theaterPage", "theaterCustomizePage"],
+                "dnd": ["modesPage", "dndPage"],
+                "bedtime": ["modesPage", "bedtimePage"],
+                "theater": ["modesPage", "theaterPage"],
                 "sound": ["soundPage"],
                 "vibration": ["vibrationPage"],
                 "battery": ["batteryPage"],

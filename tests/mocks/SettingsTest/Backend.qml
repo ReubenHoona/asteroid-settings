@@ -39,6 +39,8 @@ QtObject {
 
     // sound (PulseAudio's main volume)
     property int volume: 70
+    // how long a mocked ngfd sample plays (Nemo.Ngf NonGraphicalFeedback), ms
+    property int sampleMs: 300
 
     // Bluetooth (BlueZ adapter) and Wi-Fi (connman)
     property bool btPowered: true
@@ -52,11 +54,11 @@ QtObject {
     property var now: new Date(2026, 10, 2, 10, 9, 0)
     property int languageIndex: 1
 
-    // what was asked of the backends: { target, method, args }
+    // what was asked of the backends: { target, method, args, t (ms) }
     property var calls: []
     function record(target, method, args) {
         var l = calls.slice()
-        l.push({ "target": target, "method": method, "args": args || [] })
+        l.push({ "target": target, "method": method, "args": args || [], "t": Date.now() })
         calls = l
     }
     function find(target, method) {
@@ -77,7 +79,7 @@ QtObject {
                 "/system/osso/dsm/display/display_blank_timeout": 5 }
         brightness = 60; als = true; lpm = true; tilt = true; tiltAvailable = true; tap = true
         batteryPercent = 57; batteryState = 2; chargerType = 0
-        volume = 70
+        volume = 70; sampleMs = 300
         btPowered = true; btConnected = true; wifiPowered = true; wifiConnected = true; wifiServices = []
         timezone = "Europe/London"; languageIndex = 1
         replies = {

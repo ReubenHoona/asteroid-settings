@@ -198,6 +198,10 @@ SettingsHarness {
                     ["row:Silence watch while charging",
                      "text:Notifications won't sound or vibrate while the watch is charging",
                      "row:Vibration & haptics",
+                     // the intensity sliders (W2-settings-sound-vibration-modes) are not rows
+                     "category:Ring vibration",
+                     "category:Notification vibration",
+                     "category:Alarm vibration",
                      "category:Interactive haptics",
                      "row:Touch feedback",
                      "row:Using crown"])

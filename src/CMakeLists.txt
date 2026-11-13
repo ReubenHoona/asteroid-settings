@@ -60,6 +60,10 @@ asteroid_app_qml_module(asteroid-settings
 	qml/GesturesPage.qml
 	qml/AppsPage.qml
 	qml/DndPage.qml
+	qml/BedtimePage.qml
+	qml/TheaterPage.qml
+	qml/ModeCustomizePage.qml
+	qml/VolumeStepSound.qml
 	qml/AssistantPage.qml
 	qml/SoundPage.qml
 	qml/VibrationPage.qml
@@ -115,6 +119,7 @@ install(
 	FILES
 		icons/eos-settings-accessibility.svg
 		icons/eos-settings-battery.svg
+		icons/eos-settings-bedtime.svg
 		icons/eos-settings-buttons.svg
 		icons/eos-settings-connectivity.svg
 		icons/eos-settings-gestures.svg
@@ -122,5 +127,6 @@ install(
 		icons/eos-settings-modes.svg
 		icons/eos-settings-security.svg
 		icons/eos-settings-system.svg
+		icons/eos-settings-theater.svg
 	DESTINATION ${CMAKE_INSTALL_DATADIR}/asteroid-settings/icons
 )

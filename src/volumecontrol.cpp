@@ -94,8 +94,8 @@ void VolumeControl::setVolume(int volume)
         emit volumeChanged();
         if (m_volIface->isValid()) {
             m_volIface->setCurrentStep(newVolume);
-            if (m_ngf)
-                m_ngf->play("notification");
+            /* the step sound is SoundPage's VolumeStepSound (volume_step on the
+             * stream being changed, cut after 2 s), not the notification sample */
         }
     }
 }

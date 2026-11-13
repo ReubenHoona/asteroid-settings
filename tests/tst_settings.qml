@@ -135,7 +135,7 @@ SettingsHarness {
             compare(problems, [])
             var expected = ["mainPage", "connectivityPage", "bluetoothPage", "wifiPage", "wifiAddPage", "wifiSavedPage",
                             "displayPage", "brightnessPage", "extraDimPage", "nightstandPage", "gesturesPage", "buttonsPage", "appsPage", "modesPage",
-                            "dndPage", "assistantPage", "soundPage", "vibrationPage", "batteryPage", "generalPage", "systemPage",
+                            "dndPage", "dndCustomizePage", "bedtimePage", "bedtimeCustomizePage", "theaterPage", "theaterCustomizePage", "assistantPage", "soundPage", "vibrationPage", "batteryPage", "generalPage", "systemPage",
                             "dateTimePage", "aboutPage", "versionsPage", "developerPage"]
             for (var i = 0; i < expected.length; i++)
                 verify(visited.indexOf(expected[i]) >= 0, expected[i] + " reached")
@@ -412,21 +412,19 @@ SettingsHarness {
 
         function test_06_notifications_sound_vibration() {
             Backend.confSet("/desktop/asteroid/pre-mute-level", 0)
-            open(["appsItem", "dndItem"])
+            open(["modesItem", "modesDndItem"])
             h.tapName(this, "dndSwitch")
             compare(conf("/org/asteroidos/notifications/do-not-disturb"), true)
             compare(h.find(h.current(), "dndSwitch").title, "On")
-            h.back(this)
-            compare(h.find(h.current(), "dndItem").summary, "On")
             h.home(this)
             open(["soundItem"])
-            h.tap(this, h.find(h.current(), "sliderPlus"))
+            h.tap(this, h.find(h.find(h.current(), "volumeSlider"), "sliderPlus"))
             compare(last("pulse", "MainVolume2.CurrentStep").args, [80])
             // muted from the quick panel (volume 0, the level kept): a step unmutes
             Backend.confSet("/desktop/asteroid/pre-mute-level", 60)
             Backend.volume = 0
             compare(h.find(h.current(), "volumeSlider").value, 0)
-            h.tap(this, h.find(h.current(), "sliderPlus"))
+            h.tap(this, h.find(h.find(h.current(), "volumeSlider"), "sliderPlus"))
             compare(last("pulse", "MainVolume2.CurrentStep").args, [10])
             compare(conf("/desktop/asteroid/pre-mute-level"), 0)
             h.home(this)

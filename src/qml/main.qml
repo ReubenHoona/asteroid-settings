@@ -71,6 +71,11 @@ Application {
     Component { id: gesturesLayer;              GesturesPage   { } }
     Component { id: appsLayer;                  AppsPage       { } }
     Component { id: dndLayer;                   DndPage        { } }
+    Component { id: bedtimeLayer;               BedtimePage    { } }
+    Component { id: theaterLayer;               TheaterPage    { } }
+    Component { id: dndCustomizeLayer;          ModeCustomizePage { mode: "do-not-disturb" } }
+    Component { id: bedtimeCustomizeLayer;      ModeCustomizePage { mode: "bedtime" } }
+    Component { id: theaterCustomizeLayer;      ModeCustomizePage { mode: "theater" } }
     Component { id: assistantLayer;             AssistantPage  { } }
     Component { id: soundLayer;                 SoundPage      { } }
     Component { id: vibrationLayer;             VibrationPage  { } }
@@ -340,10 +345,15 @@ Application {
         "apps": [appsLayer],
         "modes": [modesLayer],
         "mode_do_not_disturb": [modesLayer, dndLayer],
-        // Bedtime is on the Do Not Disturb page until it has its own
-        "mode_bedtime": [modesLayer, dndLayer],
-        "mode_bedtime_customize": [modesLayer, dndLayer],
-        "mode_theater": [modesLayer],
+        "mode_do_not_disturb_customize": [modesLayer, dndLayer, dndCustomizeLayer],
+        "mode_bedtime": [modesLayer, bedtimeLayer],
+        "mode_bedtime_customize": [modesLayer, bedtimeLayer, bedtimeCustomizeLayer],
+        "mode_theater": [modesLayer, theaterLayer],
+        "mode_theater_customize": [modesLayer, theaterLayer, theaterCustomizeLayer],
+        // short names (modes-dnd-02)
+        "dnd": [modesLayer, dndLayer],
+        "bedtime": [modesLayer, bedtimeLayer],
+        "theater": [modesLayer, theaterLayer],
         "sound": [soundLayer],
         "vibration": [vibrationLayer],
         "battery": [batteryLayer],

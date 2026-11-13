@@ -57,11 +57,15 @@ Item {
 
     function stepBy(n) {
         var v = Math.max(from, Math.min(to, Math.round((value - from) / stepSize + n) * stepSize + from))
-        if (v === value) {
-            Haptics.limit()
+        // a press that moves nothing plays nothing; the step onto the first
+        // or last value is GESTURE_END (click 1.0), every other SEGMENT_FREQUENT_TICK
+        // (tick 1.0), both touch class (SliderKt$$ExternalSyntheticLambda8.java:20-40)
+        if (v === value)
             return
-        }
-        Haptics.tick()
+        if (v === from || v === to)
+            Haptics.gestureEnd()
+        else
+            Haptics.segmentTick()
         moved(v)
     }
 

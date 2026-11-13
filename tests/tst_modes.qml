@@ -131,17 +131,17 @@ SettingsHarness {
             verify(chip("brightnessItem").active)
         }
 
-        function test_04_bedtime_under_do_not_disturb() {
-            open(["appsItem", "dndItem"])
+        function test_04_bedtime_and_do_not_disturb_pages() {
+            open(["modesItem", "modesBedtimeItem"])
+            compare(h.current().objectName, "bedtimePage")
             verify(h.shown(chip("bedtimeSwitch")))
             compare(chip("bedtimeSwitch").title, "Off")
             h.tapName(this, "bedtimeSwitch")
             compare(conf(bedtimeKey), true)
             compare(chip("bedtimeSwitch").title, "On")
-            h.shot(this, "modes-06-dnd-bedtime")
+            h.shot(this, "modes-06-bedtime")
             h.back(this)
-            compare(chip("dndItem").summary, "Bedtime mode is on")
-            h.tapName(this, "dndItem")
+            h.tapName(this, "modesDndItem")
             h.settle(this)
             // Do Not Disturb on: the launcher's engine ends Bedtime (here: by hand)
             h.tapName(this, "dndSwitch")
@@ -149,9 +149,10 @@ SettingsHarness {
             Backend.confSet(bedtimeKey, false)
             wait(50)
             compare(chip("dndSwitch").title, "On")
-            compare(chip("bedtimeSwitch").title, "Off")
             h.back(this)
-            compare(chip("dndItem").summary, "On")
+            h.tapName(this, "modesBedtimeItem")
+            h.settle(this)
+            compare(chip("bedtimeSwitch").title, "Off")
         }
 
         function test_05_battery_saver() {

@@ -37,6 +37,24 @@ Item {
     property alias extraDimIntensity: intensityConf.value
     property alias doNotDisturb: dndConf.value
 
+    /*
+     * Customize pages (modes-dnd-03): /org/asteroidos/modes/<mode>/<name>, mode
+     * do-not-disturb | bedtime | theater, name starred | repeat | media |
+     * alarm-sound | alarm-vibrate. Stock's defaults: FocusModeConstants.
+     * createZenPolicyFor (Bedtime: starred and repeat callers, alarm sound and
+     * vibration, no media; Theater: alarms vibrate only) and Do Not Disturb's
+     * all five.
+     */
+    readonly property var customizeDefaults: ({
+        "do-not-disturb": { "starred": true, "repeat": true, "media": true, "alarm-sound": true, "alarm-vibrate": true },
+        "bedtime": { "starred": true, "repeat": true, "media": false, "alarm-sound": true, "alarm-vibrate": true },
+        "theater": { "starred": false, "repeat": false, "media": false, "alarm-sound": false, "alarm-vibrate": true }
+    })
+    function customizeKey(mode, name) { return "/org/asteroidos/modes/" + mode + "/" + name }
+    function customizeDefault(mode, name) {
+        return customizeDefaults.hasOwnProperty(mode) ? customizeDefaults[mode][name] === true : false
+    }
+
     readonly property string alwaysOnHolder: theater ? "theater" : bedtime ? "bedtime" : batterySaver ? "battery-saver" : ""
     readonly property string tiltHolder: alwaysOnHolder
     readonly property string touchHolder: theater ? "theater" : bedtime ? "bedtime" : ""

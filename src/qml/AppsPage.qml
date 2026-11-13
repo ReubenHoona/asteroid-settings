@@ -7,21 +7,14 @@ import QtQuick
 import org.asteroid.controls
 import Nemo.Configuration
 
-// Settings > Apps & notifications (stock prefs_apps.xml): Do Not Disturb and
-// Assistant (its voice recognition). The phone decides which apps notify
-// (Gadgetbridge); a notification's long press mutes its app.
+// Settings > Apps & notifications (stock prefs_apps.xml): Assistant (its voice
+// recognition). Do Not Disturb is under Modes in CP3A (settings-a-01). The
+// phone decides which apps notify (Gadgetbridge); a notification's long press
+// mutes its app.
 SettingsPage {
     objectName: "appsPage"
     title: qsTrId("id-apps-page")
 
-    SettingsChip {
-        objectName: "dndItem"
-        //% "Do Not Disturb"
-        title: qsTrId("id-dnd-page")
-        summary: modeState.bedtime ? qsTrId("id-mode-bedtime-on")
-                 : modeState.doNotDisturb ? qsTrId("id-on") : qsTrId("id-off")
-        onClicked: layerStack.push(dndLayer)
-    }
     SettingsChip {
         objectName: "assistantItem"
         //% "Assistant"
