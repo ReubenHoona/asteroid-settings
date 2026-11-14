@@ -109,6 +109,7 @@ SettingsHarness {
             Backend.batteryState = 1
             Backend.chargerType = 1
             go(["batteryItem"]); page("battery")
+            go(["batterySaverItem"]); page("battery-saver"); h.back(this)
             h.home(this)
 
             go(["generalItem"]); page("general")
@@ -121,15 +122,20 @@ SettingsHarness {
             go(["updatesItem"]); page("system-updates"); h.back(this)
             h.tapName(this, "powerOffItem"); snap("system-power-off-dialog")
             h.tap(this, h.find(h.app, "dialogNo"))
+            Backend.confSet("/org/asteroidos/settings/auto-time", false)
+            Backend.confSet("/org/asteroidos/settings/auto-time-zone", false)
             go(["dateTimeItem"]); page("system-date-time")
-            go(["setDateItem"]); page("system-set-date"); h.back(this)
-            go(["setTimeItem"]); page("system-set-time"); h.back(this)
+            go(["setDateItem"]); wait(300); page("system-set-date"); h.back(this)
+            go(["setTimeItem"]); wait(300); page("system-set-time"); h.back(this)
             go(["setZoneItem"]); wait(200); page("system-time-zone")
-            h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 7)); h.settle(this)
-            page("system-time-zone-europe")
-            h.back(this); h.back(this); h.back(this)
+            h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 5)); wait(700)
+            page("system-date-time-after-zone")
+            h.back(this)
+            go(["inputMethodsItem"]); page("system-input-methods")
+            go(["manageKeyboardsItem"]); page("system-manage-keyboards"); h.back(this); h.back(this)
             go(["languageItem"]); page("system-language"); h.back(this)
             go(["aboutItem"]); page("system-about")
+            go(["licensesItem"]); page("system-about-licenses"); h.back(this)
             go(["versionsItem"]); page("system-about-versions")
             h.home(this)
 

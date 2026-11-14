@@ -18,94 +18,37 @@
 
 import QtQuick
 import org.asteroid.controls
-import org.asteroid.utils
-import Nemo.Configuration
 import org.asteroid.settings
 
+// Settings > Date & time > Set time: the Wear Material 3 TimePicker (stock
+// route TIME_PICKER, ClockworkNavRouteCollector$init$27:43-58). Its type is
+// automatic: 24 hours, or hours, minutes and AM/PM by the time format of the
+// watch (use-12h-format, as DateFormat.is24HourFormat; TimePickerKt.java:445).
 Item {
-    property int depth
     id: root
+    objectName: "timePage"
+    property int depth
     property var pop
 
+    // stock's picker is a dialog over the screen: no time text above its heading
+    Component.onCompleted: app.showTime = false
+    Component.onDestruction: app.showTime = true
+
     DateTimeSettings { id: dtSettings }
-    WallClock { id: wallClock}
 
-    ConfigurationValue {
-        id: use12H
-        key: "/org/asteroidos/settings/use-12h-format"
-        defaultValue: false
-    }
+    // the time shown at first: now
+    readonly property date start: new Date()
 
-    Row {
-        id: timeSelector
-        anchors {
-            left: parent.left
-            leftMargin: DeviceSpecs.hasRoundScreen ? Dims.w(5) : 0
-            right: parent.right
-            rightMargin: DeviceSpecs.hasRoundScreen ? Dims.w(5) : 0
-            top: title.bottom
-        }
-        height: Dims.h(60)
-
-        property int spinnerWidth: use12H.value ? width/3 : width/2
-
-        CircularSpinner {
-            id: hourLV
-            height: parent.height
-            width: parent.spinnerWidth
-            model: use12H.value ? 12 : 24
-            showSeparator: true
-            delegate: SpinnerDelegate { text: (index == 0 && use12H.value) ? "12" : ("0" + index).slice(-2) }
-        }
-
-        CircularSpinner {
-            id: minuteLV
-            height: parent.height
-            width: parent.spinnerWidth
-            model: 60
-            showSeparator: use12H.value
-        }
-
-        Spinner {
-            id: amPmLV
-            height: parent.height
-            width: parent.spinnerWidth
-            model: 2
-            delegate: SpinnerDelegate { text: index == 0 ? "AM" : "PM" }
-        }
-    }
-
-    Component.onCompleted: {
-        var hour = wallClock.time.getHours();
-        if(use12H.value) {
-            amPmLV.positionViewAtIndex(hour / 12, ListView.SnapPosition);
-            hour = hour % 12;
-        }
-        hourLV.currentIndex = hour;
-        minuteLV.currentIndex = wallClock.time.getMinutes();
-    }
-
-    IconButton {
-        iconName: "ios-checkmark-circle-outline"
-        anchors { 
-            bottom: parent.bottom
-            horizontalCenter: parent.horizontalCenter
-            bottomMargin: Dims.iconButtonMargin
-        }
-
-        onClicked: {
-            var hour = hourLV.currentIndex;
-            if(use12H.value)
-                hour += amPmLV.currentIndex*12;
-
-            dtSettings.setTime(hour, minuteLV.currentIndex)
-
+    TimePicker {
+        id: picker
+        objectName: "timePicker"
+        anchors.fill: parent
+        type: "auto"
+        hour: root.start.getHours()
+        minute: root.start.getMinutes()
+        onConfirmed: (hour, minute, second) => {
+            dtSettings.setTime(hour, minute)
             root.pop()
         }
-    }
-
-    PageHeader {
-        id: title
-        text: qsTrId("id-time-page")
     }
 }

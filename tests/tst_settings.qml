@@ -84,7 +84,8 @@ SettingsHarness {
             var chips = chipsOf(page)
             for (var i = 0; i < chips.length; i++) {
                 var c = chips[i]
-                if (!h.shown(c) || !c.clickable || !c.active || c.objectName === "developerSwitch")
+                if (!h.shown(c) || !c.clickable || !c.active || c.objectName === "developerSwitch"
+                        || c.objectName === "buildItem" /* stock: no notice for the first taps */)
                     continue
                 var layers = h.stack.layers.length
                 var calls = Backend.calls.length
@@ -136,7 +137,7 @@ SettingsHarness {
             var expected = ["mainPage", "connectivityPage", "bluetoothPage", "wifiPage", "wifiAddPage", "wifiSavedPage",
                             "displayPage", "brightnessPage", "displaySizePage", "wristOrientationPage", "touchLockPage", "gesturesPage", "buttonsPage", "appsPage", "modesPage",
                             "dndPage", "dndCustomizePage", "bedtimePage", "bedtimeCustomizePage", "theaterPage", "theaterCustomizePage", "assistantPage", "soundPage", "vibrationPage", "batteryPage", "generalPage", "systemPage",
-                            "dateTimePage", "aboutPage", "versionsPage", "developerPage"]
+                            "dateTimePage", "aboutPage", "versionsPage", "developerPage", "batterySaverPage", "inputMethodsPage", "manageKeyboardsPage", "licensesPage"]
             for (var i = 0; i < expected.length; i++)
                 verify(visited.indexOf(expected[i]) >= 0, expected[i] + " reached")
         }
@@ -469,17 +470,16 @@ SettingsHarness {
             Backend.batteryState = 1
             Backend.chargerType = 1
             open(["batteryItem"])
-            compare(h.find(h.current(), "batteryPercent").text, "57%")
-            compare(h.find(h.current(), "batteryStatus").text, "Charging")
-            Backend.batteryState = 3
-            compare(h.find(h.current(), "batteryStatus").text, "Connected, not charging")
+            compare(h.find(h.current(), "batteryPercent").text, "57")
+            compare(h.find(h.current(), "batteryPercentSign").text, "%")
+            compare(h.find(h.current(), "batteryRemaining").text, "Charge remaining")
             h.home(this)
             open(["generalItem"])
             h.tapName(this, "unreadDotSwitch")
             compare(conf("/org/asteroidos/notifications/unread-dot"), false)
-            compare(h.find(h.current(), "appViewItem").summary, "Default horizontal")
-            Backend.confSet("/desktop/asteroid/applauncher", "file:///usr/share/asteroid-launcher/applauncher/006-wear-list.qml")
             compare(h.find(h.current(), "appViewItem").summary, "List view")
+            Backend.confSet("/desktop/asteroid/applauncher", "file:///usr/share/asteroid-launcher/applauncher/007-wear-grid.qml")
+            compare(h.find(h.current(), "appViewItem").summary, "Grid view")
             h.tapName(this, "temperatureItem")
             h.settle(this)
             h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 1))
@@ -490,7 +490,7 @@ SettingsHarness {
 
         function test_08_system() {
             open(["systemItem"])
-            compare(h.find(h.current(), "languageItem").summary, "English (United Kingdom)")
+            compare(h.find(h.current(), "languageItem").summary, "")
             h.tapName(this, "powerOffItem")
             compare(dialog().title, "Power off")
             compare(dialog().message, "Are you sure?")
@@ -512,18 +512,15 @@ SettingsHarness {
             h.tapName(this, "hourFormatSwitch")
             compare(conf("/org/asteroidos/settings/use-12h-format"), false)
             compare(h.find(h.current(), "setTimeItem").summary, "10:09")
-            compare(h.find(h.current(), "setZoneItem").summary, "GMT+00:00 London")
-            // a zone: region, then city; back on Date & time
+            compare(h.find(h.current(), "setZoneItem").summary, "GMT+00:00")
+            // a zone: the flat list "Select time zone"; back on Date & time
+            Backend.confSet("/org/asteroidos/settings/auto-time-zone", false)
             h.tapName(this, "setZoneItem")
             h.settle(this)
             wait(200)
-            var regions = h.find(h.current(), "choiceList")
-            verify(regions.count > 5)
-            h.tap(this, h.listItem(this, regions, 7))   // Europe
-            h.settle(this)
             var zones = h.find(h.current(), "choiceList")
-            compare(zones.count, 3)
-            h.tap(this, h.listItem(this, zones, 0))     // Berlin
+            compare(zones.count, 9)
+            h.tap(this, h.listItem(this, zones, 5))     // Berlin
             wait(700)
             compare(last("org.freedesktop.timedate1", "org.freedesktop.timedate1.SetTimezone").args, ["Europe/Berlin", false])
             compare(h.current().objectName, "dateTimePage")
@@ -538,12 +535,12 @@ SettingsHarness {
         function test_09_developer_options() {
             open(["systemItem", "aboutItem", "versionsItem"])
             var build = h.find(h.current(), "buildItem")
-            for (var i = 0; i < 3; i++)
+            // stock: a toast only with 2 or 1 taps left
+            for (var i = 0; i < 4; i++)
                 h.tap(this, build)
-            verify(!toast().visible || toast().text === "", "no toast for the first taps")
+            verify(!toast().visible || toast().text === "", "no toast for the first four taps")
             h.tap(this, build)
-            compare(h.find(toast(), "toastText").text, "You are now 3 steps away from being a developer.")
-            h.tap(this, build)
+            compare(h.find(toast(), "toastText").text, "You are now 2 steps away from being a developer.")
             h.tap(this, build)
             compare(h.find(toast(), "toastText").text, "You are now 1 step away from being a developer.")
             h.tap(this, build)
@@ -555,6 +552,7 @@ SettingsHarness {
             compare(titlesShown(h.current()).pop(), "Developer options")
             h.tap(this, dev)
             h.settle(this)
+            compare(h.find(h.current(), "developerSwitch").title, "Use developer options")
             h.tapName(this, "bootloaderItem")
             accept()
             compare(last("org.freedesktop.login1", "org.freedesktop.login1.Manager.SetRebootParameter").args, ["bootloader"])

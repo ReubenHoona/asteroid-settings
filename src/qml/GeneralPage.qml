@@ -7,10 +7,12 @@ import QtQuick
 import org.asteroid.controls
 import Nemo.Configuration
 
-// Settings > General (stock: the system UI's SysUiSettingsActivity): Show
-// unread notification dot (the launcher's dot on the watch face), App view
-// (the launcher's app list style), then this watch's own: the quick
-// settings panel and the temperature unit.
+// Settings > General as stock CP3A (SysUI general settings, jbk.java:62-177):
+// Show unread notification indicator (the launcher's dot on the watch face),
+// Autolaunch media controls (the launcher opens the media controls when
+// phone playback starts), Start tutorial (goes to the watch face and starts
+// the navigation tutorial) and App view (List view / Grid view); then this
+// watch's own rows: the quick settings panel and the temperature unit.
 SettingsPage {
     id: page
     objectName: "generalPage"
@@ -22,9 +24,21 @@ SettingsPage {
         defaultValue: true
     }
     ConfigurationValue {
+        id: autolaunchMedia
+        key: "/org/asteroidos/ux/autolaunch-media"
+        defaultValue: false
+    }
+    ConfigurationValue {
         id: appLauncher
         key: "/desktop/asteroid/applauncher"
-        defaultValue: "file:///usr/share/asteroid-launcher/applauncher/000-default-horizontal.qml"
+        defaultValue: "file:///usr/share/asteroid-launcher/applauncher/006-wear-list.qml"
+    }
+    // the launcher starts the navigation tutorial when this changes
+    // ("tutorial@<ms>", as open-face-picker)
+    ConfigurationValue {
+        id: tutorialRequest
+        key: "/org/asteroidos/launcher/start-tutorial"
+        defaultValue: ""
     }
     ConfigurationValue {
         id: useFahrenheit
@@ -32,31 +46,49 @@ SettingsPage {
         defaultValue: false
     }
 
-    // the name of a launcher style from its file: 006-wear-list.qml is the
-    // Wear OS list ("List view" as stock), the others by their names
-    function launcherName(url) {
-        var file = String(url).split("/").pop().replace(/\.qml$/, "")
-        if (file === "006-wear-list")
-            //% "List view"
-            return qsTrId("id-app-view-list")
-        var name = file.replace(/^[0-9]+-/, "").replace(/-/g, " ")
-        return name.charAt(0).toUpperCase() + name.slice(1)
-    }
+    // the two stock views: the Wear OS list (006) and the grid (007)
+    readonly property string listView: "file:///usr/share/asteroid-launcher/applauncher/006-wear-list.qml"
+    readonly property string gridView: "file:///usr/share/asteroid-launcher/applauncher/007-wear-grid.qml"
+    readonly property bool grid: String(appLauncher.value).indexOf("007-") >= 0
+    readonly property var viewNames: [
+        //% "List view"
+        qsTrId("id-app-view-list"),
+        //% "Grid view"
+        qsTrId("id-app-view-grid")]
 
     SettingsChip {
         objectName: "unreadDotSwitch"
-        //% "Show unread notification dot"
+        //% "Show unread notification indicator"
         title: qsTrId("id-unread-dot")
         control: "toggle"
         checked: unreadDot.value
         onClicked: unreadDot.value = !unreadDot.value
     }
     SettingsChip {
+        objectName: "autolaunchMediaSwitch"
+        //% "Autolaunch media controls"
+        title: qsTrId("id-autolaunch-media")
+        control: "toggle"
+        checked: autolaunchMedia.value
+        onClicked: autolaunchMedia.value = !autolaunchMedia.value
+    }
+    SettingsChip {
+        objectName: "startTutorialItem"
+        //% "Start tutorial"
+        title: qsTrId("id-start-tutorial")
+        onClicked: {
+            tutorialRequest.value = "tutorial@" + Date.now()
+            // Settings ends and the face shows the tutorial
+            closeTimer.start()
+        }
+    }
+    SettingsChip {
         objectName: "appViewItem"
         //% "App view"
         title: qsTrId("id-app-view")
-        summary: page.launcherName(appLauncher.value)
-        onClicked: layerStack.push(launcherLayer)
+        summary: page.viewNames[page.grid ? 1 : 0]
+        onClicked: app.choose(qsTrId("id-app-view"), page.viewNames, page.grid ? 1 : 0,
+                              function (i) { appLauncher.value = i === 1 ? page.gridView : page.listView })
     }
     SettingsChip {
         objectName: "quickPanelItem"
@@ -76,5 +108,12 @@ SettingsPage {
                                qsTrId("id-fahrenheit-unit")],
                               useFahrenheit.value ? 1 : 0,
                               function (i) { useFahrenheit.value = i === 1 })
+    }
+
+    // the launcher has read the request when this fires (one shot)
+    Timer {
+        id: closeTimer
+        interval: 150
+        onTriggered: app.closeApp()
     }
 }

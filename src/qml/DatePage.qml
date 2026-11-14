@@ -18,84 +18,46 @@
 
 import QtQuick
 import org.asteroid.controls
-import org.asteroid.utils
 import org.asteroid.settings
 
+// Settings > Date & time > Set date: the Wear Material 3 DatePicker (stock
+// route DATE_PICKER, ClockworkNavRouteCollector$init$27:43-58). The date is
+// built in one step from the three columns, so a day the current month does
+// not have is not rolled over into the next month first (E17,
+// dialogs-pickers-feedback-15: 31 December on 10 November used to store
+// 1 December); the picker keeps a day that the picked month lacks from being
+// confirmed, and store() clamps all the same.
 Item {
-    property int depth
     id: root
+    objectName: "datePage"
+    property int depth
     property var pop
+
+    // stock's picker is a dialog over the screen: no time text above its heading
+    Component.onCompleted: app.showTime = false
+    Component.onDestruction: app.showTime = true
 
     DateTimeSettings { id: dtSettings }
 
-    Row {
-        id: dateSelector
-        anchors {
-            left: parent.left
-            leftMargin: DeviceSpecs.hasRoundScreen ? Dims.w(5) : 0
-            right: parent.right
-            rightMargin: DeviceSpecs.hasRoundScreen ? Dims.w(5) : 0
-            top: title.bottom
-        }
-        height: Dims.h(60)
+    // the date shown at first: today
+    readonly property date start: new Date()
 
-        CircularSpinner {
-            id: dayLV
-            height: parent.height
-            width: parent.width/3
-            model: 31
-            showSeparator: true
-            delegate: SpinnerDelegate { text: index+1 }
-        }
-
-        CircularSpinner {
-            id: monthLV
-            height: parent.height
-            width: parent.width/3
-            model: 12
-            showSeparator: true
-            delegate: SpinnerDelegate { text: Qt.locale().monthName(index, Locale.ShortFormat) }
-        }
-
-        CircularSpinner {
-            id: yearLV
-            height: parent.height
-            width: parent.width/3
-            model: 100
-            delegate: SpinnerDelegate { text: index+2000 }
-        }
+    // year, month (1-12) and day as picked; the time of day stays as it is
+    function store(year, month, day) {
+        var now = new Date()
+        var last = new Date(year, month, 0).getDate()
+        dtSettings.setDate(new Date(year, month - 1, Math.min(day, last),
+                                    now.getHours(), now.getMinutes(), now.getSeconds()))
     }
 
-    Component.onCompleted: {
-        var d = new Date();
-        dayLV.currentIndex = d.getDate()-1;
-        monthLV.currentIndex = d.getMonth();
-        yearLV.currentIndex = d.getFullYear()-2000;
-
-    }
-
-    IconButton {
-        iconName: "ios-checkmark-circle-outline"
-        anchors { 
-            bottom: parent.bottom
-            horizontalCenter: parent.horizontalCenter
-            bottomMargin: Dims.iconButtonMargin
+    DatePicker {
+        id: picker
+        objectName: "datePicker"
+        anchors.fill: parent
+        date: root.start
+        onConfirmed: (year, month, day) => {
+            root.store(year, month, day)
+            root.pop()
         }
-
-        onClicked: {
-            var date = new Date();
-            date.setDate(dayLV.currentIndex+1)
-            date.setMonth(monthLV.currentIndex)
-            date.setFullYear(yearLV.currentIndex+2000)
-            dtSettings.setDate(date)
-
-            root.pop();
-        }
-    }
-
-    PageHeader {
-        id: title
-        text: qsTrId("id-date-page")
     }
 }
-

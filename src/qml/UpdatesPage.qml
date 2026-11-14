@@ -45,6 +45,21 @@ Item {
     }
     Timer { id: checkTimeout; interval: 60000; onTriggered: page.checking = false }
 
+    // stock forces a check when the page opens (SystemUpdatePreference.java:
+    // 58-69): not while an update is ready or being installed, and not when
+    // one was started within the minute; the button stays for a retry
+    function startCheck() {
+        page.checking = true
+        app.updateCheckedAt = Date.now()
+        checkTimeout.restart()
+        request("eos-update-check-request.service")
+    }
+    Component.onCompleted: {
+        if (updState.value !== "staged" && updState.value !== "installing" && updState.value !== "trial"
+                && Date.now() - app.updateCheckedAt > 60000)
+            startCheck()
+    }
+
     DBusInterface {
         id: userSystemd
         bus: DBus.SessionBus
@@ -139,11 +154,7 @@ Item {
                     //% "Check for update"
                     : qsTrId("id-update-check")
                 icon: "ios-sync"
-                onClicked: {
-                    page.checking = true
-                    checkTimeout.restart()
-                    request("eos-update-check-request.service")
-                }
+                onClicked: page.startCheck()
             }
             Item { width: parent.width; height: Dims.l(15) }
         }

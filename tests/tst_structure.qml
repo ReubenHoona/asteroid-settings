@@ -595,7 +595,7 @@ SettingsHarness {
                 "sound": ["soundPage"],
                 "vibration": ["vibrationPage"],
                 "battery": ["batteryPage"],
-                "battery_saver": ["batteryPage"],
+                "battery_saver": ["batteryPage", "batterySaverPage"],
                 "general": ["generalPage"],
                 "system": ["systemPage"],
                 "date_time": ["systemPage", "dateTimePage"],

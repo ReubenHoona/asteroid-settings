@@ -8,3 +8,5 @@ TiltToWake 1.0 TiltToWake.qml
 TapToWake 1.0 TapToWake.qml
 SysInfo 1.0 SysInfo.qml
 MceConfigValue 1.0 MceConfigValue.qml
+TimeZoneModel 1.0 TimeZoneModel.qml
+PackageInfo 1.0 PackageInfo.qml

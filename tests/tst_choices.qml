@@ -486,7 +486,8 @@ SettingsHarness {
             Backend.confSet(k12h, true)
             open(["systemItem", "dateTimeItem"])
             compare(shownRows(h.current()),
-                    ["row:Automatic time format", "row:Use 24-hour format",
+                    ["row:Automatic date & time", "row:Automatic time zone",
+                     "row:Automatic time format", "row:Use 24-hour format",
                      "row:Set date", "row:Set time", "row:Set time zone"])
             compare(chip("autoTimeFormatSwitch").control, "toggle")
             compare(chip("hourFormatSwitch").control, "toggle")
@@ -515,7 +516,8 @@ SettingsHarness {
             compare(writesOf(k12h), 0)
             verify(chip("autoTimeFormatSwitch").checked)
             compare(shownRows(h.current()),
-                    ["row:Automatic time format", "row:Set date", "row:Set time", "row:Set time zone",
+                    ["row:Automatic date & time", "row:Automatic time zone",
+                     "row:Automatic time format", "row:Set date", "row:Set time", "row:Set time zone",
                      "text:Time format managed by phone's settings"])
             // what the phone sets (btsyncd writes the key) shows at once
             Backend.confSet(k12h, false)

@@ -6,17 +6,21 @@
 import QtQuick
 import org.asteroid.controls
 import org.asteroid.utils
+import org.asteroid.settings
 import Nemo.Configuration
 
-// About > Versions (stock DeviceVersionFragment): Build number, then the
-// kernel and Qt. Seven taps on Build number turn on Developer options, as
-// on Wear OS, counting down from the fourth.
+// About > Versions (stock DeviceVersionFragment:38,120-160): Build number,
+// System UI (the launcher's version), then the kernel and Qt. Seven taps on
+// Build number turn on Developer options, as on Wear OS; the toast "You are
+// now # steps away from being a developer." shows only with 2 or 1 taps left,
+// and "No need, you are already a developer." only after more than 3 taps.
 SettingsPage {
     id: page
     objectName: "versionsPage"
     //% "Versions"
     title: qsTrId("id-about-versions")
 
+    PackageInfo { id: packages }
     ConfigurationValue {
         id: developerOptions
         key: "/org/asteroidos/settings/developer-options"
@@ -30,32 +34,40 @@ SettingsPage {
         title: qsTrId("id-about-build")
         summary: DeviceSpecs.buildID
         onClicked: {
+            page.taps++
             if (developerOptions.value) {
-                //% "No need, you are already a developer."
-                toast.show(qsTrId("id-dev-already"))
+                if (page.taps > 3)
+                    //% "No need, you are already a developer."
+                    toast.show(qsTrId("id-dev-already"))
                 return
             }
-            page.taps++
             var left = 7 - page.taps
             if (left <= 0) {
                 developerOptions.value = true
                 //% "You are now a developer!"
                 toast.show(qsTrId("id-dev-on"))
-            } else if (left <= 3) {
-                toast.show(left === 1
-                           //% "You are now 1 step away from being a developer."
-                           ? qsTrId("id-dev-one-step")
-                           //% "You are now %1 steps away from being a developer."
-                           : qsTrId("id-dev-steps").arg(left))
+            } else if (left <= 2) {
+                //% "You are now %n step(s) away from being a developer."
+                toast.show(qsTrId("id-dev-steps", left))
             }
         }
     }
     SettingsChip {
+        objectName: "systemUiItem"
+        clickable: false
+        //% "System UI"
+        title: qsTrId("id-about-system-ui")
+        summary: packages.version("asteroid-launcher")
+        visible: summary !== ""
+    }
+    SettingsChip {
+        objectName: "kernelItem"
         clickable: false
         title: qsTr("Kernel version")
         summary: kernelVersion
     }
     SettingsChip {
+        objectName: "qtItem"
         clickable: false
         title: qsTr("Qt version")
         summary: qtVersion

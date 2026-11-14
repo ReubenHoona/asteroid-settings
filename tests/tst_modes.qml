@@ -5,8 +5,8 @@
  * The modes in Settings, as stock (STOCK-MODES.md) on the mocks of
  * tests/mocks: a setting a mode holds is greyed out, shown off, with the
  * mode as its summary (Bedtime, Theater, Battery saver, Extra dim);
- * Bedtime mode under Do Not Disturb; Battery saver on the Battery page
- * (asking first, greyed out on the charger) and suggested at low battery;
+ * Bedtime mode under Do Not Disturb; Battery saver on its own page under Battery
+ * (no question, greyed out on the charger; no chip at low battery);
  * Extra dim and its intensity on its own page (no Display row since
  * DECISIONS Q53; deep link extra_dim). Screenshots of each go to
  * shots/settings/ as modes-*.png.
@@ -161,15 +161,12 @@ SettingsHarness {
         }
 
         function test_05_battery_saver() {
-            open(["batteryItem"])
+            // Battery > Battery Saver (stock page): the switch toggles at once, no question
+            open(["batteryItem", "batterySaverItem"])
             var sw = chip("batterySaverSwitch")
             verify(sw.active && !sw.checked)
             h.tap(this, sw)
-            verify(dialog().shown)
-            compare(dialog().title, "Turn on Battery Saver?")
-            compare(dialog().message, "Turns off Always-on screen and Tilt-to-wake to extend battery life")
-            h.shot(this, "modes-07-battery-saver-dialog")
-            accept()
+            verify(!dialog().shown, "no 'Turn on Battery Saver?' question")
             compare(conf(saverKey), true)
             verify(sw.checked)
             h.shot(this, "modes-08-battery-saver")
@@ -184,25 +181,13 @@ SettingsHarness {
             verify(!sw.active && !sw.checked)
         }
 
-        function test_06_suggested_at_low_battery() {
-            var s = h.find(h.current(), "batterySaverSuggestion")
-            verify(!h.shown(s), "not at 57 %")
+        function test_06_no_suggestion_at_low_battery() {
+            // stock has no 'Battery saver / Suggested' chip in the main list
+            verify(h.find(h.current(), "batterySaverSuggestion") === null)
             Backend.batteryPercent = 14
             wait(50)
-            verify(h.shown(s), "at 14 %")
-            compare(s.title, "Battery saver")
-            compare(s.summary, "Suggested")
-            h.shot(this, "modes-09-settings-suggested")
-            h.tap(this, s)
-            compare(dialog().title, "Turn on Battery Saver?")
-            accept()
-            compare(conf(saverKey), true)
-            verify(!h.shown(s), "gone once on")
-            // on the charger: not suggested
-            Backend.confSet(saverKey, false)
-            Backend.chargerType = 1
-            wait(50)
-            verify(!h.shown(s))
+            verify(h.find(h.current(), "batterySaverSuggestion") === null)
+            compare(h.find(h.current(), "batteryItem").summary, "14%")
         }
     }
 }

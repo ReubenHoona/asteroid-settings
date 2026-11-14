@@ -514,22 +514,6 @@
         <source>On</source>
         <translation>On</translation>
     </message>
-    <message id="id-battery-charging">
-        <source>Charging</source>
-        <translation>Charging</translation>
-    </message>
-    <message id="id-battery-charged">
-        <source>Charged</source>
-        <translation>Charged</translation>
-    </message>
-    <message id="id-battery-not-charging-plugged">
-        <source>Connected, not charging</source>
-        <translation>Connected, not charging</translation>
-    </message>
-    <message id="id-battery-discharging">
-        <source>Not charging</source>
-        <translation>Not charging</translation>
-    </message>
     <message id="id-bluetooth-phone">
         <source>Phone</source>
         <translation>Phone</translation>
@@ -602,13 +586,19 @@
         <source>Are you sure?</source>
         <translation>Are you sure?</translation>
     </message>
-    <message id="id-seconds">
-        <source>%1 seconds</source>
-        <translation>%1 seconds</translation>
+    <message id="id-seconds" numerus="yes">
+        <source>%n seconds</source>
+        <translation>
+            <numerusform>%n second</numerusform>
+            <numerusform>%n seconds</numerusform>
+        </translation>
     </message>
-    <message id="id-seconds-recommended">
-        <source>%1 seconds (recommended)</source>
-        <translation>%1 seconds (recommended)</translation>
+    <message id="id-seconds-recommended" numerus="yes">
+        <source>%n seconds (recommended)</source>
+        <translation>
+            <numerusform>%n second (recommended)</numerusform>
+            <numerusform>%n seconds (recommended)</numerusform>
+        </translation>
     </message>
     <message id="id-screen-timeout">
         <source>Screen timeout</source>
@@ -651,8 +641,8 @@
         <translation>List view</translation>
     </message>
     <message id="id-unread-dot">
-        <source>Show unread notification dot</source>
-        <translation>Show unread notification dot</translation>
+        <source>Show unread notification indicator</source>
+        <translation>Show unread notification indicator</translation>
     </message>
     <message id="id-app-view">
         <source>App view</source>
@@ -734,13 +724,12 @@
         <source>You are now a developer!</source>
         <translation>You are now a developer!</translation>
     </message>
-    <message id="id-dev-one-step">
-        <source>You are now 1 step away from being a developer.</source>
-        <translation>You are now 1 step away from being a developer.</translation>
-    </message>
-    <message id="id-dev-steps">
-        <source>You are now %1 steps away from being a developer.</source>
-        <translation>You are now %1 steps away from being a developer.</translation>
+    <message id="id-dev-steps" numerus="yes">
+        <source>You are now %n step(s) away from being a developer.</source>
+        <translation>
+            <numerusform>You are now %n step away from being a developer.</numerusform>
+            <numerusform>You are now %n steps away from being a developer.</numerusform>
+        </translation>
     </message>
     <message id="id-vibration-page">
         <source>Vibration</source>
@@ -949,18 +938,6 @@ If you turn Wi-Fi off here, it stays off.</translation>
     <message id="id-battery-saver">
         <source>Battery saver</source>
         <translation>Battery saver</translation>
-    </message>
-    <message id="id-suggested">
-        <source>Suggested</source>
-        <translation>Suggested</translation>
-    </message>
-    <message id="id-saver-confirm-title">
-        <source>Turn on Battery Saver?</source>
-        <translation>Turn on Battery Saver?</translation>
-    </message>
-    <message id="id-saver-explain">
-        <source>Turns off Always-on screen and Tilt-to-wake to extend battery life</source>
-        <translation>Turns off Always-on screen and Tilt-to-wake to extend battery life</translation>
     </message>
     <message id="id-wifi-wrong-password">
         <source>Wrong password</source>
@@ -1490,6 +1467,186 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Crown on the right</source>
         <translation>Crown on the right</translation>
     </message>
+    <message id="id-battery-charge-remaining">
+        <source>Charge remaining</source>
+        <translation>Charge remaining</translation>
+    </message>
+    <message id="id-battery-saver-page">
+        <source>Battery Saver</source>
+        <translation>Battery Saver</translation>
+    </message>
+    <message id="id-battery-saver-will-turn-on">
+        <source>Will turn on at %1%</source>
+        <translation>Will turn on at %1%</translation>
+    </message>
+    <message id="id-battery-percentage">
+        <source>Battery percentage</source>
+        <translation>Battery percentage</translation>
+    </message>
+    <message id="id-battery-percentage-caption">
+        <source>Show battery percentage in quick settings</source>
+        <translation>Show battery percentage in quick settings</translation>
+    </message>
+    <message id="id-battery-health">
+        <source>Battery health assistance</source>
+        <translation>Battery health assistance</translation>
+    </message>
+    <message id="id-battery-health-caption">
+        <source>Helps to manage your battery&apos;s long term health by adjusting charging performance and capacity.</source>
+        <translation>Helps to manage your battery&apos;s long term health by adjusting charging performance and capacity.</translation>
+    </message>
+    <message id="id-charging-preferences">
+        <source>Charging preferences</source>
+        <translation>Charging preferences</translation>
+    </message>
+    <message id="id-adaptive-charging">
+        <source>Adaptive charging</source>
+        <translation>Adaptive charging</translation>
+    </message>
+    <message id="id-adaptive-charging-caption">
+        <source>Extend battery lifespan by charging steadily during larger charging periods. Activated based on your usage cycle.</source>
+        <translation>Extend battery lifespan by charging steadily during larger charging periods. Activated based on your usage cycle.</translation>
+    </message>
+    <message id="id-battery-saver-explain">
+        <source>Limits background activity and turns off always-on-screen. Notifications may be delayed.</source>
+        <translation>Limits background activity and turns off always-on-screen. Notifications may be delayed.</translation>
+    </message>
+    <message id="id-battery-saver-auto-on">
+        <source>Turn on at %1%</source>
+        <translation>Turn on at %1%</translation>
+    </message>
+    <message id="id-battery-saver-auto-off">
+        <source>Turn off when charged</source>
+        <translation>Turn off when charged</translation>
+    </message>
+    <message id="id-battery-saver-auto-off-caption">
+        <source>Battery Saver turns off when your watch charges above %1%</source>
+        <translation>Battery Saver turns off when your watch charges above %1%</translation>
+    </message>
+    <message id="id-autolaunch-media">
+        <source>Autolaunch media controls</source>
+        <translation>Autolaunch media controls</translation>
+    </message>
+    <message id="id-start-tutorial">
+        <source>Start tutorial</source>
+        <translation>Start tutorial</translation>
+    </message>
+    <message id="id-app-view-grid">
+        <source>Grid view</source>
+        <translation>Grid view</translation>
+    </message>
+    <message id="id-auto-date-time">
+        <source>Automatic date &amp; time</source>
+        <translation>Automatic date &amp; time</translation>
+    </message>
+    <message id="id-auto-time-zone">
+        <source>Automatic time zone</source>
+        <translation>Automatic time zone</translation>
+    </message>
+    <message id="id-select-timezone">
+        <source>Select time zone</source>
+        <translation>Select time zone</translation>
+    </message>
+    <message id="id-input-methods-page">
+        <source>Input methods</source>
+        <translation>Input methods</translation>
+    </message>
+    <message id="id-factory-reset">
+        <source>Disconnect &amp; reset</source>
+        <translation>Disconnect &amp; reset</translation>
+    </message>
+    <message id="id-factory-reset-title">
+        <source>Disconnect &amp; reset?</source>
+        <translation>Disconnect &amp; reset?</translation>
+    </message>
+    <message id="id-factory-reset-message">
+        <source>This will reset watch to factory settings and delete all user data.</source>
+        <translation>This will reset watch to factory settings and delete all user data.</translation>
+    </message>
+    <message id="id-factory-reset-recommend">
+        <source>It&apos;s best to disconnect the watch using the %1 app.</source>
+        <translation>It&apos;s best to disconnect the watch using the %1 app.</translation>
+    </message>
+    <message id="id-factory-reset-battery">
+        <source>Charge your watch to at least %1% to reset it.</source>
+        <translation>Charge your watch to at least %1% to reset it.</translation>
+    </message>
+    <message id="id-factory-resetting">
+        <source>Resetting...</source>
+        <translation>Resetting...</translation>
+    </message>
+    <message id="id-about-serial">
+        <source>Serial number</source>
+        <translation>Serial number</translation>
+    </message>
+    <message id="id-about-manufactured">
+        <source>Manufactured year</source>
+        <translation>Manufactured year</translation>
+    </message>
+    <message id="id-about-manufactured-unknown">
+        <source>Unknown</source>
+        <translation>Unknown</translation>
+    </message>
+    <message id="id-about-licenses">
+        <source>System licenses</source>
+        <translation>System licenses</translation>
+    </message>
+    <message id="id-about-legal">
+        <source>Legal notices</source>
+        <translation>Legal notices</translation>
+    </message>
+    <message id="id-about-legal-text">
+        <source>AsteroidOS is free software. Its licences, and the source of this system, are at asteroidos.org.</source>
+        <translation>AsteroidOS is free software. Its licences, and the source of this system, are at asteroidos.org.</translation>
+    </message>
+    <message id="id-licenses-kernel">
+        <source>Linux kernel: GNU General Public License, version 2.</source>
+        <translation>Linux kernel: GNU General Public License, version 2.</translation>
+    </message>
+    <message id="id-licenses-asteroid">
+        <source>AsteroidOS apps and system UI: GNU General Public License version 3, GNU Lesser General Public License version 2.1 and BSD 3-clause licences.</source>
+        <translation>AsteroidOS apps and system UI: GNU General Public License version 3, GNU Lesser General Public License version 2.1 and BSD 3-clause licences.</translation>
+    </message>
+    <message id="id-licenses-qt">
+        <source>Qt: GNU Lesser General Public License version 3.</source>
+        <translation>Qt: GNU Lesser General Public License version 3.</translation>
+    </message>
+    <message id="id-licenses-others">
+        <source>Other parts keep their own licences. The full texts and the source are at asteroidos.org.</source>
+        <translation>Other parts keep their own licences. The full texts and the source are at asteroidos.org.</translation>
+    </message>
+    <message id="id-about-system-ui">
+        <source>System UI</source>
+        <translation>System UI</translation>
+    </message>
+    <message id="id-smart-reply">
+        <source>Smart Reply</source>
+        <translation>Smart Reply</translation>
+    </message>
+    <message id="id-keyboard-typing">
+        <source>Keyboard</source>
+        <translation>Keyboard</translation>
+    </message>
+    <message id="id-keyboard-handwriting">
+        <source>Handwriting</source>
+        <translation>Handwriting</translation>
+    </message>
+    <message id="id-manage-keyboards">
+        <source>Manage keyboards</source>
+        <translation>Manage keyboards</translation>
+    </message>
+    <message id="id-available-keyboards">
+        <source>Available virtual keyboard</source>
+        <translation>Available virtual keyboard</translation>
+    </message>
+    <message id="id-developer-use">
+        <source>Use developer options</source>
+        <translation>Use developer options</translation>
+    </message>
+    <message id="id-stay-awake">
+        <source>Stay awake when charging</source>
+        <translation>Stay awake when charging</translation>
+    </message>
 </context>
 <context>
     <name>AboutPage</name>
@@ -1517,11 +1674,6 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <location filename="../src/qml/AboutPage.qml" line="88"/>
         <source>IMEI</source>
         <translation>IMEI</translation>
-    </message>
-    <message>
-        <location filename="../src/qml/AboutPage.qml" line="89"/>
-        <source>Serial number</source>
-        <translation>Serial number</translation>
     </message>
     <message>
         <location filename="../src/qml/AboutPage.qml" line="90"/>

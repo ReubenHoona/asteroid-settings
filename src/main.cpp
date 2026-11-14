@@ -28,6 +28,8 @@
 #include "taptowake.h"
 #include "sysinfo.h"
 #include "mceconfigvalue.h"
+#include "packageinfo.h"
+#include "timezonemodel.h"
 
 int main(int argc, char *argv[])
 {
@@ -40,6 +42,8 @@ int main(int argc, char *argv[])
     qmlRegisterType<TapToWake>("org.asteroid.settings", 1, 0, "TapToWake");
     qmlRegisterType<SysInfo>("org.asteroid.settings", 1, 0, "SysInfo");
     qmlRegisterType<MceConfigValue>("org.asteroid.settings", 1, 0, "MceConfigValue");
+    qmlRegisterType<TimeZoneModel>("org.asteroid.settings", 1, 0, "TimeZoneModel");
+    qmlRegisterType<PackageInfo>("org.asteroid.settings", 1, 0, "PackageInfo");
     view->setSource(QUrl("qrc:/Settings/qml/main.qml"));
     view->rootContext()->setContextProperty("qtVersion", QString(qVersion()));
     view->rootContext()->setContextProperty("kernelVersion", QString(buf.release));

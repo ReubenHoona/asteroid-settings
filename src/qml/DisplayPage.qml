@@ -109,15 +109,15 @@ SettingsPage {
         faceBlankTimeout.value = blankSeconds
     }
     function timeoutLabel(s) {
-        //% "%1 seconds"
-        return qsTrId("id-seconds").arg(s)
+        //% "%n seconds"
+        return qsTrId("id-seconds", s)
     }
     // the option as stock lists and summarises it: the recommended one
     // says so (pref_screenTimeout_default_value)
     function timeoutOption(s) {
         return s === recommendedTimeout
-               //% "%1 seconds (recommended)"
-               ? qsTrId("id-seconds-recommended").arg(s)
+               //% "%n seconds (recommended)"
+               ? qsTrId("id-seconds-recommended", s)
                : timeoutLabel(s)
     }
 

@@ -5,64 +5,155 @@
 
 import QtQuick
 import org.asteroid.controls
+import Nemo.Configuration
 import Nemo.Mce
 
-// Settings > Battery (stock prefs_battery_saver.xml): the charge in large
-// letters (BatteryPercentPreference) and under it what the charger does
-// (the stock battery_info_status words), from mce; then Battery saver
-// (the launcher's modes engine: always-on screen and tilt-to-wake off; it
-// goes off on the charger and comes back when unplugged), unchecked and
-// greyed out while plugged in, asking before it turns on, as stock.
+// Settings > Battery as stock CP3A (PixelWatchNavRouteCollector$init$2:39-47,
+// BatteryStatusItemKt:80-81,202,270): the charge in large letters, "Charge
+// remaining" under it (the charger words of the older Wear OS are gone, and
+// there is no time left), then the rows Battery Saver (its own page, with
+// "Will turn on at 15%" while the automatic saver is on and the saver is
+// off), Battery percentage (a switch, with its caption), and, once the
+// charger driver can limit charging, Battery health assistance and Charging
+// preferences (settings-b-14).
 SettingsPage {
     id: page
     objectName: "batteryPage"
     title: qsTrId("id-battery-page")
 
     MceBatteryLevel { id: batteryLevel }
-    MceBatteryState { id: batteryState }
-    MceChargerType { id: chargerType }
 
-    readonly property bool plugged: chargerType.type != MceChargerType.None
+    ConfigurationValue {
+        id: autoSaver
+        key: "/org/asteroidos/modes/battery-saver-auto-on"
+        defaultValue: true
+    }
+    ConfigurationValue {
+        id: autoOnLevel
+        key: "/org/asteroidos/modes/battery-saver-auto-on-level"
+        defaultValue: 15
+    }
+    ConfigurationValue {
+        id: showPercent
+        key: "/org/asteroidos/quickpanel/show-battery-percent"
+        defaultValue: true
+    }
+    // the charger driver can limit or slow charging (set by the layer once
+    // charging-battery confirms it): shows the two stock rows below
+    ConfigurationValue {
+        id: chargeControl
+        key: "/org/asteroidos/battery/charge-control"
+        defaultValue: false
+    }
+    ConfigurationValue {
+        id: healthAssist
+        key: "/org/asteroidos/battery/health-assistance"
+        defaultValue: true
+    }
 
-    Label {
-        objectName: "batteryPercent"
+    // the level at which the automatic saver turns on (stock overlay
+    // config_automaticBatterySaverModeEntryPercentage 15)
+    readonly property int onLevel: Number(autoOnLevel.value)
+
+    // BatteryStatusItem: numeralSmall digits (30 sp = 60 px, weight 550) with
+    // the % sign in titleLarge (18 sp = 36 px), both onSurfaceVariant, and
+    // "Charge remaining" in labelSmall (13 sp = 26 px) under them
+    Item {
+        id: header
+        objectName: "batteryHeader"
         width: parent.width
-        horizontalAlignment: Text.AlignHCenter
-        text: batteryLevel.valid ? qsTrId("id-battery-percent").arg(batteryLevel.percent) : ""
-        font.pixelSize: Dims.l(16)
-        font.styleName: "SemiCondensed Medium"
-        clip: false
-    }
-    SettingsText {
-        objectName: "batteryStatus"
-        horizontalAlignment: Text.AlignHCenter
-        text: batteryState.value == MceBatteryState.Charging
-              //% "Charging"
-              ? qsTrId("id-battery-charging")
-              : batteryState.value == MceBatteryState.Full
-              //% "Charged"
-              ? qsTrId("id-battery-charged")
-              : page.plugged
-              //% "Connected, not charging"
-              ? qsTrId("id-battery-not-charging-plugged")
-              //% "Not charging"
-              : qsTrId("id-battery-discharging")
-    }
-    SettingsChip {
-        objectName: "batterySaverSwitch"
-        title: qsTrId("id-battery-saver")
-        control: "toggle"
-        active: !page.plugged
-        checked: modeState.batterySaver && !page.plugged
-        onClicked: {
-            if (modeState.batterySaver) {
-                modeState.batterySaver = false
-                return
+        height: headerColumn.height + Theme.dp(6)
+        visible: batteryLevel.valid
+        EdgeEffect { id: headerEdge; item: header }
+        opacity: headerEdge.alpha
+        transform: Scale {
+            origin.x: header.width / 2
+            origin.y: header.height / 2
+            xScale: headerEdge.scale
+            yScale: headerEdge.scale
+        }
+        Column {
+            id: headerColumn
+            width: parent.width
+            Item {
+                width: parent.width
+                height: digits.height
+                Row {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    Label {
+                        id: digits
+                        objectName: "batteryPercent"
+                        role: "numeralSmall"
+                        color: Theme.color.onSurfaceVariant
+                        text: batteryLevel.valid ? String(batteryLevel.percent) : ""
+                        clip: false
+                    }
+                    Label {
+                        id: sign
+                        objectName: "batteryPercentSign"
+                        role: "titleLarge"
+                        color: Theme.color.onSurfaceVariant
+                        text: "%"
+                        y: digits.baselineOffset - baselineOffset
+                        clip: false
+                    }
+                }
             }
-            app.turnOnBatterySaver()
+            Label {
+                objectName: "batteryRemaining"
+                width: parent.width
+                role: "labelSmall"
+                color: Theme.color.onSurfaceVariant
+                horizontalAlignment: Text.AlignHCenter
+                //% "Charge remaining"
+                text: qsTrId("id-battery-charge-remaining")
+                clip: false
+            }
         }
     }
+
+    SettingsChip {
+        objectName: "batterySaverItem"
+        //% "Battery Saver"
+        title: qsTrId("id-battery-saver-page")
+        summary: autoSaver.value && !modeState.batterySaver
+                 //% "Will turn on at %1%"
+                 ? qsTrId("id-battery-saver-will-turn-on").arg(page.onLevel) : ""
+        onClicked: layerStack.push(batterySaverLayer)
+    }
+    SettingsChip {
+        objectName: "batteryPercentSwitch"
+        //% "Battery percentage"
+        title: qsTrId("id-battery-percentage")
+        control: "toggle"
+        checked: showPercent.value
+        onClicked: showPercent.value = !showPercent.value
+    }
     SettingsText {
-        text: qsTrId("id-saver-explain")
+        objectName: "batteryPercentCaption"
+        //% "Show battery percentage in quick settings"
+        text: qsTrId("id-battery-percentage-caption")
+    }
+    SettingsChip {
+        objectName: "batteryHealthSwitch"
+        visible: chargeControl.value
+        //% "Battery health assistance"
+        title: qsTrId("id-battery-health")
+        control: "toggle"
+        checked: healthAssist.value
+        onClicked: healthAssist.value = !healthAssist.value
+    }
+    SettingsText {
+        objectName: "batteryHealthCaption"
+        visible: chargeControl.value
+        //% "Helps to manage your battery's long term health by adjusting charging performance and capacity."
+        text: qsTrId("id-battery-health-caption")
+    }
+    SettingsChip {
+        objectName: "chargingPrefsItem"
+        visible: chargeControl.value
+        //% "Charging preferences"
+        title: qsTrId("id-charging-preferences")
+        onClicked: layerStack.push(chargingLayer)
     }
 }

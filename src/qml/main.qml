@@ -80,17 +80,20 @@ Application {
     Component { id: soundLayer;                 SoundPage      { } }
     Component { id: vibrationLayer;             VibrationPage  { } }
     Component { id: batteryLayer;               BatteryPage    { } }
+    Component { id: batterySaverLayer;          BatterySaverPage { } }
+    Component { id: chargingLayer;              ChargingPage   { } }
     Component { id: generalLayer;               GeneralPage    { } }
     Component { id: quickPanelLayer;            QuickPanelPage { } }
-    Component { id: launcherLayer;              LauncherPage   { } }
     Component { id: systemLayer;                SystemPage     { } }
     Component { id: dateTimeLayer;              DateTimePage   { } }
     Component { id: timeLayer;                  TimePage       { } }
     Component { id: dateLayer;                  DatePage       { } }
-    Component { id: timezoneLayer;              TimezonePage   { } }
     Component { id: languageLayer;              LanguagePage   { } }
     Component { id: updatesLayer;               UpdatesPage    { } }
     Component { id: aboutLayer;                 AboutPage      { } }
+    Component { id: licensesLayer;              LicensesPage   { } }
+    Component { id: inputMethodsLayer;          InputMethodsPage { } }
+    Component { id: manageKeyboardsLayer;       ManageKeyboardsPage { } }
     Component { id: versionsLayer;              VersionsPage   { } }
     Component { id: developerLayer;             DeveloperPage  { } }
     Component { id: buttonsLayer;               ButtonsPage    { } }
@@ -111,21 +114,14 @@ Application {
     }
 
     MceBatteryLevel { id: batteryLevel }
-    MceChargerType { id: chargerType }
 
     // the modes (Bedtime, Theater, Battery saver, Extra dim, Do Not
     // Disturb): which setting a mode holds, and its summary
     ModeState { id: modeState }
 
-    // Battery saver on, asking first as stock (the Battery page and the
-    // suggestion at low battery)
-    function turnOnBatterySaver() {
-        //% "Turn on Battery Saver?"
-        confirm.ask(qsTrId("id-saver-confirm-title"),
-                    //% "Turns off Always-on screen and Tilt-to-wake to extend battery life"
-                    qsTrId("id-saver-explain"),
-                    function () { modeState.batterySaver = true })
-    }
+    // when System updates last started a check (a page opened within the
+    // minute does not start another), ms since 1970
+    property double updateCheckedAt: 0
 
     LayerStack {
         id: layerStack
@@ -156,6 +152,13 @@ Application {
         behind: chooser.shown ? chooser : layerStack
     }
 
+    // the screen of Disconnect & reset: over everything, no way back
+    FactoryResetScreen {
+        id: resetScreen
+        anchors.fill: parent
+        z: 1500
+    }
+
     // the Android toast (org.asteroid.controls Toast: centred, 2 s)
     Toast {
         id: toast
@@ -172,20 +175,6 @@ Application {
             //% "Settings"
             title: qsTrId("id-settings-title")
 
-            // stock: at the top when the battery is low (at most
-            // low_power_trigger_level, 15 %), off the charger
-            SettingsChip {
-                objectName: "batterySaverSuggestion"
-                visible: batteryLevel.valid && batteryLevel.percent <= 15 && chargerType.type == MceChargerType.None
-                         && !modeState.batterySaver
-                //% "Battery saver"
-                title: qsTrId("id-battery-saver")
-                //% "Suggested"
-                summary: qsTrId("id-suggested")
-                control: "toggle"
-                checked: false
-                onClicked: app.turnOnBatterySaver()
-            }
             SettingsChip {
                 objectName: "connectivityItem"
                 //% "Connectivity"
@@ -372,8 +361,7 @@ Application {
         "sound": [soundLayer],
         "vibration": [vibrationLayer],
         "battery": [batteryLayer],
-        // Battery saver is on the Battery page until it has its own
-        "battery_saver": [batteryLayer],
+        "battery_saver": [batteryLayer, batterySaverLayer],
         "general": [generalLayer],
         "system": [systemLayer],
         "date_time": [systemLayer, dateTimeLayer],

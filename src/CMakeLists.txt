@@ -13,18 +13,22 @@ set(
 	SRC
 	main.cpp
 	mceconfigvalue.cpp
+	packageinfo.cpp
 	sysinfo.cpp
 	taptowake.cpp
 	tilttowake.cpp
+	timezonemodel.cpp
 	volumecontrol.cpp
 	${dbus_srcs}
 )
 set(
 	HEADERS
 	mceconfigvalue.h
+	packageinfo.h
 	sysinfo.h
 	taptowake.h
 	tilttowake.h
+	timezonemodel.h
 	volumecontrol.h
 )
 
@@ -68,17 +72,21 @@ asteroid_app_qml_module(asteroid-settings
 	qml/SoundPage.qml
 	qml/VibrationPage.qml
 	qml/BatteryPage.qml
+	qml/BatterySaverPage.qml
+	qml/ChargingPage.qml
 	qml/GeneralPage.qml
 	qml/QuickPanelPage.qml
-	qml/LauncherPage.qml
 	qml/SystemPage.qml
 	qml/UpdatesPage.qml
 	qml/DateTimePage.qml
 	qml/TimePage.qml
 	qml/DatePage.qml
-	qml/TimezonePage.qml
 	qml/LanguagePage.qml
 	qml/AboutPage.qml
+	qml/LicensesPage.qml
+	qml/InputMethodsPage.qml
+	qml/ManageKeyboardsPage.qml
+	qml/FactoryResetScreen.qml
 	qml/VersionsPage.qml
 	qml/DeveloperPage.qml
 	qml/PageReady.js
