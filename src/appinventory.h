@@ -6,10 +6,12 @@
 #ifndef APPINVENTORY_H
 #define APPINVENTORY_H
 
+#include <QMutex>
 #include <QObject>
 #include <QString>
 #include <QStringList>
 #include <QVariantList>
+#include <memory>
 
 #include "packageinfo.h"
 
@@ -39,6 +41,7 @@ class AppInventory : public QObject
     Q_PROPERTY(QString statusFile READ statusFile WRITE setStatusFile NOTIFY changed)
 public:
     explicit AppInventory(QObject *parent = nullptr);
+    ~AppInventory() override;
 
     QString desktopDir() const { return m_desktopDir; }
     void setDesktopDir(const QString &dir);
@@ -86,6 +89,15 @@ private:
     QString m_procDir;
     QString m_homeDir;
     PackageInfo m_packages;
+
+    /* what a pool thread may touch: nothing of this object, only this
+       guard, which the destructor clears under the lock (the pool thread
+       posts its answer under the same lock) */
+    struct SizeGuard {
+        QMutex mutex;
+        AppInventory *target = nullptr;
+    };
+    std::shared_ptr<SizeGuard> m_guard;
 };
 
 #endif // APPINVENTORY_H

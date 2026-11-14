@@ -23,7 +23,16 @@ AppInventory::AppInventory(QObject *parent)
     , m_infoDir(QStringLiteral("/var/lib/opkg/info"))
     , m_procDir(QStringLiteral("/proc"))
     , m_homeDir(QDir::homePath())
+    , m_guard(std::make_shared<SizeGuard>())
 {
+    m_guard->target = this;
+}
+
+AppInventory::~AppInventory()
+{
+    // a pool thread still summing keeps its own copy of the guard and finds no target
+    QMutexLocker lock(&m_guard->mutex);
+    m_guard->target = nullptr;
 }
 
 void AppInventory::setDesktopDir(const QString &dir) { if (dir != m_desktopDir) { m_desktopDir = dir; emit changed(); } }
@@ -209,11 +218,29 @@ qint64 AppInventory::appBytes(const QString &package) const
 
 void AppInventory::computeSizes(const QString &key, const QStringList &names, const QString &package)
 {
-    QThreadPool::globalInstance()->start([this, key, names, package]() {
-        const double app = double(appBytes(package));
-        const double data = double(dataBytes(names));
-        const double cache = double(cacheBytes(names));
-        QMetaObject::invokeMethod(this, [this, key, app, data, cache]() { emit sizesReady(key, app, data, cache); },
+    // The pool thread gets copies of everything it reads (the directories, the
+    // status file) and never touches this object: the page that owns it may be
+    // popped while a big ~/.cache is still summed. The answer is posted through
+    // the guard, which the destructor clears (a deleted inventory gets nothing).
+    const QStringList dataList = dataDirs(names);
+    const QStringList cacheList = cacheDirs(names);
+    const QString status = m_packages.statusFile();
+    const std::shared_ptr<SizeGuard> guard = m_guard;
+    QThreadPool::globalInstance()->start([guard, key, dataList, cacheList, package, status]() {
+        PackageInfo packages;
+        packages.setStatusFile(status);
+        const double app = double(packages.installedSize(package));
+        double data = 0;
+        for (const QString &d : dataList)
+            data += double(dirBytes(d));
+        double cache = 0;
+        for (const QString &d : cacheList)
+            cache += double(dirBytes(d));
+        QMutexLocker lock(&guard->mutex);
+        if (!guard->target)
+            return;
+        AppInventory *self = guard->target;
+        QMetaObject::invokeMethod(self, [self, key, app, data, cache]() { emit self->sizesReady(key, app, data, cache); },
                                   Qt::QueuedConnection);
     });
 }
