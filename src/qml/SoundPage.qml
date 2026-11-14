@@ -19,7 +19,8 @@ import Nemo.Configuration
  * - sliders with their own header label, Ring volume, Notification volume,
  *   Alarm volume (stream steps and lowest step of AudioService:
  *   MAX_STREAM_VOLUME {call 5, ring 7, alarm 7, notification 7} and
- *   MIN_STREAM_VOLUME {call 1, alarm 1}), kept as percent of the maximum in
+ *   MIN_STREAM_VOLUME {call 1}; the alarm starts at 0 as stock's
+ *   config_audio_alarm_min_vol), kept as percent of the maximum in
  *   /org/asteroidos/sound/<role>-volume, the defaults those of AOSP
  *   (ring 5 and notification 5 of 7 as config_audio_ring_vol_default and
  *   config_audio_notif_vol_default, alarm 6 of 7, call 4 of 5);
@@ -48,7 +49,7 @@ SettingsPage {
     readonly property var streams: ({
         "ring":         { "from": 0, "to": 7, "percent": 71 },
         "notification": { "from": 0, "to": 7, "percent": 71 },
-        "alarm":        { "from": 1, "to": 7, "percent": 86 },
+        "alarm":        { "from": 0, "to": 7, "percent": 86 },
         "call":         { "from": 1, "to": 5, "percent": 80 }
     })
     function on(v) { return v === true || v === "true" }

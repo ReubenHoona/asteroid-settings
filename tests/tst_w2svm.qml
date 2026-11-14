@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2026 Reuben Horner <reubarb.scons@gmail.com>
+ * Copyright (C) 2026 eos-mainline contributors
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * W2-settings-sound-vibration-modes, on the mocks of tests/mocks (Backend
@@ -333,7 +333,7 @@ SettingsHarness {
             verify(chip("unlockSoundSwitch").checked)
             verify(chip("chargingSoundsSwitch").checked)
             var sl = [["ringVolumeSlider", 0, 7, 5], ["notificationVolumeSlider", 0, 7, 5],
-                      ["alarmVolumeSlider", 1, 7, 6], ["callVolumeSlider", 1, 5, 4]]
+                      ["alarmVolumeSlider", 0, 7, 6], ["callVolumeSlider", 1, 5, 4]]
             for (var i = 0; i < sl.length; i++) {
                 var s = chip(sl[i][0])
                 compare(s.from, sl[i][1], sl[i][0] + " from")
@@ -382,11 +382,11 @@ SettingsHarness {
             // notification 5 -> 4
             minus("notificationVolumeSlider")
             compare(conf("/org/asteroidos/sound/notification-volume"), 57)
-            // alarm starts at 6 and never goes below 1; call at 4 of 5, lowest 1
+            // alarm starts at 6 and never goes below 0 (config_audio_alarm_min_vol); call at 4 of 5, lowest 1
             for (var i = 0; i < 7; i++)
                 minus("alarmVolumeSlider")
-            compare(chip("alarmVolumeSlider").value, 1)
-            compare(conf("/org/asteroidos/sound/alarm-volume"), 14)
+            compare(chip("alarmVolumeSlider").value, 0)
+            compare(conf("/org/asteroidos/sound/alarm-volume"), 0)
             for (i = 0; i < 6; i++)
                 minus("callVolumeSlider")
             compare(chip("callVolumeSlider").value, 1)
@@ -508,10 +508,10 @@ SettingsHarness {
             minus("ringVolumeSlider")
             compare(haptics().length, 7, "nothing below the first value")
             h.stamps = []
-            // a slider whose first value is 1: stepping onto it is the end
+            // a slider whose first value is 0 (alarm, from 6): five ticks, then the end
             for (i = 0; i < 6; i++)
                 minus("alarmVolumeSlider")
-            compare(haptics(), ["ui_segment_tick", "ui_segment_tick", "ui_segment_tick", "ui_segment_tick",
+            compare(haptics(), ["ui_segment_tick", "ui_segment_tick", "ui_segment_tick", "ui_segment_tick", "ui_segment_tick",
                                 "ui_gesture_end"])
         }
 

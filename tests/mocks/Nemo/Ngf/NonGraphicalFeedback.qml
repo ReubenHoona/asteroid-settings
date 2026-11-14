@@ -1,3 +1,5 @@
+// Copyright (C) 2026 eos-mainline contributors
+// SPDX-License-Identifier: BSD-3-Clause
 // Test double for the Settings tests: Nemo.Ngf's NonGraphicalFeedback (the
 // ngfd client). Every play and stop is recorded in Backend.calls as
 // ("ngf", "play"|"stop", [event]); a sample plays for Backend.sampleMs, then
