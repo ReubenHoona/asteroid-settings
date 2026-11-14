@@ -41,3 +41,23 @@ QString PackageInfo::version(const QString &package) const
     }
     return QString();
 }
+
+qint64 PackageInfo::installedSize(const QString &package) const
+{
+    QFile file(m_statusFile);
+    if (package.isEmpty() || !file.open(QIODevice::ReadOnly))
+        return 0;
+    const QByteArray wanted = package.toUtf8();
+    bool inPackage = false;
+    while (!file.atEnd()) {
+        const QByteArray line = file.readLine().trimmed();
+        if (line.isEmpty()) {
+            inPackage = false;
+        } else if (line.startsWith("Package:")) {
+            inPackage = line.mid(8).trimmed() == wanted;
+        } else if (inPackage && line.startsWith("Installed-Size:")) {
+            return line.mid(15).trimmed().toLongLong();
+        }
+    }
+    return 0;
+}

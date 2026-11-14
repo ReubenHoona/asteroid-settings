@@ -97,6 +97,10 @@ SettingsHarness {
             h.home(this)
 
             go(["appsItem"]); page("apps")
+            go(["notificationsItem"]); page("apps-notifications")
+            go(["appNotificationsItem"]); page("apps-app-notifications"); h.back(this); h.back(this)
+            go(["appInfoItem"]); page("apps-app-info"); h.back(this)
+            go(["appStorageItem"]); page("apps-app-storage"); h.back(this)
             Backend.confSet("/org/asteroidos/voice/recognition", "auto")
             go(["assistantItem"]); page("apps-assistant")
             go(["recognitionItem"]); page("apps-assistant-voice-recognition")
@@ -114,7 +118,6 @@ SettingsHarness {
 
             go(["generalItem"]); page("general")
             go(["appViewItem"]); page("general-app-view"); h.back(this)
-            go(["quickPanelItem"]); page("general-quick-settings"); h.back(this)
             go(["temperatureItem"]); page("general-temperature"); h.back(this)
             h.home(this)
 

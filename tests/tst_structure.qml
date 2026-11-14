@@ -74,10 +74,12 @@ SettingsHarness {
             compare(h.current().objectName, "mainPage")
             compare(titlesShown(h.current()),
                     ["Connectivity", "Display", "Gestures", "Buttons", "Apps & notifications", "Modes",
-                     "Sound", "Vibration", "Battery", "General", "System"])
+                     "Sound", "Vibration", "Battery", "General", "Health profile", "Location",
+                     "Safety & Emergency", "Accessibility", "Security", "System"])
             // no Watch face & style (settings-a-03 / face-interaction-30)
             compare(h.find(h.current(), "styleItem"), null)
-            // the stock slots of the stub pages, hidden until they have rows
+            // the stock slots of Health profile, Location, Safety & Emergency, Accessibility and
+            // Security (W3-settings-apps-privacy filled them)
             var order = ["connectivityItem", "displayItem", "gesturesItem", "buttonsItem", "appsItem", "modesItem",
                          "soundItem", "vibrationItem", "batteryItem", "generalItem", "healthProfileItem",
                          "locationItem", "safetyItem", "accessibilityItem", "securityItem", "systemItem",
@@ -94,9 +96,9 @@ SettingsHarness {
                 verify(at > last, order[i] + " after the one before it")
                 last = at
             }
-            var hidden = ["healthProfileItem", "locationItem", "safetyItem", "accessibilityItem", "securityItem"]
-            for (i = 0; i < hidden.length; i++)
-                verify(!h.shown(chip(hidden[i])), hidden[i] + " hidden until its page has rows")
+            var filled = ["healthProfileItem", "locationItem", "safetyItem", "accessibilityItem", "securityItem"]
+            for (i = 0; i < filled.length; i++)
+                verify(h.shown(chip(filled[i])), filled[i] + " shown, its page has rows")
             compare(chip("healthProfileItem").title, "Health profile")
             compare(chip("safetyItem").title, "Safety & Emergency")
             // the icons drawn to the stock shapes (System is a gear, not an info circle)

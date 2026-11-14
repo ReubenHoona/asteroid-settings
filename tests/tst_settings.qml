@@ -59,7 +59,8 @@ SettingsHarness {
             compare(h.current().objectName, "mainPage")
             compare(titlesShown(h.current()),
                     ["Connectivity", "Display", "Gestures", "Buttons", "Apps & notifications", "Modes",
-                     "Sound", "Vibration", "Battery", "General", "System"])
+                     "Sound", "Vibration", "Battery", "General", "Health profile", "Location",
+                     "Safety & Emergency", "Accessibility", "Security", "System"])
             compare(h.find(h.current(), "batteryItem").summary, "57%")
             verify(!h.shown(h.find(h.current(), "developerItem")), "Developer options hidden until the 7 taps")
             // the title is the first row and scrolls with the list
@@ -137,6 +138,8 @@ SettingsHarness {
             var expected = ["mainPage", "connectivityPage", "bluetoothPage", "wifiPage", "wifiAddPage", "wifiSavedPage",
                             "displayPage", "brightnessPage", "displaySizePage", "wristOrientationPage", "touchLockPage", "gesturesPage", "buttonsPage", "appsPage", "modesPage",
                             "dndPage", "dndCustomizePage", "bedtimePage", "bedtimeCustomizePage", "theaterPage", "theaterCustomizePage", "assistantPage", "soundPage", "vibrationPage", "batteryPage", "generalPage", "systemPage",
+                            "notificationsPage", "appNotificationsPage", "appInfoPage", "appStoragePage", "locationPage",
+                            "securityPage", "accessibilityPage", "audioAdjustPage", "healthProfilePage", "safetyPage",
                             "dateTimePage", "aboutPage", "versionsPage", "developerPage", "batterySaverPage", "inputMethodsPage", "manageKeyboardsPage", "licensesPage"]
             for (var i = 0; i < expected.length; i++)
                 verify(visited.indexOf(expected[i]) >= 0, expected[i] + " reached")

@@ -234,7 +234,7 @@ SettingsHarness {
             compare(h.current().objectName, "generalPage")
             compare(shownRows(h.current()),
                     ["row:Show unread notification indicator", "row:Autolaunch media controls",
-                     "row:Start tutorial", "row:App view", "row:Quick settings", "row:Temperature"])
+                     "row:Start tutorial", "row:App view", "row:Temperature"])
             verify(chip("unreadDotSwitch").checked, "on by default")
             verify(!chip("autolaunchMediaSwitch").checked, "off by default")
             h.tap(this, chip("autolaunchMediaSwitch"))

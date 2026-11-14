@@ -12,8 +12,8 @@
  * that fills a page sets its flag here (a one-word change; main.qml stays
  * owned by W1-settings-structure).
  */
-var healthProfile = false   // Health profile, HealthProfilePage.qml (W3-settings-apps-privacy)
-var location = false        // Location (W3-settings-apps-privacy)
-var safety = false          // Safety & Emergency, SafetyPage.qml (with Emergency SOS)
-var accessibility = false   // Accessibility (W3-settings-apps-privacy)
-var security = false        // Security (W3-settings-apps-privacy)
+var healthProfile = true    // Health profile, HealthProfilePage.qml (W3-settings-apps-privacy)
+var location = true         // Location (W3-settings-apps-privacy)
+var safety = true           // Safety & Emergency, SafetyPage.qml (with Emergency SOS)
+var accessibility = true    // Accessibility (W3-settings-apps-privacy)
+var security = true         // Security (W3-settings-apps-privacy)

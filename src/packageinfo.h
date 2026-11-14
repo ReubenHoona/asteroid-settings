@@ -28,6 +28,8 @@ public:
     void setStatusFile(const QString &file);
 
     Q_INVOKABLE QString version(const QString &package) const;
+    /* the Installed-Size field in bytes (opkg writes bytes), 0 when unknown */
+    Q_INVOKABLE qint64 installedSize(const QString &package) const;
 
 signals:
     void statusFileChanged();

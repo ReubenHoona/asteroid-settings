@@ -12,7 +12,8 @@ import Nemo.Configuration
 // Autolaunch media controls (the launcher opens the media controls when
 // phone playback starts), Start tutorial (goes to the watch face and starts
 // the navigation tutorial) and App view (List view / Grid view); then this
-// watch's own rows: the quick settings panel and the temperature unit.
+// watch's own row: the temperature unit. Stock has no quick settings editor
+// (fixed order from the resource array), so there is none here (DECISIONS Q30).
 SettingsPage {
     id: page
     objectName: "generalPage"
@@ -89,12 +90,6 @@ SettingsPage {
         summary: page.viewNames[page.grid ? 1 : 0]
         onClicked: app.choose(qsTrId("id-app-view"), page.viewNames, page.grid ? 1 : 0,
                               function (i) { appLauncher.value = i === 1 ? page.gridView : page.listView })
-    }
-    SettingsChip {
-        objectName: "quickPanelItem"
-        //% "Quick settings"
-        title: qsTrId("id-quick-settings")
-        onClicked: layerStack.push(quickPanelLayer)
     }
     SettingsChip {
         objectName: "temperatureItem"

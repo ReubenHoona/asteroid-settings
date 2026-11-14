@@ -83,7 +83,6 @@ Application {
     Component { id: batterySaverLayer;          BatterySaverPage { } }
     Component { id: chargingLayer;              ChargingPage   { } }
     Component { id: generalLayer;               GeneralPage    { } }
-    Component { id: quickPanelLayer;            QuickPanelPage { } }
     Component { id: systemLayer;                SystemPage     { } }
     Component { id: dateTimeLayer;              DateTimePage   { } }
     Component { id: timeLayer;                  TimePage       { } }
@@ -104,6 +103,13 @@ Application {
     Component { id: displaySizeLayer;           DisplaySizePage { } }
     Component { id: wristOrientationLayer;      WristOrientationPage { } }
     Component { id: touchLockLayer;             TouchLockPage  { } }
+    Component { id: healthProfileLayer;         HealthProfilePage { } }
+    Component { id: safetyLayer;                SafetyPage     { } }
+    Component { id: notificationsLayer;         NotificationsPage { } }
+    Component { id: appNotificationsLayer;      AppNotificationsPage { } }
+    Component { id: appInfoLayer;               AppInfoPage    { } }
+    Component { id: appStorageLayer;            AppStoragePage { } }
+    Component { id: audioAdjustLayer;           AudioAdjustPage { } }
 
     // Developer options appear at the end of the list once Build number
     // (About > Versions) was tapped seven times, as on Wear OS
@@ -252,8 +258,7 @@ Application {
                 //% "Health profile"
                 title: qsTrId("id-health-profile-page")
                 iconName: "ios-heart-outline"
-                // made when tapped: the page comes with its package
-                onClicked: layerStack.push(Qt.createComponent("HealthProfilePage.qml"))
+                onClicked: layerStack.push(healthProfileLayer)
             }
             SettingsChip {
                 objectName: "locationItem"
@@ -269,8 +274,7 @@ Application {
                 //% "Safety & Emergency"
                 title: qsTrId("id-safety-page")
                 iconName: "ios-medkit-outline"
-                // made when tapped: the page comes with its package
-                onClicked: layerStack.push(Qt.createComponent("SafetyPage.qml"))
+                onClicked: layerStack.push(safetyLayer)
             }
             SettingsChip {
                 objectName: "accessibilityItem"
@@ -347,6 +351,17 @@ Application {
         "gestures": [gesturesLayer],
         "buttons": [buttonsLayer],
         "apps": [appsLayer],
+        "notifications": [appsLayer, notificationsLayer],
+        "app_notifications": [appsLayer, notificationsLayer, appNotificationsLayer],
+        "app_info": [appsLayer, appInfoLayer],
+        "app_storage": [appsLayer, appStorageLayer],
+        "assistant": [appsLayer, assistantLayer],
+        "health_profile": [healthProfileLayer],
+        "location": [locationLayer],
+        "safety": [safetyLayer],
+        "accessibility": [accessibilityLayer],
+        "audio_adjustment": [accessibilityLayer, audioAdjustLayer],
+        "security": [securityLayer],
         "modes": [modesLayer],
         "mode_do_not_disturb": [modesLayer, dndLayer],
         "mode_do_not_disturb_customize": [modesLayer, dndLayer, dndCustomizeLayer],

@@ -1647,6 +1647,378 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Stay awake when charging</source>
         <translation>Stay awake when charging</translation>
     </message>
+    <message id="id-notifications-page">
+        <source>Notifications</source>
+        <translation>Notifications</translation>
+    </message>
+    <message id="id-app-info-page">
+        <source>App info</source>
+        <translation>App info</translation>
+    </message>
+    <message id="id-app-storage-page">
+        <source>App storage</source>
+        <translation>App storage</translation>
+    </message>
+    <message id="id-notif-show-wrist">
+        <source>On wrist raise</source>
+        <translation>On wrist raise</translation>
+    </message>
+    <message id="id-notif-show-immediately">
+        <source>Immediately</source>
+        <translation>Immediately</translation>
+    </message>
+    <message id="id-note-recommended">
+        <source>(recommended)</source>
+        <translation>(recommended)</translation>
+    </message>
+    <message id="id-note-reduces-battery">
+        <source>(reduces battery life)</source>
+        <translation>(reduces battery life)</translation>
+    </message>
+    <message id="id-app-notifications">
+        <source>App notifications</source>
+        <translation>App notifications</translation>
+    </message>
+    <message id="id-show-new-notifications">
+        <source>Show new notifications</source>
+        <translation>Show new notifications</translation>
+    </message>
+    <message id="id-show-apps-all">
+        <source>All apps</source>
+        <translation>All apps</translation>
+    </message>
+    <message id="id-show-apps-off">
+        <source>Notifications off</source>
+        <translation>Notifications off</translation>
+    </message>
+    <message id="id-show-apps-core">
+        <source>Core system apps</source>
+        <translation>Core system apps</translation>
+    </message>
+    <message id="id-show-apps">
+        <source>Show apps</source>
+        <translation>Show apps</translation>
+    </message>
+    <message id="id-show-apps-installed">
+        <source>Installed apps</source>
+        <translation>Installed apps</translation>
+    </message>
+    <message id="id-show-apps-system">
+        <source>System apps</source>
+        <translation>System apps</translation>
+    </message>
+    <message id="id-app-enable">
+        <source>Enable</source>
+        <translation>Enable</translation>
+    </message>
+    <message id="id-app-disable">
+        <source>Disable</source>
+        <translation>Disable</translation>
+    </message>
+    <message id="id-app-enable-title">
+        <source>Enable?</source>
+        <translation>Enable?</translation>
+    </message>
+    <message id="id-app-disable-title">
+        <source>Disable?</source>
+        <translation>Disable?</translation>
+    </message>
+    <message id="id-app-disable-message">
+        <source>Other apps may be affected.</source>
+        <translation>Other apps may be affected.</translation>
+    </message>
+    <message id="id-app-force-stop">
+        <source>Force stop</source>
+        <translation>Force stop</translation>
+    </message>
+    <message id="id-app-force-stop-title">
+        <source>Force stop?</source>
+        <translation>Force stop?</translation>
+    </message>
+    <message id="id-app-force-stop-message">
+        <source>App may not function properly.</source>
+        <translation>App may not function properly.</translation>
+    </message>
+    <message id="id-computing">
+        <source>Computing…</source>
+        <translation>Computing…</translation>
+    </message>
+    <message id="id-app-version">
+        <source>Version</source>
+        <translation>Version</translation>
+    </message>
+    <message id="id-app-storage">
+        <source>Storage</source>
+        <translation>Storage</translation>
+    </message>
+    <message id="id-app-data">
+        <source>Data</source>
+        <translation>Data</translation>
+    </message>
+    <message id="id-app-cache">
+        <source>Cache</source>
+        <translation>Cache</translation>
+    </message>
+    <message id="id-app-clear-data">
+        <source>Clear data</source>
+        <translation>Clear data</translation>
+    </message>
+    <message id="id-app-delete-data-title">
+        <source>Delete app data?</source>
+        <translation>Delete app data?</translation>
+    </message>
+    <message id="id-app-delete-data-message">
+        <source>All this app's data will be permanently deleted. This includes all files, settings, accounts, databases, etc.</source>
+        <translation>All this app's data will be permanently deleted. This includes all files, settings, accounts, databases, etc.</translation>
+    </message>
+    <message id="id-app-data-cleared">
+        <source>Data cleared</source>
+        <translation>Data cleared</translation>
+    </message>
+    <message id="id-app-clear-cache">
+        <source>Clear cache</source>
+        <translation>Clear cache</translation>
+    </message>
+    <message id="id-app-cache-cleared">
+        <source>Cache cleared</source>
+        <translation>Cache cleared</translation>
+    </message>
+    <message id="id-storage-sort-data">
+        <source>Data size</source>
+        <translation>Data size</translation>
+    </message>
+    <message id="id-storage-sort-app">
+        <source>App size</source>
+        <translation>App size</translation>
+    </message>
+    <message id="id-app-alarm-clock">
+        <source>Alarm clock</source>
+        <translation>Alarm clock</translation>
+    </message>
+    <message id="id-app-timer">
+        <source>Timer</source>
+        <translation>Timer</translation>
+    </message>
+    <message id="id-app-phone-sync">
+        <source>Phone sync</source>
+        <translation>Phone sync</translation>
+    </message>
+    <message id="id-app-sensor-logger">
+        <source>Sensor logger</source>
+        <translation>Sensor logger</translation>
+    </message>
+    <message id="id-app-weather-service">
+        <source>Weather service</source>
+        <translation>Weather service</translation>
+    </message>
+    <message id="id-use-location">
+        <source>Use location</source>
+        <translation>Use location</translation>
+    </message>
+    <message id="id-use-location-summary">
+        <source>From phone &amp; watch</source>
+        <translation>From phone &amp; watch</translation>
+    </message>
+    <message id="id-location-footer-off">
+        <source>Location access is off for apps and services. Your device location may still be sent to emergency responders when you call or text an emergency number.</source>
+        <translation>Location access is off for apps and services. Your device location may still be sent to emergency responders when you call or text an emergency number.</translation>
+    </message>
+    <message id="id-lock-pattern">
+        <source>Pattern</source>
+        <translation>Pattern</translation>
+    </message>
+    <message id="id-lock-pin">
+        <source>PIN</source>
+        <translation>PIN</translation>
+    </message>
+    <message id="id-lock-none">
+        <source>None</source>
+        <translation>None</translation>
+    </message>
+    <message id="id-screen-lock">
+        <source>Screen lock</source>
+        <translation>Screen lock</translation>
+    </message>
+    <message id="id-lock-now">
+        <source>Lock screen now</source>
+        <translation>Lock screen now</translation>
+    </message>
+    <message id="id-text-size">
+        <source>Text size</source>
+        <translation>Text size</translation>
+    </message>
+    <message id="id-reduce-animations">
+        <source>Reduce animations</source>
+        <translation>Reduce animations</translation>
+    </message>
+    <message id="id-reduce-animations-explain">
+        <source>Reduce movement on the screen</source>
+        <translation>Reduce movement on the screen</translation>
+    </message>
+    <message id="id-audio-adjustment">
+        <source>Audio adjustment</source>
+        <translation>Audio adjustment</translation>
+    </message>
+    <message id="id-audio-adjustment-summary">
+        <source>Mono audio, Audio balance</source>
+        <translation>Mono audio, Audio balance</translation>
+    </message>
+    <message id="id-mono-audio">
+        <source>Mono audio</source>
+        <translation>Mono audio</translation>
+    </message>
+    <message id="id-mono-audio-explain">
+        <source>Combine channels when playing audio</source>
+        <translation>Combine channels when playing audio</translation>
+    </message>
+    <message id="id-audio-balance">
+        <source>Audio balance</source>
+        <translation>Audio balance</translation>
+    </message>
+    <message id="id-audio-balance-percent">
+        <source>%1 percent audio balance</source>
+        <translation>%1 percent audio balance</translation>
+    </message>
+    <message id="id-my-profile">
+        <source>My profile</source>
+        <translation>My profile</translation>
+    </message>
+    <message id="id-gender-female">
+        <source>Female</source>
+        <translation>Female</translation>
+    </message>
+    <message id="id-gender-male">
+        <source>Male</source>
+        <translation>Male</translation>
+    </message>
+    <message id="id-gender-non-binary">
+        <source>Non-binary</source>
+        <translation>Non-binary</translation>
+    </message>
+    <message id="id-height-feet-inches">
+        <source>%1 ft %2 in</source>
+        <translation>%1 ft %2 in</translation>
+    </message>
+    <message id="id-height-cm">
+        <source>%1 cm</source>
+        <translation>%1 cm</translation>
+    </message>
+    <message id="id-weight-lbs">
+        <source>%1 lbs</source>
+        <translation>%1 lbs</translation>
+    </message>
+    <message id="id-weight-kg">
+        <source>%1 kg</source>
+        <translation>%1 kg</translation>
+    </message>
+    <message id="id-gender">
+        <source>Gender</source>
+        <translation>Gender</translation>
+    </message>
+    <message id="id-height">
+        <source>Height</source>
+        <translation>Height</translation>
+    </message>
+    <message id="id-height-ft">
+        <source>%1 ft</source>
+        <translation>%1 ft</translation>
+    </message>
+    <message id="id-height-in">
+        <source>%1 in</source>
+        <translation>%1 in</translation>
+    </message>
+    <message id="id-weight">
+        <source>Weight</source>
+        <translation>Weight</translation>
+    </message>
+    <message id="id-assistant-press-hold">
+        <source>Press &amp; hold</source>
+        <translation>Press &amp; hold</translation>
+    </message>
+    <message id="id-assistant-press-hold-explain">
+        <source>Hold down side button to talk</source>
+        <translation>Hold down side button to talk</translation>
+    </message>
+    <message id="id-speech-output">
+        <source>Speech output</source>
+        <translation>Speech output</translation>
+    </message>
+    <message id="id-speech-output-explain">
+        <source>Assistant will speak responses, including when Do Not Disturb is on</source>
+        <translation>Assistant will speak responses, including when Do Not Disturb is on</translation>
+    </message>
+    <message id="id-assistant-turn-off">
+        <source>Turn off Assistant</source>
+        <translation>Turn off Assistant</translation>
+    </message>
+    <message id="id-assistant-turn-on">
+        <source>Turn on Assistant</source>
+        <translation>Turn on Assistant</translation>
+    </message>
+    <message id="id-assistant-turn-off-title">
+        <source>Turn off Assistant?</source>
+        <translation>Turn off Assistant?</translation>
+    </message>
+    <message id="id-assistant-turn-off-message">
+        <source>When turned off, you won't be able to use Assistant to do things like set alarms and timers, message your contacts, and more</source>
+        <translation>When turned off, you won't be able to use Assistant to do things like set alarms and timers, message your contacts, and more</translation>
+    </message>
+    <message id="id-assistant-about">
+        <source>Assistant answers what you say to your watch. Speech is recognised on the watch, or on your phone when you choose it.</source>
+        <translation>Assistant answers what you say to your watch. Speech is recognised on the watch, or on your phone when you choose it.</translation>
+    </message>
+    <message id="id-sos-auto">
+        <source>Automatically call</source>
+        <translation>Automatically call</translation>
+    </message>
+    <message id="id-sos-hold">
+        <source>Touch &amp; hold to call</source>
+        <translation>Touch &amp; hold to call</translation>
+    </message>
+    <message id="id-sos-get-help">
+        <source>Get help fast</source>
+        <translation>Get help fast</translation>
+    </message>
+    <message id="id-sos-title">
+        <source>Emergency SOS</source>
+        <translation>Emergency SOS</translation>
+    </message>
+    <message id="id-sos-summary">
+        <source>You can call for help by quickly pressing the crown 5 times or more</source>
+        <translation>You can call for help by quickly pressing the crown 5 times or more</translation>
+    </message>
+    <message id="id-sos-ways">
+        <source>Ways to start SOS</source>
+        <translation>Ways to start SOS</translation>
+    </message>
+    <message id="id-sos-who">
+        <source>Who to call for help</source>
+        <translation>Who to call for help</translation>
+    </message>
+    <message id="id-sos-local-number">
+        <source>Local emergency number</source>
+        <translation>Local emergency number</translation>
+    </message>
+    <message id="id-sos-sound">
+        <source>Countdown alarm</source>
+        <translation>Countdown alarm</translation>
+    </message>
+    <message id="id-sos-sound-explain">
+        <source>Play a sound</source>
+        <translation>Play a sound</translation>
+    </message>
+    <message id="id-sos-number-hint">
+        <source>Phone number</source>
+        <translation>Phone number</translation>
+    </message>
+    <message id="id-sos-number-explain">
+        <source>Leave empty to call the local emergency number</source>
+        <translation>Leave empty to call the local emergency number</translation>
+    </message>
+    <message id="id-sos-use-local">
+        <source>Use local emergency number</source>
+        <translation>Use local emergency number</translation>
+    </message>
 </context>
 <context>
     <name>AboutPage</name>

@@ -69,6 +69,34 @@ QtObject {
     }
     function clearCalls() { calls = [] }
 
+    // the apps of the watch (AppInventory): the entries with a launcher entry,
+    // the owner package of each, the installed packages with their versions,
+    // the processes that run and the sizes in bytes
+    property var inv: ({})
+    function defaultInv() {
+        return {
+            "apps": [
+                { "id": "asteroid-alarmclock", "name": "Alarm clock", "exec": "asteroid-alarmclock", "process": "asteroid-alarmclock" },
+                { "id": "asteroid-assistant", "name": "Assistant", "exec": "busctl --user call x", "process": "" },
+                { "id": "asteroid-settings", "name": "Settings", "exec": "asteroid-settings", "process": "asteroid-settings" },
+                { "id": "asteroid-weather", "name": "Weather", "exec": "asteroid-weather", "process": "asteroid-weather" }
+            ],
+            "owners": { "asteroid-alarmclock": "asteroid-alarmclock", "asteroid-assistant": "asteroid-assistant",
+                        "asteroid-settings": "asteroid-settings", "asteroid-weather": "asteroid-weather" },
+            "packages": { "asteroid-alarmclock": "1.0-r0", "asteroid-assistant": "1.1-r0", "asteroid-settings": "2.0-r0",
+                          "asteroid-weather": "1.2-r0", "asteroid-btsyncd": "2.1-r1", "asteroid-sensorlogd": "1.0-r0",
+                          "eos-update": "3.0-r0" },
+            "running": { "asteroid-weather": true, "asteroid-settings": true, "asteroid-btsyncd": true },
+            "sizes": {
+                "asteroid-alarmclock": { "app": 400000, "data": 12000, "cache": 0 },
+                "asteroid-assistant": { "app": 8000000, "data": 25000000, "cache": 3000 },
+                "asteroid-settings": { "app": 1500000, "data": 2000, "cache": 100000 },
+                "asteroid-weather": { "app": 900000, "data": 1500000, "cache": 4200000 }
+            },
+            "sizeDelay": 0
+        }
+    }
+
     // D-Bus replies, "interface.method" -> value
     property var replies: ({})
 
@@ -89,6 +117,7 @@ QtObject {
                                                         "Europe/London", "Europe/Paris", "Pacific/Auckland", "Zulu"]
         }
         calls = []
+        inv = defaultInv()
     }
     Component.onCompleted: reset()
 }

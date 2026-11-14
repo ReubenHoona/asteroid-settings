@@ -11,6 +11,7 @@ qt_add_dbus_interfaces(
 
 set(
 	SRC
+	appinventory.cpp
 	main.cpp
 	mceconfigvalue.cpp
 	packageinfo.cpp
@@ -23,6 +24,7 @@ set(
 )
 set(
 	HEADERS
+	appinventory.h
 	mceconfigvalue.h
 	packageinfo.h
 	sysinfo.h
@@ -75,7 +77,6 @@ asteroid_app_qml_module(asteroid-settings
 	qml/BatterySaverPage.qml
 	qml/ChargingPage.qml
 	qml/GeneralPage.qml
-	qml/QuickPanelPage.qml
 	qml/SystemPage.qml
 	qml/UpdatesPage.qml
 	qml/DateTimePage.qml
@@ -97,6 +98,21 @@ asteroid_app_qml_module(asteroid-settings
 	qml/SecurityPage.qml
 	qml/DisplaySizePage.qml
 	qml/TouchLockPage.qml
+	qml/AppFormat.js
+	qml/WatchApps.qml
+	qml/NotificationsPage.qml
+	qml/AppNotificationsPage.qml
+	qml/AppNotificationPage.qml
+	qml/AppInfoPage.qml
+	qml/AppDetailPage.qml
+	qml/AppDataPage.qml
+	qml/AppStoragePage.qml
+	qml/AudioAdjustPage.qml
+	qml/HealthProfilePage.qml
+	qml/ProfilePickerPage.qml
+	qml/AssistantAboutPage.qml
+	qml/SafetyPage.qml
+	qml/SosNumberPage.qml
 	qml/WristOrientationPage.qml
 	qml/WristToggle.qml
 )
