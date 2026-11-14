@@ -5,39 +5,49 @@
 
 import QtQuick
 import org.asteroid.controls
-import Nemo.Configuration
+import Nemo.DBus
 
 // Settings > Security (settings-b-07, accessibility-lock-security-09). Stock
 // CP3A's legacy SecuritySettingsFragment: Screen lock (summary Pattern, PIN
 // or Off; a radio list Pattern / PIN / None) and Lock screen now (only while
 // a PIN or pattern is set). Device administration, Watch Unlock and Trust
 // agents are Google features and stay out.
-// The lock itself is the launcher's keyguard (W3-launcher-a11y-security): it
-// keeps the kind in lock-type ("none", "pin", "pattern") and runs the set up
-// flows, so Settings only asks. A choice writes lock-request =
-// "<kind>@<ms>" (pin, pattern or none; none asks for the current credential
-// first, as stock) and ends Settings so that the flow shows over the face;
-// Lock screen now writes lock-now = "lock@<ms>" the same way.
+// The lock is the launcher's (W3-launcher-a11y-security). Settings asks its
+// session bus object org.asteroidos.launcher.Lock (CR-06): State() says what
+// is in force, StateChanged(s) keeps this page right, Lock() is "Lock screen
+// now". A choice in the list starts the set-up flow (LockFlowPage: the
+// current credential first, as stock; the new one twice; None asks for the
+// current one) which calls Verify, SetPin, SetPattern and Clear. No dconf key
+// is involved (FP-S2 removed security/lock-type, lock-request and lock-now).
 SettingsPage {
     id: page
     objectName: "securityPage"
     title: qsTrId("id-security-page")
 
-    ConfigurationValue {
-        id: lockType
-        key: "/org/asteroidos/security/lock-type"
-        defaultValue: "none"
+    // the session name of the launcher (CR-01)
+    DBusInterface {
+        id: lock
+        bus: DBus.SessionBus
+        service: "org.asteroidos.launcher"
+        path: "/org/asteroidos/launcher/lock"
+        iface: "org.asteroidos.launcher.Lock"
+        signalsEnabled: true
+        // Nemo.DBus connects a signal to the function rc<Signal>
+        function rcStateChanged(state) { page.setKind(state) }
     }
-    ConfigurationValue {
-        id: lockRequest
-        key: "/org/asteroidos/security/lock-request"
-        defaultValue: ""
+
+    // the credential kind in force: "none", "pin" or "pattern"; "" until the launcher has answered
+    property string kindNow: ""
+    readonly property bool known: kindNow !== ""
+
+    function setKind(k) {
+        var s = String(k)
+        kindNow = (s === "pin" || s === "pattern") ? s : "none"
     }
-    ConfigurationValue {
-        id: lockNow
-        key: "/org/asteroidos/security/lock-now"
-        defaultValue: ""
+    function refresh() {
+        lock.typedCall("State", [], function (r) { page.setKind(r) }, function () { page.kindNow = "" })
     }
+    Component.onCompleted: refresh()
 
     // the list is Pattern, PIN, None, as stock
     readonly property var kinds: ["pattern", "pin", "none"]
@@ -49,21 +59,21 @@ SettingsPage {
         //% "None"
         qsTrId("id-lock-none")]
     readonly property int current: {
-        var i = kinds.indexOf(String(lockType.value))
+        var i = kinds.indexOf(kindNow)
         return i < 0 ? 2 : i
     }
     readonly property bool locked: current !== 2
 
     // the summary of the row: Pattern, PIN or Off
-    readonly property string summaryText: locked ? kindNames[current]
-                                                 : qsTrId("id-off")
+    readonly property string summaryText: !known ? "" : (locked ? kindNames[current] : qsTrId("id-off"))
 
-    function request(text) {
-        lockRequest.value = text + "@" + Date.now()
-        closeTimer.restart()
+    // the set-up flow for the kind chosen in the list (the one in force is not asked again)
+    function startFlow(kind) {
+        layerStack.push(lockFlowLayer, { "kind": kind, "oldKind": page.kindNow,
+                                         "finished": function (k) { page.setKind(k) } })
     }
     function lockNowAndLeave() {
-        lockNow.value = "lock@" + Date.now()
+        lock.typedCall("Lock", [], function () {}, function () {})
         closeTimer.restart()
     }
     Timer {
@@ -77,11 +87,20 @@ SettingsPage {
         //% "Screen lock"
         title: qsTrId("id-screen-lock")
         summary: page.summaryText
-        onClicked: app.choose(qsTrId("id-screen-lock"), page.kindNames, page.current,
-                              function (i) {
-                                  if (i !== page.current)
-                                      page.request(page.kinds[i])
-                              })
+        onClicked: {
+            if (!page.known) {
+                // the launcher did not answer (yet): ask again and say so
+                page.refresh()
+                //% "Screen lock is not available"
+                toast.show(qsTrId("id-lock-unavailable"))
+                return
+            }
+            app.choose(qsTrId("id-screen-lock"), page.kindNames, page.current,
+                       function (i) {
+                           if (i !== page.current)
+                               page.startFlow(page.kinds[i])
+                       })
+        }
     }
     SettingsChip {
         objectName: "lockNowItem"

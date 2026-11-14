@@ -1855,6 +1855,98 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Lock screen now</source>
         <translation>Lock screen now</translation>
     </message>
+    <message id="id-lock-enter-pin">
+        <source>Enter your PIN</source>
+        <translation>Enter your PIN</translation>
+    </message>
+    <message id="id-lock-enter-pattern">
+        <source>Enter your pattern</source>
+        <translation>Enter your pattern</translation>
+    </message>
+    <message id="id-lock-choose-pin">
+        <source>Choose a PIN</source>
+        <translation>Choose a PIN</translation>
+    </message>
+    <message id="id-lock-draw-new-pattern">
+        <source>Draw an unlock pattern</source>
+        <translation>Draw an unlock pattern</translation>
+    </message>
+    <message id="id-lock-confirm-pin">
+        <source>Confirm your PIN</source>
+        <translation>Confirm your PIN</translation>
+    </message>
+    <message id="id-lock-confirm-pattern">
+        <source>Draw pattern again to confirm</source>
+        <translation>Draw pattern again to confirm</translation>
+    </message>
+    <message id="id-lock-wrong-pin">
+        <source>Wrong PIN</source>
+        <translation>Wrong PIN</translation>
+    </message>
+    <message id="id-lock-wrong-pattern">
+        <source>Wrong pattern</source>
+        <translation>Wrong pattern</translation>
+    </message>
+    <message id="id-lock-pins-differ">
+        <source>PINs don't match</source>
+        <translation>PINs don't match</translation>
+    </message>
+    <message id="id-lock-patterns-differ">
+        <source>Patterns don't match</source>
+        <translation>Patterns don't match</translation>
+    </message>
+    <message id="id-lock-too-short">
+        <source>Connect at least 4 dots</source>
+        <translation>Connect at least 4 dots</translation>
+    </message>
+    <message id="id-lock-failed-pin">
+        <source>Failed to set PIN</source>
+        <translation>Failed to set PIN</translation>
+    </message>
+    <message id="id-lock-failed-pattern">
+        <source>Failed to set lock pattern.</source>
+        <translation>Failed to set lock pattern.</translation>
+    </message>
+    <message id="id-lock-failed-none">
+        <source>Failed to turn off screen lock</source>
+        <translation>Failed to turn off screen lock</translation>
+    </message>
+    <message id="id-lock-unavailable">
+        <source>Screen lock is not available</source>
+        <translation>Screen lock is not available</translation>
+    </message>
+    <message id="id-lock-try-seconds">
+        <source>Try again in %1 sec</source>
+        <translation>Try again in %1 sec</translation>
+    </message>
+    <message id="id-lock-try-minutes">
+        <source>Try again in %1 min %2 sec</source>
+        <translation>Try again in %1 min %2 sec</translation>
+    </message>
+    <message id="id-lock-try-hours">
+        <source>Try again in %1 hr %2 min</source>
+        <translation>Try again in %1 hr %2 min</translation>
+    </message>
+    <message id="id-lock-try-day">
+        <source>Try again in 24 hr</source>
+        <translation>Try again in 24 hr</translation>
+    </message>
+    <message id="id-lock-delete">
+        <source>Delete</source>
+        <translation>Delete</translation>
+    </message>
+    <message id="id-lock-enter">
+        <source>Enter</source>
+        <translation>Enter</translation>
+    </message>
+    <message id="id-lock-pin-area">
+        <source>PIN area</source>
+        <translation>PIN area</translation>
+    </message>
+    <message id="id-lock-draw-pattern">
+        <source>Draw pattern</source>
+        <translation>Draw pattern</translation>
+    </message>
     <message id="id-text-size">
         <source>Text size</source>
         <translation>Text size</translation>

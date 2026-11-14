@@ -47,7 +47,8 @@ Application {
     centerColor: "#000000"
     outerColor: "#000000"
     // stock AppScaffold: TimeText on every Settings screen (settings-a-06)
-    showTime: true
+    // the clock at the top, except over the screen lock flow (stock draws its pad full screen)
+    showTime: !(layerStack.layers.length > 0 && layerStack.currentLayer && layerStack.currentLayer.hideTime === true)
 
     // the list icons drawn for Settings (src/icons, installed in
     // /usr/share/asteroid-settings/icons), named for Icon, which looks in
@@ -98,6 +99,7 @@ Application {
     Component { id: locationLayer;              LocationPage   { } }
     Component { id: accessibilityLayer;         AccessibilityPage { } }
     Component { id: securityLayer;              SecurityPage   { } }
+    Component { id: lockFlowLayer;              LockFlowPage   { } }
     Component { id: displaySizeLayer;           DisplaySizePage { } }
     Component { id: wristOrientationLayer;      WristOrientationPage { } }
     Component { id: touchLockLayer;             TouchLockPage  { } }

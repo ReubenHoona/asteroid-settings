@@ -9,6 +9,8 @@
  * Location, Security, Accessibility with Audio adjustment, Health profile,
  * Assistant, Safety & Emergency, the deep links and the removal of the quick
  * settings editor.
+ * FP-S2: the screen lock set-up flows of Security against the launcher's Lock
+ * object (CR-06), modelled by Backend.lockCall.
  */
 
 import QtQuick
@@ -16,6 +18,7 @@ import QtTest
 import SettingsTest
 import org.asteroid.controls
 import "../src/qml/AppFormat.js" as AppFormat
+import "../src/qml/lock.js" as Lock
 
 SettingsHarness {
     id: h
@@ -31,9 +34,6 @@ SettingsHarness {
         readonly property string kKnown: "/org/asteroidos/notifications/known-apps"
         readonly property string kHidden: "/org/asteroidos/launcher/hidden-apps"
         readonly property string kLocation: "/org/asteroidos/settings/location-enabled"
-        readonly property string kLockType: "/org/asteroidos/security/lock-type"
-        readonly property string kLockRequest: "/org/asteroidos/security/lock-request"
-        readonly property string kLockNow: "/org/asteroidos/security/lock-now"
         readonly property string kReduce: "/org/asteroidos/a11y/reduce-motion"
         readonly property string kAudioSupported: "/org/asteroidos/a11y/audio-adjust-supported"
         readonly property string kUiOpen: "/org/asteroidos/settings/ui/open"
@@ -471,62 +471,444 @@ SettingsHarness {
             compare(shownRows(h.current()), ["row:Use location"])
         }
 
-        // ---- Security (settings-b-07, accessibility-lock-security-09)
+        // ---- Security (settings-b-07, accessibility-lock-security-09) and the
+        // screen lock set-up flows (FP-S2, CR-06): the page talks to the
+        // launcher's session bus object org.asteroidos.launcher.Lock, modelled
+        // by Backend.lockCall (records every call, answers the result codes)
 
-        function test_15_security_default() {
+        readonly property string kLockService: "org.asteroidos.launcher"
+        readonly property string kLockIface: "org.asteroidos.launcher.Lock"
+
+        // the arguments of each call made to the Lock object
+        function lockCalls(method) {
+            var out = []
+            for (var i = 0; i < Backend.calls.length; i++) {
+                var c = Backend.calls[i]
+                if (c.target === kLockService && (method === undefined || c.method === kLockIface + "." + method))
+                    out.push(c.args)
+            }
+            return out
+        }
+        function lockMethods() {
+            var out = []
+            for (var i = 0; i < Backend.calls.length; i++)
+                if (Backend.calls[i].target === kLockService)
+                    out.push(Backend.calls[i].method.substring(kLockIface.length + 1))
+            return out
+        }
+        function flow() { return h.current() }
+        function prompt() { return h.find(h.current(), "lockPrompt").text }
+        function typeDigits(digits) {
+            for (var i = 0; i < digits.length; i++)
+                h.tapName(this, "pinKey_" + digits[i])
+            wait(50)
+        }
+        // the dots in order: a finger down on the first and moved over each
+        function draw(dots) {
+            var pad = h.find(h.current(), "patternPad")
+            var c = pad.dotCenter(dots[0])
+            pad.touchDown(c.x, c.y)
+            for (var i = 1; i < dots.length; i++) {
+                c = pad.dotCenter(dots[i])
+                pad.touchMove(c.x, c.y)
+            }
+            pad.touchUp()
+            wait(50)
+        }
+        function openSecurity() {
             open(["securityItem"])
             compare(h.current().objectName, "securityPage")
+        }
+        // Screen lock row -> the kind in the selection dialog (0 Pattern, 1 PIN, 2 None)
+        function chooseLock(index) {
+            h.tap(this, chip("screenLockItem"))
+            h.settle(this)
+            h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), index))
+            h.settle(this)
+        }
+        function noLockKeys() {
+            var keys = ["/org/asteroidos/security/lock-type", "/org/asteroidos/security/lock-request",
+                        "/org/asteroidos/security/lock-now"]
+            for (var i = 0; i < keys.length; i++) {
+                verify(!has(keys[i]), keys[i] + " was written")
+                for (var j = 0; j < Backend.calls.length; j++)
+                    verify(!(Backend.calls[j].target === "dconf" && Backend.calls[j].method === keys[i]), keys[i])
+            }
+        }
+
+        function test_15_security_default() {
+            openSecurity()
             compare(title(), "Security")
             // no lock: Screen lock "Off", no Lock screen now
             compare(shownRows(h.current()), ["row:Screen lock"])
             compare(chip("screenLockItem").summary, "Off")
+            // the state is asked of the launcher's name on the session bus (CR-01, CR-06)
+            compare(h.app.showTime, true)
+            compare(lockMethods(), ["State"])
+            compare(Backend.lockBus, 1)
+            compare(Backend.lockSigs["State"], "")
             h.tap(this, chip("screenLockItem"))
             h.settle(this)
             compare(h.chooser().title, "Screen lock")
             compare(choices(), ["Pattern", "PIN", "None"])
             h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 1))
             h.settle(this)
-            // the keyguard of the launcher runs the set up; Settings ends
-            var req = String(conf(kLockRequest))
-            compare(req.indexOf("pin@"), 0)
-            verify(Math.abs(Number(req.substring(4)) - Date.now()) < 5000)
-            tryCompare(h, "closeCount", 1, 2000)
-            h.shot(this, "security-15-page")
+            // the set-up flow opens over the page; nothing was written to dconf
+            compare(h.current().objectName, "lockFlowPage")
+            compare(h.current().kind, "pin")
+            compare(h.current().step, "enter")
+            compare(prompt(), "Choose a PIN")
+            // the pad is full screen: no clock over it
+            compare(h.app.showTime, false)
+            noLockKeys()
+            h.shot(this, "security-15-choose-pin")
+            h.back(this)
+            compare(h.app.showTime, true)
         }
 
         function test_16_security_with_lock() {
-            Backend.confSet(kLockType, "pattern")
-            open(["securityItem"])
+            Backend.lockKind = "pattern"
+            Backend.lockSecret = "0145"
+            openSecurity()
             compare(shownRows(h.current()), ["row:Screen lock", "row:Lock screen now"])
             compare(chip("screenLockItem").summary, "Pattern")
             // the current one is not asked again
+            var depth = h.stack.layers.length
             h.tap(this, chip("screenLockItem"))
             h.settle(this)
             h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 0))
             h.settle(this)
-            verify(!has(kLockRequest))
-            // None asks the keyguard for the current credential first
-            pick("screenLockItem", 2)
-            compare(String(conf(kLockRequest)).indexOf("none@"), 0)
-            tryCompare(h, "closeCount", 1, 2000)
+            compare(h.stack.layers.length, depth)
+            compare(h.current().objectName, "securityPage")
+            // None asks for the current credential first
+            chooseLock(2)
+            compare(h.current().objectName, "lockFlowPage")
+            compare(h.current().kind, "none")
+            compare(h.current().step, "verify")
+            compare(prompt(), "Enter your pattern")
+            verify(h.find(h.current(), "patternPad").visible)
+            verify(!h.find(h.current(), "pinPad").visible)
+            compare(lockCalls("Clear").length, 0)
+            noLockKeys()
+            h.shot(this, "security-16-enter-pattern")
         }
 
         function test_17_lock_screen_now() {
-            Backend.confSet(kLockType, "pin")
-            open(["securityItem"])
+            Backend.lockKind = "pin"
+            Backend.lockSecret = "1234"
+            openSecurity()
             compare(chip("screenLockItem").summary, "PIN")
             h.tap(this, chip("lockNowItem"))
             h.settle(this)
             compare(dialogText()[0], "Lock screen now")
             reject()
             h.settle(this)
-            verify(!has(kLockNow))
+            compare(lockCalls("Lock").length, 0)
             h.tap(this, chip("lockNowItem"))
             h.settle(this)
             accept()
-            compare(String(conf(kLockNow)).indexOf("lock@"), 0)
+            // Lock() of the launcher, no dconf key; Settings ends so that the lock shows
+            compare(lockCalls("Lock").length, 1)
+            compare(Backend.lockSigs["Lock"], "")
+            compare(Backend.lockLocked, true)
+            noLockKeys()
             tryCompare(h, "closeCount", 1, 2000)
             h.shot(this, "security-17-lock-now")
+        }
+
+        // StateChanged(s) of the launcher reaches rcStateChanged (CR-06, rule 5)
+        function test_17a_state_changed_signal() {
+            openSecurity()
+            compare(chip("screenLockItem").summary, "Off")
+            Backend.lockSet("pin", "", "4321")
+            wait(50)
+            compare(chip("screenLockItem").summary, "PIN")
+            compare(shownRows(h.current()), ["row:Screen lock", "row:Lock screen now"])
+            Backend.lockCall("Clear", ["4321"])
+            wait(50)
+            compare(chip("screenLockItem").summary, "Off")
+            compare(shownRows(h.current()), ["row:Screen lock"])
+        }
+
+        function test_17b_launcher_not_there() {
+            Backend.lockAvailable = false
+            openSecurity()
+            // not asked of anything else: the row says nothing and the tap says why
+            compare(chip("screenLockItem").summary, "")
+            h.tap(this, chip("screenLockItem"))
+            h.settle(this)
+            verify(!h.chooser().shown)
+            compare(toast().visible, true)
+            compare(h.find(toast(), "toastText").text, "Screen lock is not available")
+            // it came up meanwhile: the next tap works
+            Backend.lockAvailable = true
+            wait(2300)
+            h.tap(this, chip("screenLockItem"))
+            h.settle(this)
+            compare(chip("screenLockItem").summary, "Off")
+        }
+
+        function test_17c_set_pin() {
+            openSecurity()
+            chooseLock(1)
+            compare(prompt(), "Choose a PIN")
+            typeDigits("1234")
+            compare(flow().step, "confirm")
+            compare(prompt(), "Confirm your PIN")
+            compare(lockCalls("SetPin").length, 0)
+            typeDigits("1234")
+            // saved with no old credential, back on the Security page showing PIN
+            compare(lockCalls("SetPin"), [["", "1234"]])
+            compare(Backend.lockSigs["SetPin"], "ss")
+            compare(lockCalls("Verify").length, 0)
+            compare(Backend.lockKind, "pin")
+            tryVerify(function () { return h.current().objectName === "securityPage" }, 2000)
+            compare(chip("screenLockItem").summary, "PIN")
+            compare(shownRows(h.current()), ["row:Screen lock", "row:Lock screen now"])
+            noLockKeys()
+        }
+
+        function test_17d_pin_mismatch() {
+            openSecurity()
+            chooseLock(1)
+            typeDigits("1234")
+            typeDigits("1235")
+            // says so and starts the entry over; nothing was sent
+            compare(prompt(), "PINs don't match")
+            compare(flow().step, "enter")
+            compare(lockCalls("SetPin").length, 0)
+            h.shot(this, "security-17d-mismatch")
+            // the next digit takes the message away
+            typeDigits("9")
+            compare(prompt(), "Choose a PIN")
+            h.find(h.current(), "pinPad").reset()
+            typeDigits("1234")
+            typeDigits("1234")
+            compare(lockCalls("SetPin"), [["", "1234"]])
+        }
+
+        function test_17e_pin_is_4_digits() {
+            // the pad takes 4 digits, a fifth is refused, back removes one
+            var r = Lock.pressKey("1234", "5")
+            compare(r.entry, "1234")
+            compare(r.submit, false)
+            compare(Lock.pressKey("123", "4").submit, true)
+            compare(Lock.pressKey("1234", "back").entry, "123")
+            compare(Lock.pressKey("12", "enter").submit, false)
+            // and a PIN the launcher refuses is Failed to set PIN
+            openSecurity()
+            chooseLock(1)
+            Backend.lockForce = { "SetPin": 4 }
+            typeDigits("1234")
+            typeDigits("1234")
+            compare(lockCalls("SetPin").length, 1)
+            compare(prompt(), "Failed to set PIN")
+            compare(flow().step, "enter")
+            compare(Backend.lockKind, "none")
+            wait(600)
+        }
+
+        function test_17f_set_pattern() {
+            openSecurity()
+            chooseLock(0)
+            compare(flow().kind, "pattern")
+            compare(prompt(), "Draw an unlock pattern")
+            // 3 dots: not a try
+            draw([0, 1, 2])
+            compare(prompt(), "Connect at least 4 dots")
+            compare(flow().step, "enter")
+            compare(lockCalls().length, 1)       // State only
+            h.shot(this, "security-17f-too-short")
+            draw([0, 1, 4, 5])
+            compare(flow().step, "confirm")
+            compare(prompt(), "Draw pattern again to confirm")
+            // a different second pattern
+            draw([0, 1, 4, 7])
+            compare(prompt(), "Patterns don't match")
+            compare(flow().step, "enter")
+            compare(lockCalls("SetPattern").length, 0)
+            draw([0, 3, 6, 7, 8])
+            draw([0, 3, 6, 7, 8])
+            compare(lockCalls("SetPattern"), [["", "03678"]])
+            compare(Backend.lockSigs["SetPattern"], "ss")
+            compare(Backend.lockKind, "pattern")
+            tryVerify(function () { return h.current().objectName === "securityPage" }, 2000)
+            compare(chip("screenLockItem").summary, "Pattern")
+            noLockKeys()
+        }
+
+        function test_17g_change_asks_the_current_credential() {
+            Backend.lockKind = "pin"
+            Backend.lockSecret = "1234"
+            openSecurity()
+            chooseLock(0)
+            compare(flow().step, "verify")
+            compare(prompt(), "Enter your PIN")
+            // wrong: the launcher counted it, the step stays
+            typeDigits("1111")
+            compare(lockCalls("Verify"), [["1111"]])
+            compare(Backend.lockSigs["Verify"], "s")
+            compare(prompt(), "Wrong PIN")
+            compare(flow().step, "verify")
+            compare(lockCalls("SetPattern").length, 0)
+            h.shot(this, "security-17g-wrong-pin")
+            typeDigits("1234")
+            compare(flow().step, "enter")
+            compare(prompt(), "Draw an unlock pattern")
+            verify(h.find(h.current(), "patternPad").visible)
+            draw([1, 4, 7, 8])
+            draw([1, 4, 7, 8])
+            // the old PIN rides along as `old`
+            compare(lockCalls("SetPattern"), [["1234", "1478"]])
+            compare(Backend.lockKind, "pattern")
+            tryVerify(function () { return h.current().objectName === "securityPage" }, 2000)
+            compare(chip("screenLockItem").summary, "Pattern")
+        }
+
+        function test_17h_none_asks_first_then_clears() {
+            Backend.lockKind = "pattern"
+            Backend.lockSecret = "0145"
+            openSecurity()
+            chooseLock(2)
+            compare(flow().step, "verify")
+            draw([0, 1, 4, 7])
+            compare(prompt(), "Wrong pattern")
+            compare(lockCalls("Clear").length, 0)
+            compare(Backend.lockKind, "pattern")
+            draw([0, 1, 4, 5])
+            compare(lockCalls("Clear"), [["0145"]])
+            compare(Backend.lockSigs["Clear"], "s")
+            compare(Backend.lockKind, "none")
+            tryVerify(function () { return h.current().objectName === "securityPage" }, 2000)
+            compare(chip("screenLockItem").summary, "Off")
+            compare(shownRows(h.current()), ["row:Screen lock"])
+        }
+
+        // the wait after too many wrong tries: the pad is off, the countdown shows
+        function test_17i_throttled() {
+            Backend.lockKind = "pin"
+            Backend.lockSecret = "1234"
+            Backend.lockMaxTries = 2
+            Backend.lockWaitMs = 125000
+            openSecurity()
+            chooseLock(2)
+            typeDigits("1111")
+            compare(prompt(), "Wrong PIN")
+            typeDigits("2222")
+            // the second one began the wait (Verify answered 1, Remaining says 125 s)
+            tryCompare(flow(), "waiting", true, 2000)
+            compare(prompt(), "Try again in 2 min 05 sec")
+            compare(h.find(h.current(), "pinPad").inputEnabled, false)
+            var n = lockCalls("Verify").length
+            typeDigits("1234")
+            compare(lockCalls("Verify").length, n)
+            h.shot(this, "security-17i-throttled")
+            // the wait is over: the pad is back
+            Backend.lockRemaining = 0
+            flow().updateWait()
+            tryCompare(flow(), "waiting", false, 2000)
+            compare(h.find(h.current(), "pinPad").inputEnabled, true)
+            compare(prompt(), "Enter your PIN")
+            typeDigits("1234")
+            compare(lockCalls("Clear"), [["1234"]])
+        }
+
+        function test_17j_result_codes_of_verify() {
+            Backend.lockKind = "pin"
+            Backend.lockSecret = "1234"
+            openSecurity()
+            // 2: the launcher is inside a wait already (a try is not counted)
+            chooseLock(0)
+            Backend.lockForce = { "Verify": 2 }
+            Backend.lockRemaining = 12000
+            typeDigits("1234")
+            tryCompare(flow(), "waiting", true, 2000)
+            compare(prompt(), "Try again in 12 sec")
+            compare(flow().step, "verify")
+            // 4: refused, treated as wrong
+            Backend.lockRemaining = 0
+            flow().updateWait()
+            tryCompare(flow(), "waiting", false, 2000)
+            Backend.lockForce = { "Verify": 4 }
+            typeDigits("1234")
+            compare(prompt(), "Wrong PIN")
+            compare(flow().step, "verify")
+            // 3: no credential any more: nothing to confirm, on to the new one
+            Backend.lockForce = { "Verify": 3 }
+            typeDigits("1234")
+            compare(flow().step, "enter")
+            compare(flow().oldKind, "none")
+            compare(prompt(), "Draw an unlock pattern")
+        }
+
+        function test_17k_result_codes_of_save() {
+            // a pattern in force, a PIN being set
+            Backend.lockKind = "pattern"
+            Backend.lockSecret = "0145"
+            openSecurity()
+            chooseLock(1)
+            draw([0, 1, 4, 5])
+            compare(flow().step, "enter")
+            // 1: the credential in force changed under us: asked for again
+            Backend.lockForce = { "SetPin": 1 }
+            typeDigits("5678")
+            typeDigits("5678")
+            compare(lockCalls("SetPin").length, 1)
+            compare(flow().step, "verify")
+            compare(prompt(), "Wrong pattern")
+            Backend.lockForce = {}
+            draw([0, 1, 4, 5])
+            compare(flow().step, "enter")
+            // 3: no credential any more: set again with no old one
+            Backend.lockForce = { "SetPin": 3 }
+            typeDigits("5678")
+            typeDigits("5678")
+            var sets = lockCalls("SetPin")
+            compare(sets[sets.length - 2], ["0145", "5678"])
+            compare(sets[sets.length - 1], ["", "5678"])
+            compare(flow().step, "enter")
+            compare(prompt(), "Failed to set PIN")
+            // 4 on a pattern: Failed to set lock pattern.
+            h.home(this)
+            Backend.lockForce = {}
+            Backend.lockKind = "none"
+            openSecurity()
+            chooseLock(0)
+            Backend.lockForce = { "SetPattern": 4 }
+            draw([0, 1, 4, 5])
+            draw([0, 1, 4, 5])
+            compare(prompt(), "Failed to set lock pattern.")
+            compare(flow().step, "enter")
+            wait(2300)
+        }
+
+        function test_17l_launcher_gone_in_the_flow() {
+            openSecurity()
+            chooseLock(1)
+            typeDigits("1234")
+            Backend.lockAvailable = false
+            typeDigits("1234")
+            compare(prompt(), "Screen lock is not available")
+            compare(flow().busy, false)
+            noLockKeys()
+            wait(600)
+        }
+
+        // the three dconf keys of the old design are gone from the sources, and
+        // so is the old session name
+        function test_17m_old_keys_removed() {
+            var files = ["SecurityPage.qml", "LockFlowPage.qml"]
+            for (var i = 0; i < files.length; i++) {
+                var x = new XMLHttpRequest()
+                x.open("GET", Qt.resolvedUrl("../src/qml/" + files[i]), false)
+                x.send()
+                var text = x.responseText
+                verify(text.length > 100, files[i])
+                verify(text.indexOf("/org/asteroidos/security/") < 0, files[i] + ": a security dconf key")
+                verify(text.indexOf("ConfigurationValue") < 0, files[i] + ": no dconf at all")
+                verify(text.indexOf("org.nemomobile.lipstick") < 0, files[i] + ": the old session name")
+                verify(text.indexOf("org.asteroidos.launcher") >= 0, files[i] + ": " + (i === 0 ? "the session name" : "iface"))
+            }
         }
 
         // ---- Accessibility (settings-b-10, accessibility-lock-security-20)

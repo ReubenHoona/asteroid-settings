@@ -120,6 +120,97 @@ QtObject {
         }
     }
 
+    // The launcher's screen lock, org.asteroidos.launcher.Lock on the session
+    // bus (CR-06): a model of lockservice.cpp and its credential store. State,
+    // Locked, Verify, SetPin, SetPattern, Clear, Lock, Remaining; the integer
+    // answers are 0 ok, 1 wrong, 2 throttled, 3 no credential set, 4 invalid or
+    // not saved. lockForce { "<method>": code } forces an answer (the call has
+    // no effect), lockAvailable false makes every call fail (nobody owns the
+    // name), lockRemaining is the wait in ms (5 wrong tries start one).
+    // lockSignal(name, value) is StateChanged / LockedChanged.
+    property bool lockAvailable: true
+    property string lockKind: "none"
+    property string lockSecret: ""
+    property bool lockLocked: false
+    property int lockFailures: 0
+    property real lockRemaining: 0
+    property int lockMaxTries: 5
+    property real lockWaitMs: 30000
+    property var lockForce: ({})
+    // the bus and the argument types of the last call of each method ("ss" for two strings)
+    property int lockBus: -1
+    property var lockSigs: ({})
+    signal lockSignal(string name, var value)
+    function lockCheck(secret) {
+        if (lockKind === "none")
+            return 3
+        if (lockRemaining > 0)
+            return 2
+        if (String(secret) === lockSecret) {
+            lockFailures = 0
+            return 0
+        }
+        lockFailures++
+        if (lockFailures >= lockMaxTries) {
+            lockFailures = 0
+            lockRemaining = lockWaitMs
+        }
+        return 1
+    }
+    function lockValid(kind, secret) {
+        var s = String(secret)
+        if (kind === "pin")
+            return /^[0-9]{4}$/.test(s)
+        if (!/^[0-8]{4,9}$/.test(s))
+            return false
+        for (var i = 0; i < s.length; i++)
+            if (s.indexOf(s[i]) !== i)
+                return false
+        return true
+    }
+    function lockSet(kind, old, secret) {
+        if (!lockValid(kind, secret))
+            return 4
+        if (lockKind !== "none") {
+            var r = lockCheck(old)
+            if (r !== 0)
+                return r
+        }
+        lockKind = kind
+        lockSecret = String(secret)
+        lockSignal("StateChanged", kind)
+        return 0
+    }
+    function lockCall(method, args) {
+        if (lockForce.hasOwnProperty(method))
+            return lockForce[method]
+        switch (method) {
+        case "State": return lockKind
+        case "Locked": return lockLocked
+        case "Remaining": return lockRemaining
+        case "Verify": return lockCheck(args[0])
+        case "SetPin": return lockSet("pin", args[0], args[1])
+        case "SetPattern": return lockSet("pattern", args[0], args[1])
+        case "Clear": {
+            var c = lockCheck(args[0])
+            if (c !== 0)
+                return c
+            lockKind = "none"
+            lockSecret = ""
+            lockLocked = false
+            lockSignal("StateChanged", "none")
+            return 0
+        }
+        case "Lock":
+            if (lockKind !== "none") {
+                lockLocked = true
+                lockSignal("LockedChanged", true)
+            }
+            return undefined
+        }
+        return undefined
+    }
+
     // D-Bus replies, "interface.method" -> value
     property var replies: ({})
 
@@ -146,6 +237,9 @@ QtObject {
             "org.freedesktop.timedate1.ListTimezones": ["Africa/Abidjan", "America/New_York", "Europe/Berlin",
                                                         "Europe/London", "Europe/Paris", "Pacific/Auckland", "Zulu"]
         }
+        lockAvailable = true; lockKind = "none"; lockSecret = ""; lockLocked = false; lockFailures = 0
+        lockRemaining = 0; lockMaxTries = 5; lockWaitMs = 30000; lockForce = {}
+        lockBus = -1; lockSigs = {}
         calls = []
         inv = defaultInv()
     }

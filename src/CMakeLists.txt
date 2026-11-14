@@ -107,6 +107,10 @@ asteroid_app_qml_module(asteroid-settings
 	qml/LocationPage.qml
 	qml/AccessibilityPage.qml
 	qml/SecurityPage.qml
+	qml/LockFlowPage.qml
+	qml/PinPad.qml
+	qml/PatternPad.qml
+	qml/lock.js
 	qml/DisplaySizePage.qml
 	qml/TouchLockPage.qml
 	qml/AppFormat.js
