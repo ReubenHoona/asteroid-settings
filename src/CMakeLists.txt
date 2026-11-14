@@ -12,6 +12,8 @@ qt_add_dbus_interfaces(
 set(
 	SRC
 	appinventory.cpp
+	bluetoothdevices.cpp
+	hiddenwifi.cpp
 	main.cpp
 	mceconfigvalue.cpp
 	packageinfo.cpp
@@ -25,6 +27,8 @@ set(
 set(
 	HEADERS
 	appinventory.h
+	bluetoothdevices.h
+	hiddenwifi.h
 	mceconfigvalue.h
 	packageinfo.h
 	sysinfo.h
@@ -54,6 +58,15 @@ asteroid_app_qml_module(asteroid-settings
 	qml/WiFiSavedNetworkPage.qml
 	qml/WiFiCurrentNetworkPage.qml
 	qml/WiFiConnectionDialog.qml
+	qml/WiFiHiddenPage.qml
+	qml/WiFiInternetState.qml
+	qml/WiFiMemory.js
+	qml/BluetoothScanPage.qml
+	qml/BluetoothDevicePage.qml
+	qml/BluetoothPairErrorPage.qml
+	qml/BtIcons.js
+	qml/ShareHeartRatePage.qml
+	qml/MobilePage.qml
 	qml/DisplayPage.qml
 	qml/BrightnessPage.qml
 	qml/ExtraDimPage.qml
@@ -148,6 +161,17 @@ install(
 		icons/eos-settings-battery.svg
 		icons/eos-settings-bedtime.svg
 		icons/eos-settings-buttons.svg
+		icons/eos-settings-cellular.svg
+		icons/eos-wifi-0.svg
+		icons/eos-wifi-secure-0.svg
+		icons/eos-wifi-1.svg
+		icons/eos-wifi-secure-1.svg
+		icons/eos-wifi-2.svg
+		icons/eos-wifi-secure-2.svg
+		icons/eos-wifi-3.svg
+		icons/eos-wifi-secure-3.svg
+		icons/eos-wifi-4.svg
+		icons/eos-wifi-secure-4.svg
 		icons/eos-settings-connectivity.svg
 		icons/eos-settings-gestures.svg
 		icons/eos-settings-location.svg

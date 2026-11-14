@@ -8,6 +8,8 @@ import org.asteroid.controls
 import org.asteroid.utils
 import Connman
 import Nemo.Configuration
+import "BtIcons.js" as BtIcons
+import "WiFiMemory.js" as WiFiMemory
 
 // Settings > Connectivity > Wi-Fi as stock (prefs_wifi.xml, WifiSettingsImpl).
 // The switch is the setting, Automatic or Off, not the radio: with Automatic
@@ -95,6 +97,16 @@ SettingsPage {
         key: "/org/asteroidos/eos-wifi/bluetooth-first-shown"
         defaultValue: false
     }
+    // the networks seen without internet (WiFiInternetState)
+    ConfigurationValue {
+        id: noNet
+        key: "/org/asteroidos/eos-wifi/no-internet"
+        defaultValue: ""
+    }
+    readonly property var noNetNames: WiFiMemory.parse(noNet.value)
+    function remember(name, on) {
+        noNet.value = WiFiMemory.update(noNet.value, name, on)
+    }
     Timer {
         interval: 20000
         repeat: true
@@ -134,9 +146,15 @@ SettingsPage {
             onIsFavoriteChanged: Qt.callLater(page.recount)
             visible: page.on && modelData.connected && page.serviceName(modelData) === page.connectedName
             title: page.serviceName(modelData)
-            //% "Connected"
-            summary: qsTrId("id-wifi-connected")
-            iconName: page.secured(modelData) ? "ios-lock-outline" : "ios-wifi"
+            //% "No internet"
+            summary: net.connectedNoInternet ? qsTrId("id-wifi-no-internet") : qsTrId("id-wifi-connected")
+            iconName: BtIcons.wifiIcon(app.iconDir, modelData.strength, page.secured(modelData))
+            WiFiInternetState {
+                id: net
+                service: modelData
+                memory: page.noNetNames
+                onChanged: (name, noInternet) => page.remember(name, noInternet)
+            }
             onClicked: layerStack.push(currentLayer, { service: modelData })
         }
     }

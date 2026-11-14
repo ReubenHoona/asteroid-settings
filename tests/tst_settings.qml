@@ -148,7 +148,9 @@ SettingsHarness {
 
         function test_03_connectivity() {
             open(["connectivityItem", "bluetoothItem"])
-            compare(h.find(h.current(), "phoneItem").summary, "Connected, 80% battery")
+            // the phone is a device of the Devices category (W3-settings-connectivity): its name, Connected
+            compare(titlesShown(h.current()).slice(0, 5), ["Bluetooth", "Pair new device", "Pocket phone", "Test buds", "Answer calls on watch"])
+            compare(h.findAll(h.current(), function (o) { return o.objectName === "bluetoothDevice" })[0].summary, "Connected")
             // off asks first (stock words), ✕ keeps it on
             h.tapName(this, "bluetoothSwitch")
             verify(dialog().shown)
@@ -158,7 +160,9 @@ SettingsHarness {
             h.tapName(this, "bluetoothSwitch")
             accept()
             compare(last("bluez", "Adapter1.Powered").args, [false])
-            verify(!h.shown(h.find(h.current(), "phoneItem")), "no phone row with Bluetooth off")
+            // the rows stay with Bluetooth off, greyed out
+            compare(h.find(h.current(), "bluetoothPairItem").active, false)
+            verify(h.shown(h.find(h.current(), "answerCallsSwitch")), "rows stay with Bluetooth off")
             // on: at once
             h.tapName(this, "bluetoothSwitch")
             compare(last("bluez", "Adapter1.Powered").args, [true])
@@ -210,7 +214,7 @@ SettingsHarness {
             h.tapName(this, "wifiAdd")
             h.settle(this)
             var add = h.current()
-            compare(titlesShown(add), ["Home", "Cafe", "Library"])
+            compare(titlesShown(add), ["Home", "Cafe", "Library", "Add hidden network"])
             compare(chipTitled(add, "Home").summary, "Connected")
             compare(chipTitled(add, "Cafe").summary, "")
             seen = seen.concat(titlesShown(add))

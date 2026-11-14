@@ -29,6 +29,8 @@
 #include "sysinfo.h"
 #include "mceconfigvalue.h"
 #include "appinventory.h"
+#include "bluetoothdevices.h"
+#include "hiddenwifi.h"
 #include "packageinfo.h"
 #include "timezonemodel.h"
 
@@ -46,6 +48,8 @@ int main(int argc, char *argv[])
     qmlRegisterType<TimeZoneModel>("org.asteroid.settings", 1, 0, "TimeZoneModel");
     qmlRegisterType<PackageInfo>("org.asteroid.settings", 1, 0, "PackageInfo");
     qmlRegisterType<AppInventory>("org.asteroid.settings", 1, 0, "AppInventory");
+    qmlRegisterType<BluetoothDevices>("org.asteroid.settings", 1, 0, "BluetoothDevices");
+    qmlRegisterType<HiddenWifi>("org.asteroid.settings", 1, 0, "HiddenWifi");
     view->setSource(QUrl("qrc:/Settings/qml/main.qml"));
     view->rootContext()->setContextProperty("qtVersion", QString(qVersion()));
     view->rootContext()->setContextProperty("kernelVersion", QString(buf.release));

@@ -2019,6 +2019,236 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Use local emergency number</source>
         <translation>Use local emergency number</translation>
     </message>
+    <message id="id-mobile-on">
+        <location filename="../src/qml/ConnectivityPage.qml" line="80"/>
+        <source>On</source>
+        <translation>On</translation>
+    </message>
+    <message id="id-share-heart-rate">
+        <location filename="../src/qml/ConnectivityPage.qml" line="96"/>
+        <source>Share heart rate</source>
+        <translation>Share heart rate</translation>
+    </message>
+    <message id="id-mobile-title">
+        <location filename="../src/qml/ConnectivityPage.qml" line="111"/>
+        <source>Mobile</source>
+        <translation>Mobile</translation>
+    </message>
+    <message id="id-airplane-mode">
+        <location filename="../src/qml/ConnectivityPage.qml" line="119"/>
+        <source>Airplane mode</source>
+        <translation>Airplane mode</translation>
+    </message>
+    <message id="id-bluetooth-pairing">
+        <location filename="../src/qml/BluetoothPage.qml" line="55"/>
+        <source>Pairing…</source>
+        <translation>Pairing…</translation>
+    </message>
+    <message id="id-bluetooth-connecting">
+        <location filename="../src/qml/BluetoothPage.qml" line="58"/>
+        <source>Connecting…</source>
+        <translation>Connecting…</translation>
+    </message>
+    <message id="id-bluetooth-off-airplane-title">
+        <location filename="../src/qml/BluetoothPage.qml" line="84"/>
+        <source>Bluetooth off in airplane mode</source>
+        <translation>Bluetooth off in airplane mode</translation>
+    </message>
+    <message id="id-bluetooth-off-airplane-message">
+        <location filename="../src/qml/BluetoothPage.qml" line="86"/>
+        <source>Turning off Bluetooth disconnects your device from the phone. Your device will remember to keep it off next time you are in airplane mode</source>
+        <translation>Turning off Bluetooth disconnects your device from the phone. Your device will remember to keep it off next time you are in airplane mode</translation>
+    </message>
+    <message id="id-bluetooth-pair-new">
+        <location filename="../src/qml/BluetoothPage.qml" line="103"/>
+        <source>Pair new device</source>
+        <translation>Pair new device</translation>
+    </message>
+    <message id="id-bluetooth-devices">
+        <location filename="../src/qml/BluetoothPage.qml" line="111"/>
+        <source>Devices</source>
+        <translation>Devices</translation>
+    </message>
+    <message id="id-bluetooth-answer-calls">
+        <location filename="../src/qml/BluetoothPage.qml" line="128"/>
+        <source>Answer calls on watch</source>
+        <translation>Answer calls on watch</translation>
+    </message>
+    <message id="id-bluetooth-answer-calls-text">
+        <location filename="../src/qml/BluetoothPage.qml" line="137"/>
+        <source>Audio plays through watch speaker</source>
+        <translation>Audio plays through watch speaker</translation>
+    </message>
+    <message id="id-bluetooth-scanning">
+        <location filename="../src/qml/BluetoothScanPage.qml" line="81"/>
+        <source>Scanning for nearby devices…</source>
+        <translation>Scanning for nearby devices…</translation>
+    </message>
+    <message id="id-bluetooth-scan">
+        <location filename="../src/qml/BluetoothScanPage.qml" line="83"/>
+        <source>Scan for nearby devices</source>
+        <translation>Scan for nearby devices</translation>
+    </message>
+    <message id="id-bluetooth-disconnect">
+        <location filename="../src/qml/BluetoothDevicePage.qml" line="36"/>
+        <source>Disconnect</source>
+        <translation>Disconnect</translation>
+    </message>
+    <message id="id-bluetooth-connect">
+        <location filename="../src/qml/BluetoothDevicePage.qml" line="38"/>
+        <source>Connect</source>
+        <translation>Connect</translation>
+    </message>
+    <message id="id-bluetooth-forget">
+        <location filename="../src/qml/BluetoothDevicePage.qml" line="51"/>
+        <source>Forget</source>
+        <translation>Forget</translation>
+    </message>
+    <message id="id-bluetooth-pair-cancel">
+        <location filename="../src/qml/BluetoothDevicePage.qml" line="60"/>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+    <message id="id-bluetooth-pair-error">
+        <location filename="../src/qml/BluetoothPairErrorPage.qml" line="17"/>
+        <source>Couldn't connect with %1</source>
+        <translation>Couldn't connect with %1</translation>
+    </message>
+    <message id="id-bluetooth-pair-failed">
+        <location filename="../src/qml/BluetoothPairErrorPage.qml" line="27"/>
+        <source>Make sure device is turned on, in range and searching for a Bluetooth connection.</source>
+        <translation>Make sure device is turned on, in range and searching for a Bluetooth connection.</translation>
+    </message>
+    <message id="id-bluetooth-pair-retry">
+        <location filename="../src/qml/BluetoothPairErrorPage.qml" line="32"/>
+        <source>Try again</source>
+        <translation>Try again</translation>
+    </message>
+    <message id="id-share-hr-needs-bluetooth">
+        <location filename="../src/qml/ShareHeartRatePage.qml" line="37"/>
+        <source>Requires Bluetooth to be enabled.</source>
+        <translation>Requires Bluetooth to be enabled.</translation>
+    </message>
+    <message id="id-share-hr-battery">
+        <location filename="../src/qml/ShareHeartRatePage.qml" line="47"/>
+        <source>Using this feature will impact battery life.</source>
+        <translation>Using this feature will impact battery life.</translation>
+    </message>
+    <message id="id-share-hr-about">
+        <location filename="../src/qml/ShareHeartRatePage.qml" line="52"/>
+        <source>Connect to compatible exercise machines and apps to see real-time heart rate on display.</source>
+        <translation>Connect to compatible exercise machines and apps to see real-time heart rate on display.</translation>
+    </message>
+    <message id="id-mobile-no-airplane">
+        <location filename="../src/qml/MobilePage.qml" line="73"/>
+        <source>Mobile cannot be turned on in airplane mode</source>
+        <translation>Mobile cannot be turned on in airplane mode</translation>
+    </message>
+    <message id="id-mobile-on-title">
+        <location filename="../src/qml/MobilePage.qml" line="79"/>
+        <source>Turn on cellular?</source>
+        <translation>Turn on cellular?</translation>
+    </message>
+    <message id="id-mobile-on-message">
+        <location filename="../src/qml/MobilePage.qml" line="81"/>
+        <source>Make calls and send messages through your watch's mobile network. Turning on cellular for extended periods of time will use more battery power</source>
+        <translation>Make calls and send messages through your watch's mobile network. Turning on cellular for extended periods of time will use more battery power</translation>
+    </message>
+    <message id="id-mobile-auto-title">
+        <location filename="../src/qml/MobilePage.qml" line="84"/>
+        <source>Turn cellular to automatic?</source>
+        <translation>Turn cellular to automatic?</translation>
+    </message>
+    <message id="id-mobile-auto-message">
+        <location filename="../src/qml/MobilePage.qml" line="86"/>
+        <source>Watch will turn off mobile network when there is a Bluetooth connection to the phone or Wi-Fi to save battery power</source>
+        <translation>Watch will turn off mobile network when there is a Bluetooth connection to the phone or Wi-Fi to save battery power</translation>
+    </message>
+    <message id="id-mobile-off-title">
+        <location filename="../src/qml/MobilePage.qml" line="89"/>
+        <source>Turn off cellular?</source>
+        <translation>Turn off cellular?</translation>
+    </message>
+    <message id="id-mobile-off-message">
+        <location filename="../src/qml/MobilePage.qml" line="91"/>
+        <source>You won't be able to use apps that require a network connection</source>
+        <translation>You won't be able to use apps that require a network connection</translation>
+    </message>
+    <message id="id-data-roaming">
+        <location filename="../src/qml/MobilePage.qml" line="107"/>
+        <source>Data roaming</source>
+        <translation>Data roaming</translation>
+    </message>
+    <message id="id-data-roaming-title">
+        <location filename="../src/qml/MobilePage.qml" line="116"/>
+        <source>Attention</source>
+        <translation>Attention</translation>
+    </message>
+    <message id="id-data-roaming-message">
+        <location filename="../src/qml/MobilePage.qml" line="118"/>
+        <source>Allow data usage when roaming? Roaming charges may apply.</source>
+        <translation>Allow data usage when roaming? Roaming charges may apply.</translation>
+    </message>
+    <message id="id-wifi-no-internet">
+        <location filename="../src/qml/WiFiNetworksPage.qml" line="71"/>
+        <source>No internet</source>
+        <translation>No internet</translation>
+    </message>
+    <message id="id-wifi-unsupported-security">
+        <location filename="../src/qml/WiFiNetworksPage.qml" line="90"/>
+        <source>Access Point has unsupported security</source>
+        <translation>Access Point has unsupported security</translation>
+    </message>
+    <message id="id-wifi-add-hidden">
+        <location filename="../src/qml/WiFiNetworksPage.qml" line="165"/>
+        <source>Add hidden network</source>
+        <translation>Add hidden network</translation>
+    </message>
+    <message id="id-wifi-security-psk">
+        <location filename="../src/qml/WiFiHiddenPage.qml" line="29"/>
+        <source>WPA/WPA2/WPA3</source>
+        <translation>WPA/WPA2/WPA3</translation>
+    </message>
+    <message id="id-wifi-security-none">
+        <location filename="../src/qml/WiFiHiddenPage.qml" line="31"/>
+        <source>None</source>
+        <translation>None</translation>
+    </message>
+    <message id="id-wifi-security-wep">
+        <location filename="../src/qml/WiFiHiddenPage.qml" line="33"/>
+        <source>WEP</source>
+        <translation>WEP</translation>
+    </message>
+    <message id="id-wifi-hidden-name">
+        <location filename="../src/qml/WiFiHiddenPage.qml" line="60"/>
+        <source>Network name</source>
+        <translation>Network name</translation>
+    </message>
+    <message id="id-wifi-hidden-security">
+        <location filename="../src/qml/WiFiHiddenPage.qml" line="65"/>
+        <source>Security</source>
+        <translation>Security</translation>
+    </message>
+    <message id="id-wifi-password-hint">
+        <location filename="../src/qml/WiFiHiddenPage.qml" line="77"/>
+        <source>password</source>
+        <translation>password</translation>
+    </message>
+    <message id="id-connectivity-vibrate">
+        <location filename="../src/qml/DeveloperPage.qml" line="69"/>
+        <source>Vibrate on connectivity change</source>
+        <translation>Vibrate on connectivity change</translation>
+    </message>
+    <message id="id-bluetooth-device-connected">
+        <location filename="../src/qml/BluetoothPage.qml" line="61"/>
+        <source>Connected</source>
+        <translation>Connected</translation>
+    </message>
+    <message id="id-bluetooth-device-disconnected">
+        <location filename="../src/qml/BluetoothPage.qml" line="63"/>
+        <source>Disconnected</source>
+        <translation>Disconnected</translation>
+    </message>
 </context>
 <context>
     <name>AboutPage</name>

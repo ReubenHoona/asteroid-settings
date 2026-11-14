@@ -24,6 +24,13 @@ SettingsPage {
         key: "/org/asteroidos/settings/developer-options"
         defaultValue: false
     }
+    // Vibrate on connectivity change (stock cw_debug_connectivity_vibrate, off):
+    // asteroid-btsyncd buzzes when the phone connects or disconnects
+    ConfigurationValue {
+        id: connectivityVibrate
+        key: "/org/asteroidos/btsyncd/connectivity-vibrate"
+        defaultValue: false
+    }
     // mce: 0 INHIBIT_OFF, 1 INHIBIT_STAY_ON_WITH_CHARGER
     MceConfigValue {
         id: stayAwake
@@ -55,6 +62,14 @@ SettingsPage {
         control: "toggle"
         checked: Number(stayAwake.value) === 1
         onClicked: stayAwake.value = Number(stayAwake.value) === 1 ? 0 : 1
+    }
+    SettingsChip {
+        objectName: "connectivityVibrateSwitch"
+        //% "Vibrate on connectivity change"
+        title: qsTrId("id-connectivity-vibrate")
+        control: "toggle"
+        checked: connectivityVibrate.value === true || connectivityVibrate.value === "true"
+        onClicked: connectivityVibrate.value = !(connectivityVibrate.value === true || connectivityVibrate.value === "true")
     }
     SettingsChip {
         objectName: "bootloaderItem"

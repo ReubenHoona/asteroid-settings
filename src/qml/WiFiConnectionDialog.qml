@@ -42,6 +42,57 @@ Item {
     // Enter on watch / Open on watch: connect, so that connman asks this
     // agent for the passphrase, then the fields and Connect
     property bool entering: false
+    // A plain WPA/WPA2/WPA3 network (connman asks for a Passphrase only):
+    // stock's "Enter on watch" opens the keyboard at once on a password field
+    // with the hint "password", its Done key connects, and no field label or
+    // Connect row shows (WifiConfigureNetworkFragment.onCreatePreferences
+    // passwordInput, IME action Done). Closing the keyboard without Done
+    // cancels the request and shows the configure page again. Networks that
+    // ask for more (a name, an identity, a user name) keep the labelled form.
+    property bool directEntry: false
+    property bool submitted: false
+    property bool cancelling: false
+    function plainPassphrase(fields) {
+        var has = false
+        for (const [field, args] of Object.entries(fields)) {
+            var informational = args && args["Requirement"] === "informational"
+            if (field === "Passphrase")
+                has = true
+            else if (!informational && (field === "Name" || field === "Identity" || field === "Username" || field === "Password"))
+                return false
+        }
+        return has
+    }
+    function sendPassphrase(text) {
+        submitted = true
+        userAgent.sendUserReply({ "Passphrase": text })
+        directField.text = ""
+    }
+    // the keyboard is gone: after Done the connect carries on, else cancel
+    function keyboardClosed() {
+        if (!directEntry || submitted)
+            return
+        cancelling = true
+        userAgent.sendUserReply({})
+        sourceFields = {}
+        entering = false
+        directEntry = false
+    }
+    // the password field of the direct entry: it only holds the text, the
+    // keyboard is the full screen one of org.asteroid.controls
+    TextField {
+        id: directField
+        objectName: "wifiPasswordField"
+        visible: false
+        echoMode: TextInput.Password
+        //% "password"
+        previewText: qsTrId("id-wifi-password-hint")
+        keyboardAction: "done"
+        onEnterKeyClicked: dialogItem.sendPassphrase(text)
+        on_KeyboardChanged: if (!_keyboard) dialogItem.keyboardClosed()
+    }
+    // the agent connman asks for the input (the tests answer for it)
+    readonly property alias agent: userAgent
     UserAgent {
         id: userAgent
         onUserInputRequested: (requestServicePath, fields) => {
@@ -69,15 +120,30 @@ Item {
         for (const [field, fieldInstance] of Object.entries(fieldsBackup)) {
             fieldInstance.destroy()
         }
+        if (dialogItem.entering && !dialogItem.directEntry && Object.keys(sourceFields).length > 0
+                && dialogItem.plainPassphrase(sourceFields)) {
+            dialogItem.directEntry = true
+            dialogItem.submitted = false
+            var previous = sourceFields["PreviousPassphrase"]
+            directField.text = previous && previous["Value"] ? previous["Value"] : ""
+            Qt.callLater(directField.openKeyboard)
+        }
     }
 
 
     Connections {
         target: modelData
         function onConnectRequestFailed(error) {
+            // the one we caused by cancelling the keyboard: not a failure
+            if (dialogItem.cancelling) {
+                dialogItem.cancelling = false
+                return
+            }
             console.log(error)
             dialogItem.failed = true
             dialogItem.entering = false
+            dialogItem.directEntry = false
+            dialogItem.submitted = false
             sourceFields = {}
         }
 
@@ -135,6 +201,8 @@ Item {
                    //% "Enter on watch"
                    : qsTrId("id-wifi-enter-on-watch")
             onClicked: {
+                dialogItem.cancelling = false
+                dialogItem.submitted = false
                 dialogItem.entering = true
                 modelData.requestConnect()
             }
@@ -153,11 +221,12 @@ Item {
         Column {
             id: loginFieldsColumn
             width: parent.width
+            visible: !dialogItem.directEntry
         }
         SettingsChip {
             objectName: "wifiConnect"
             // easiest way to check if we've got some active agent fields
-            visible: loginFieldsColumn.children.length > 0 && !modelData.connected
+            visible: loginFieldsColumn.children.length > 0 && !modelData.connected && !dialogItem.directEntry
             //% "Connect"
             title: qsTrId("id-wifi-connect")
             iconName: "ios-checkmark"

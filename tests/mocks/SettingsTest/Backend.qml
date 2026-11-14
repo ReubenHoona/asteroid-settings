@@ -48,6 +48,29 @@ QtObject {
     property bool wifiPowered: true
     property bool wifiConnected: true
     property var wifiServices: []
+    // airplane mode (connman's offline mode)
+    property bool offline: false
+    // BlueZ: the adapter, the devices ({ path, name, paired, connected, icon,
+    // near (heard in a scan), seen (heard in this scan) }), what a pairing does
+    property bool btAvailable: true
+    property bool btDiscovering: false
+    property var btDevices: []
+    property bool btPairFails: false
+    function btSet(path, props) {
+        var all = btDevices.slice()
+        for (var i = 0; i < all.length; i++) {
+            if (all[i].path === path) {
+                var d = JSON.parse(JSON.stringify(all[i]))
+                for (var k in props)
+                    d[k] = props[k]
+                all[i] = d
+            }
+        }
+        btDevices = all
+    }
+    // the files FileInfo.exists finds, and what connman says to a hidden network
+    property var files: ({})
+    property string hiddenError: ""
 
     // time and language
     property string timezone: "Europe/London"
@@ -109,6 +132,13 @@ QtObject {
         batteryPercent = 57; batteryState = 2; chargerType = 0
         volume = 70; sampleMs = 300
         btPowered = true; btConnected = true; wifiPowered = true; wifiConnected = true; wifiServices = []
+        offline = false; btAvailable = true; btDiscovering = false; btPairFails = false; files = {}; hiddenError = ""
+        btDevices = [
+            { "path": "/dev/phone", "name": "Pocket phone", "paired": true, "connected": true, "icon": "phone" },
+            { "path": "/dev/buds", "name": "Test buds", "paired": true, "connected": false, "icon": "audio-headset" },
+            { "path": "/dev/bike", "name": "Gym bike", "paired": false, "connected": false, "icon": "", "near": true },
+            { "path": "/dev/speaker", "name": "Desk speaker", "paired": false, "connected": false, "icon": "audio-card", "near": true }
+        ]
         timezone = "Europe/London"; languageIndex = 1
         replies = {
             "org.asteroidos.btsyncd.Phone.Connected": true,

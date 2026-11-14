@@ -5,16 +5,23 @@
 
 import QtQuick
 import org.asteroid.controls
+import Nemo.Configuration
+import "BtIcons.js" as BtIcons
+import "WiFiMemory.js" as WiFiMemory
 
 // Wi-Fi > Add network as stock (prefs_wifi_add.xml, WifiAddNetworkFragment,
 // AccessPointPreference): the network the watch is on first, then every
 // network in range, saved or not (no 802.1X and no hidden ones, as stock),
-// each with its state: Connecting…, Connected, Wrong password, Connection
-// failure, Saved, or nothing. A tap connects: a saved or an open network at
-// once, a new secured one asks for its password first (WiFiConnectionDialog:
-// "Network password required", Enter on watch); a failed connect opens that
-// page as stock's (Retry, Open on watch, Forget). Stock's last row, "Add
-// hidden network", only says to use the phone's Wear OS app: not here.
+// each with its signal level icon (the fan with 0 to 4 arcs filled, a lock
+// when secured) and its state: Connecting…, Connected (No internet when the
+// online check failed), Wrong password, Connection failure, No internet
+// (a saved network last seen without), Saved, or nothing. A tap connects: a
+// saved or an open network at once, a new secured one asks for its password
+// first (WiFiConnectionDialog: "Network password required", Enter on watch,
+// then the keyboard at once); a security this watch cannot use (WEP) says
+// "Access Point has unsupported security" instead; a failed connect opens
+// that page as stock's (Retry, Open on watch, Forget). The last row is
+// "Add hidden network" (see WiFiHiddenPage).
 SettingsPage {
     id: page
     objectName: "wifiAddPage"
@@ -24,18 +31,46 @@ SettingsPage {
     property var connectionDialog: null
     property int shown: 0
 
+    // the networks seen without internet (WiFiInternetState)
+    ConfigurationValue {
+        id: noNet
+        key: "/org/asteroidos/eos-wifi/no-internet"
+        defaultValue: ""
+    }
+    readonly property var noNetNames: WiFiMemory.parse(noNet.value)
+    function remember(name, on) {
+        noNet.value = WiFiMemory.update(noNet.value, name, on)
+    }
+
+    Component { id: hiddenLayer; WiFiHiddenPage { } }
+
     function usable(s) {
         return s.name !== "" && !(s.security && s.security.indexOf("ieee8021x") >= 0)
     }
     function secured(s) {
         return s.security && s.security.length > 0 && s.security[0] !== "none"
     }
-    function stateText(s) {
+    // WEP and anything else connman lists that is not open, PSK/SAE or WPS
+    // (stock: generateConfigForSecuredAp throws UnsupportedOperationException)
+    function unsupported(s) {
+        if (!secured(s))
+            return false
+        for (var i = 0; i < s.security.length; i++) {
+            var t = s.security[i]
+            if (t !== "psk" && t !== "sae" && t !== "wps" && t !== "none")
+                return true
+        }
+        return false
+    }
+    function stateText(s, net) {
         if (s.state === "association" || s.state === "configuration")
             //% "Connecting…"
             return qsTrId("id-wifi-connecting")
         if (s.connected)
-            return qsTrId("id-wifi-connected")
+            //% "No internet"
+            return net && net.connectedNoInternet ? qsTrId("id-wifi-no-internet") : qsTrId("id-wifi-connected")
+        if (net && net.rememberedNoInternet)
+            return qsTrId("id-wifi-no-internet")
         if (s.error === "invalid-key")
             //% "Wrong password"
             return qsTrId("id-wifi-wrong-password")
@@ -50,6 +85,11 @@ SettingsPage {
     function choose(s) {
         if (s.connected)
             return
+        if (!s.favorite && unsupported(s)) {
+            //% "Access Point has unsupported security"
+            confirm.tell("", qsTrId("id-wifi-unsupported-security"))
+            return
+        }
         if (s.favorite || !secured(s))
             s.requestConnect()
         else
@@ -70,13 +110,20 @@ SettingsPage {
 
     // (a plain property, not a required one: that would take modelData away)
     component NetworkChip: SettingsChip {
+        id: chip
         property var service: null
         onVisibleChanged: Qt.callLater(page.recount)
         title: service ? service.name : ""
-        summary: service ? page.stateText(service) : ""
-        iconName: service && page.secured(service) ? "ios-lock-outline" : "ios-wifi-outline"
+        summary: service ? page.stateText(service, net) : ""
+        iconName: service ? BtIcons.wifiIcon(app.iconDir, service.strength, page.secured(service)) : ""
         clickable: !!service && !service.connected
         onClicked: page.choose(service)
+        WiFiInternetState {
+            id: net
+            service: chip.service
+            memory: page.noNetNames
+            onChanged: (name, noInternet) => page.remember(name, noInternet)
+        }
         Connections {
             target: service
             function onConnectRequestFailed(error) {
@@ -110,5 +157,13 @@ SettingsPage {
         horizontalAlignment: Text.AlignHCenter
         //% "No networks found"
         text: qsTrId("id-wifi-none")
+    }
+    // stock's last row (prefs_wifi_add.xml pref_wifi_add_network)
+    SettingsChip {
+        objectName: "wifiAddHidden"
+        //% "Add hidden network"
+        title: qsTrId("id-wifi-add-hidden")
+        iconName: "ios-add"
+        onClicked: layerStack.push(hiddenLayer)
     }
 }

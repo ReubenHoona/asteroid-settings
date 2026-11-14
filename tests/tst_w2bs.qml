@@ -629,7 +629,8 @@ SettingsHarness {
             wait(500)
             open(["developerItem"])
             compare(title(), "Developer options")
-            compare(shownRows(h.current()), ["row:Use developer options", "row:Stay awake when charging", "row:Restart to bootloader"])
+            // Vibrate on connectivity change (stock order 30) came with W3-settings-connectivity
+            compare(shownRows(h.current()), ["row:Use developer options", "row:Stay awake when charging", "row:Vibrate on connectivity change", "row:Restart to bootloader"])
             // off by default: mce keeps blanking
             verify(!chip("stayAwakeSwitch").checked)
             h.tap(this, chip("stayAwakeSwitch"))

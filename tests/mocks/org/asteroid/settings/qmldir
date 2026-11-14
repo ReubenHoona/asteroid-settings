@@ -11,3 +11,5 @@ MceConfigValue 1.0 MceConfigValue.qml
 TimeZoneModel 1.0 TimeZoneModel.qml
 PackageInfo 1.0 PackageInfo.qml
 AppInventory 1.0 AppInventory.qml
+BluetoothDevices 1.0 BluetoothDevices.qml
+HiddenWifi 1.0 HiddenWifi.qml
