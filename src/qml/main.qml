@@ -65,8 +65,6 @@ Application {
     Component { id: displayLayer;               DisplayPage    { } }
     Component { id: brightnessLayer;            BrightnessPage { } }
     Component { id: extraDimLayer;              ExtraDimPage   { } }
-    Component { id: nightstandLayer;            NightstandPage { } }
-    Component { id: nightstandWatchfaceLayer;   NightstandWatchfacePage { } }
     Component { id: watchfaceLayer;             WatchfacePage  { } }
     Component { id: gesturesLayer;              GesturesPage   { } }
     Component { id: appsLayer;                  AppsPage       { } }
@@ -332,6 +330,14 @@ Application {
         defaultValue: ""
         onValueChanged: Qt.callLater(app.openRequested)
     }
+    // the app the route app_info shows (CR-17): its desktop id without
+    // ".desktop" (a trailing ".desktop" is tolerated), written by the launcher
+    // before the request, cleared with it
+    ConfigurationValue {
+        id: openApp
+        key: "/org/asteroidos/settings/ui/open-app"
+        defaultValue: ""
+    }
     // route -> the pages pushed from the main list, in order
     readonly property var deepLinks: ({
         "main": [],
@@ -345,9 +351,6 @@ Application {
         "touch_lock": [displayLayer, touchLockLayer],
         // no Display row since DECISIONS Q53: the Extra dim quick tile's page
         "extra_dim": [extraDimLayer],
-        // no Display row since DECISIONS Q34 either; the page goes with the
-        // launcher's Nightstand (W2-launcher-charging)
-        "nightstand": [nightstandLayer],
         "gestures": [gesturesLayer],
         "buttons": [buttonsLayer],
         "apps": [appsLayer],
@@ -396,24 +399,32 @@ Application {
             return []
         return deepLinks[page]
     }
-    function openPage(page) {
+    // appId: for app_info, the app whose page opens over the list
+    function openPage(page, appId) {
         chooser.pop()
         confirm.close()
         backToMainMenu()
         var route = routeOf(page)
-        for (var i = 0; i < route.length; i++)
-            layerStack.push(route[i])
+        for (var i = 0; i < route.length; i++) {
+            if (page === "app_info" && appId && i === route.length - 1)
+                layerStack.push(route[i], { "appId": String(appId) })
+            else
+                layerStack.push(route[i])
+        }
     }
     function openRequested() {
         var request = String(openRequest.value || "")
         if (request === "")
             return
+        var appId = String(openApp.value || "").replace(/\.desktop$/, "")
         openRequest.value = ""
+        if (String(openApp.value || "") !== "")
+            openApp.value = ""
         var at = request.lastIndexOf("@")
         var age = Date.now() - Number(request.substring(at + 1))
         if (at < 0 || !(age > -5000 && age < 60000))
             return
-        app.openPage(request.substring(0, at))
+        app.openPage(request.substring(0, at), appId)
     }
     Component.onCompleted: Qt.callLater(openRequested)
 }

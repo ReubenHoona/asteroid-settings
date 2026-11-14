@@ -33,6 +33,9 @@ import Nemo.Configuration
  *   screen_unlock_sound_enabled and wear_charging_sounds_enabled, both on)
  *   on /org/asteroidos/sound/screen-unlock and .../charging, read by whatever
  *   plays them.
+ * Hidden until /org/asteroidos/sound/volume-control-supported is true (CR-31):
+ * Ring, Notification and Alarm volume and Mute alarm, which no reader honours
+ * yet.
  * Not built: Accessibility volume (no screen reader stream yet).
  * Every volume step plays volume_step (volume_step_max at the maximum) on its
  * own stream (VolumeStepSound, haptics-sounds-14), and every slider step the
@@ -81,6 +84,11 @@ SettingsPage {
         key: "/org/asteroidos/sound/mute-ring-notifications"
         defaultValue: true
     }
+    // gate (CR-31): the ring, notification and alarm volumes and Mute alarm
+    // do nothing until ngfd's profile plug-in reads them; its package sets
+    // this true. Call volume (btsyncd) and Media volume stay.
+    ConfigurationValue { id: volumeControlSupported; key: "/org/asteroidos/sound/volume-control-supported"; defaultValue: false }
+    readonly property bool streamsOn: on(volumeControlSupported.value)
     ConfigurationValue { id: ringVolume; key: "/org/asteroidos/sound/ring-volume"; defaultValue: page.streams.ring.percent }
     ConfigurationValue { id: notificationVolume; key: "/org/asteroidos/sound/notification-volume"; defaultValue: page.streams.notification.percent }
     ConfigurationValue { id: alarmVolume; key: "/org/asteroidos/sound/alarm-volume"; defaultValue: page.streams.alarm.percent }
@@ -100,11 +108,13 @@ SettingsPage {
 
     SettingsCategory {
         objectName: "ringVolumeCategory"
+        visible: page.streamsOn
         //% "Ring volume"
         text: qsTrId("id-ring-volume")
     }
     SettingsSlider {
         objectName: "ringVolumeSlider"
+        visible: page.streamsOn
         from: page.streams.ring.from
         to: page.streams.ring.to
         stepSize: 1
@@ -113,11 +123,13 @@ SettingsPage {
     }
     SettingsCategory {
         objectName: "notificationVolumeCategory"
+        visible: page.streamsOn
         //% "Notification volume"
         text: qsTrId("id-notification-volume")
     }
     SettingsSlider {
         objectName: "notificationVolumeSlider"
+        visible: page.streamsOn
         from: page.streams.notification.from
         to: page.streams.notification.to
         stepSize: 1
@@ -126,11 +138,13 @@ SettingsPage {
     }
     SettingsCategory {
         objectName: "alarmVolumeCategory"
+        visible: page.streamsOn
         //% "Alarm volume"
         text: qsTrId("id-alarm-volume")
     }
     SettingsSlider {
         objectName: "alarmVolumeSlider"
+        visible: page.streamsOn
         from: page.streams.alarm.from
         to: page.streams.alarm.to
         stepSize: 1
@@ -140,6 +154,7 @@ SettingsPage {
 
     SettingsChip {
         objectName: "muteAlarmSwitch"
+        visible: page.streamsOn
         //% "Mute alarm"
         title: qsTrId("id-mute-alarm")
         control: "toggle"
@@ -148,6 +163,7 @@ SettingsPage {
     }
     SettingsText {
         objectName: "muteAlarmCaption"
+        visible: page.streamsOn
         //% "Silences alarm when Mute ring is enabled while worn. Watch will still vibrate"
         text: qsTrId("id-mute-alarm-explain")
     }

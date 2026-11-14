@@ -129,6 +129,11 @@ SettingsHarness {
         }
         function test_02_no_dead_entries_no_cut_text() {
             Backend.confSet("/org/asteroidos/settings/developer-options", true)
+            // the rows behind gate keys (CR-30, CR-31, CR-33) count as reachable
+            // once the package that reads them has set the gate
+            Backend.confSet("/org/asteroidos/a11y/audio-adjust-supported", true)
+            Backend.confSet("/org/asteroidos/sound/volume-control-supported", true)
+            Backend.confSet("/org/asteroidos/modes/media-supported", true)
             Backend.wifiServices = [netComponent.createObject(h, { name: "Home", connected: true, favorite: true }),
                                     netComponent.createObject(h, { name: "Cafe", favorite: false })]
             visited = []
@@ -357,12 +362,12 @@ SettingsHarness {
             accept()
             compare(conf("/org/asteroidos/settings/always-on-display"), true)
             compare(last("mce", "use_low_power_mode").args, [true])
-            // on the charger with Nightstand, mce's mode is Nightstand's
+            // no Nightstand: on the charger too, mce's mode follows the switch
             Backend.chargerType = 2
             Backend.clearCalls()
             h.tapName(this, "aodSwitch")
             compare(conf("/org/asteroidos/settings/always-on-display"), false)
-            compare(last("mce", "use_low_power_mode"), null)
+            compare(last("mce", "use_low_power_mode").args, [false])
             Backend.chargerType = 0
             h.tapName(this, "aodSwitch")
             accept()
@@ -377,20 +382,11 @@ SettingsHarness {
             h.tapName(this, "adaptiveSwitch")
             compare(last("mce", "als_enabled").args, [false])
             h.back(this)
-            // Nightstand: no Display row, the page by its deep link
+            // the Nightstand page is gone (FP-S1): its old deep link opens the main list
             Backend.confSet("/org/asteroidos/settings/ui/open", "nightstand@" + Date.now())
             wait(200)
-            compare(h.current().objectName, "nightstandPage")
-            h.tapName(this, "nightstandDelay")
-            h.settle(this)
-            h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 2))
-            h.settle(this)
-            compare(conf("/desktop/asteroid/nightstand/delay"), 10)
-            h.tap(this, h.find(h.current(), "sliderPlus"))
-            compare(conf("/desktop/asteroid/nightstand/brightness"), 40)
-            h.tapName(this, "nightstandSwitch")
-            compare(conf("/desktop/asteroid/nightstand/enabled"), false)
-            verify(!h.find(h.current(), "nightstandDelay").active, "the rest greyed out with Nightstand off")
+            compare(h.stack.layers.length, 0)
+            verify(h.find(h.app, "nightstandDelay") === null)
         }
 
         function test_05_gestures() {
@@ -433,7 +429,8 @@ SettingsHarness {
             h.home(this)
             open(["vibrationItem"])
             h.tapName(this, "quietSwitch")
-            compare(conf("/org/asteroidos/notifications/quiet-on-charger"), false)
+            compare(conf("/org/asteroidos/notifications/silence-off-wrist"), false)
+            verify(!Backend.confHas("/org/asteroidos/notifications/quiet-on-charger"))
             h.tapName(this, "vibrationSwitch")
             compare(conf("/desktop/asteroid/vibration"), false)
         }
@@ -487,12 +484,8 @@ SettingsHarness {
             compare(h.find(h.current(), "appViewItem").summary, "List view")
             Backend.confSet("/desktop/asteroid/applauncher", "file:///usr/share/asteroid-launcher/applauncher/007-wear-grid.qml")
             compare(h.find(h.current(), "appViewItem").summary, "Grid view")
-            h.tapName(this, "temperatureItem")
-            h.settle(this)
-            h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 1))
-            h.settle(this)
-            compare(conf("/org/asteroidos/settings/use-fahrenheit"), true)
-            compare(h.find(h.current(), "temperatureItem").summary, "Fahrenheit (°F)")
+            // the temperature unit is the Weather app's (settings-b-16)
+            verify(h.find(h.current(), "temperatureItem") === null)
         }
 
         function test_08_system() {

@@ -234,7 +234,8 @@ SettingsHarness {
             compare(h.current().objectName, "generalPage")
             compare(shownRows(h.current()),
                     ["row:Show unread notification indicator", "row:Autolaunch media controls",
-                     "row:Start tutorial", "row:App view", "row:Temperature"])
+                     "row:Start tutorial", "row:App view"])
+            verify(chip("temperatureItem") === null, "the temperature unit is the Weather app's")
             verify(chip("unreadDotSwitch").checked, "on by default")
             verify(!chip("autolaunchMediaSwitch").checked, "off by default")
             h.tap(this, chip("autolaunchMediaSwitch"))
@@ -288,7 +289,10 @@ SettingsHarness {
             open(["systemItem", "inputMethodsItem"])
             compare(h.current().objectName, "inputMethodsPage")
             compare(title(), "Input methods")
-            compare(shownRows(h.current()), ["row:Smart Reply", "row:Keyboard", "row:Handwriting", "row:Manage keyboards"])
+            compare(shownRows(h.current()), ["row:Smart Reply", "row:Keyboard", "row:Handwriting",
+                                             "row:Popup on keypress", "row:Glide typing",
+                                             "text:Input a word by sliding through the letters",
+                                             "row:Manage keyboards"])
             verify(chip("smartReplySwitch").checked, "show the reply chips by default")
             h.tap(this, chip("smartReplySwitch"))
             compare(conf("/org/asteroidos/notifications/smart-reply"), false)
@@ -302,7 +306,28 @@ SettingsHarness {
             // the last keyboard that is on cannot be turned off
             verify(!chip("typingKeyboardSwitch").active)
             h.back(this)
-            compare(shownRows(h.current()), ["row:Smart Reply", "row:Keyboard", "row:Manage keyboards"])
+            compare(shownRows(h.current()), ["row:Smart Reply", "row:Keyboard",
+                                             "row:Popup on keypress", "row:Glide typing",
+                                             "text:Input a word by sliding through the letters",
+                                             "row:Manage keyboards"])
+        }
+
+        // CR-24: Popup on keypress and Glide typing write the keys WearKeyboard reads
+        function test_11b_keyboard_popup_glide() {
+            open(["systemItem", "inputMethodsItem"])
+            verify(chip("keyPopupSwitch").checked && chip("keyGlideSwitch").checked, "both on by default")
+            compare(chip("keyPopupSwitch").control, "toggle")
+            h.tap(this, chip("keyPopupSwitch"))
+            compare(conf("/org/asteroidos/ux/keyboard-popup"), false)
+            verify(!chip("keyPopupSwitch").checked && chip("keyGlideSwitch").checked)
+            h.tap(this, chip("keyGlideSwitch"))
+            compare(conf("/org/asteroidos/ux/keyboard-glide"), false)
+            verify(!chip("keyGlideSwitch").checked)
+            h.tap(this, chip("keyPopupSwitch"))
+            compare(conf("/org/asteroidos/ux/keyboard-popup"), true)
+            // options of the typing keyboard: gone with it
+            Backend.confSet("/org/asteroidos/keyboard/typing-enabled", false)
+            compare(shownRows(h.current()), ["row:Smart Reply", "row:Handwriting", "row:Manage keyboards"])
         }
 
         function test_12_language_list() {

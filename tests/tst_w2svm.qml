@@ -41,9 +41,18 @@ SettingsHarness {
         readonly property string kTheater: "/org/asteroidos/modes/theater"
         readonly property string kDnd: "/org/asteroidos/notifications/do-not-disturb"
 
+        readonly property string kVolSupported: "/org/asteroidos/sound/volume-control-supported"
+        readonly property string kMediaSupported: "/org/asteroidos/modes/media-supported"
+        readonly property string kSilence: "/org/asteroidos/notifications/silence-off-wrist"
+        readonly property string kQuietOld: "/org/asteroidos/notifications/quiet-on-charger"
+
         function init() {
             h.start(this)
             h.stamps = []
+            // the rows behind the gates (CR-30, CR-31) are tested shown here;
+            // test_17 tests them hidden, as shipped
+            Backend.confSet(kVolSupported, true)
+            Backend.confSet(kMediaSupported, true)
         }
 
         function chip(name) { return h.find(h.current(), name) }
@@ -612,16 +621,66 @@ SettingsHarness {
             open(["vibrationItem"])
             compare(chip("quietSwitch").title, "Silence watch while charging")
             compare(chip("quietCaption").text, "Notifications won't sound or vibrate while the watch is charging")
+            verify(chip("quietSwitch").checked, "on by default")
             h.tapName(this, "quietSwitch")
-            compare(conf("/org/asteroidos/notifications/quiet-on-charger"), false)
+            // CR-10: the new key, never the retired one
+            compare(conf(kSilence), false)
+            verify(!Backend.confHas(kQuietOld), "quiet-on-charger is never written")
             // once the watch knows when it is off the wrist: stock's title and caption
             Backend.confSet("/org/asteroidos/sensors/off-body-available", true)
             compare(chip("quietSwitch").title, "Silence when off wrist")
             compare(chip("quietCaption").text, "Notifications won't sound or vibrate when watch is off wrist or charging")
             verify(!chip("quietSwitch").checked)
             h.tapName(this, "quietSwitch")
-            compare(conf("/org/asteroidos/notifications/quiet-on-charger"), true)
+            compare(conf(kSilence), true)
+            verify(chip("quietSwitch").checked)
+            verify(!Backend.confHas(kQuietOld), "quiet-on-charger is never written")
             h.shot(this, "w2-12-vibration-off-wrist")
+        }
+
+        // CR-10: while silence-off-wrist is unset the switch shows the choice
+        // made under the retired name, and a tap writes the new key only
+        function test_16b_silence_seeded_from_retired_key() {
+            Backend.confSet(kQuietOld, false)
+            open(["vibrationItem"])
+            verify(!chip("quietSwitch").checked, "the earlier choice shows")
+            verify(!Backend.confHas(kSilence), "nothing written by looking")
+            h.tapName(this, "quietSwitch")
+            compare(conf(kSilence), true)
+            verify(chip("quietSwitch").checked)
+            compare(conf(kQuietOld), false, "the retired key is left alone")
+            // the new key wins over the retired one
+            Backend.confSet(kSilence, false)
+            verify(!chip("quietSwitch").checked)
+            Backend.confSet(kQuietOld, true)
+            verify(!chip("quietSwitch").checked)
+        }
+
+        // ---- the rows behind gate keys are hidden by default (CR-30, CR-31)
+
+        function test_17_gated_rows_hidden() {
+            Backend.confSet(kVolSupported, false)
+            Backend.confSet(kMediaSupported, false)
+            open(["soundItem"])
+            compare(shownRows(h.current()),
+                    ["row:Mute ring & notifications",
+                     "category:Media volume", "slider:volumeSlider",
+                     "category:Call volume", "slider:callVolumeSlider",
+                     "row:Screen unlocking sound", "row:Charging sounds"])
+            verify(!chip("ringVolumeSlider").visible && !chip("notificationVolumeSlider").visible
+                   && !chip("alarmVolumeSlider").visible && !chip("muteAlarmSwitch").visible)
+            // the gate turns them on
+            Backend.confSet(kVolSupported, true)
+            verify(chip("ringVolumeSlider").visible && chip("alarmVolumeSlider").visible && chip("muteAlarmSwitch").visible)
+            Backend.confSet(kVolSupported, false)
+            h.home(this)
+            open(["modesItem", "modesDndItem", "dndCustomize"])
+            compare(shownRows(h.current()),
+                    ["category:What can notify you", "row:Starred callers", "row:Repeat callers",
+                     "category:Alarms and Timers", "row:Sound", "row:Vibrate",
+                     "text:Individual app settings for sound and vibration still apply"])
+            Backend.confSet(kMediaSupported, true)
+            verify(chip("mediaSwitch").visible)
         }
     }
 }

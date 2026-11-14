@@ -11,8 +11,11 @@ import Nemo.Ngf
 /*
  * Settings > Vibration, in stock CP3A order (the vibration preferenceFactories
  * of ClockworkNavRouteCollector):
- * - Silence watch (stock: off the wrist or charging; this watch knows the
- *   charger: asteroid-btsyncd's quiet-on-charger) and its caption;
+ * - Silence watch (stock: off the wrist or charging) and its caption. The
+ *   switch writes /org/asteroidos/notifications/silence-off-wrist (CR-10;
+ *   the launcher and asteroid-btsyncd read it); the retired quiet-on-charger
+ *   of image 44 is read only to show the earlier choice while the new key is
+ *   unset, and is never written again;
  * - Vibration & haptics: the master for every vibration
  *   (/desktop/asteroid/vibration; stock VibrationSwitchPreference on
  *   vibrate_on, title pref_vibrationEnabled);
@@ -57,10 +60,18 @@ SettingsPage {
     objectName: "vibrationPage"
     title: qsTrId("id-vibration-page")
 
+    // CR-10: the switch's key; unset until the user first turns it
+    ConfigurationValue {
+        id: silenceOffWrist
+        key: "/org/asteroidos/notifications/silence-off-wrist"
+        defaultValue: undefined
+    }
+    // retired (image 44): read to seed the switch while silence-off-wrist is
+    // unset, never written
     ConfigurationValue {
         id: quietOnCharger
         key: "/org/asteroidos/notifications/quiet-on-charger"
-        defaultValue: true
+        defaultValue: undefined
     }
     ConfigurationValue {
         id: vibration
@@ -89,6 +100,10 @@ SettingsPage {
     function on(v) { return v === true || v === "true" }
     readonly property bool masterOn: on(vibration.value)
     readonly property bool offBody: on(offBodyAvailable.value)
+    function isSet(v) { return v !== undefined && v !== null }
+    // silence-off-wrist, else the earlier quiet-on-charger, else on (default)
+    readonly property bool silenceOn: isSet(silenceOffWrist.value) ? on(silenceOffWrist.value)
+                                    : isSet(quietOnCharger.value) ? on(quietOnCharger.value) : true
     // a stored intensity, 0 (off) to 3 (high)
     function level(v) {
         var n = Number(v)
@@ -178,8 +193,8 @@ SettingsPage {
                //% "Silence watch while charging"
                : qsTrId("id-quiet-on-charger")
         control: "toggle"
-        checked: quietOnCharger.value
-        onClicked: quietOnCharger.value = !quietOnCharger.value
+        checked: page.silenceOn
+        onClicked: silenceOffWrist.value = !page.silenceOn
     }
     SettingsText {
         objectName: "quietCaption"

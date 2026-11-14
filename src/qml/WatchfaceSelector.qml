@@ -55,6 +55,7 @@ Item {
             id: folderModel
             folder: assetPath + "watchfaces"
             nameFilters: ["*.qml"]
+            showDirs: false
             onCountChanged: {
                 var i = 0
                 while (i < folderModel.count){

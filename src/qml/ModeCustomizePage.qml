@@ -46,6 +46,9 @@ SettingsPage {
     ConfigurationValue { id: starred; key: page.keyOf("starred"); defaultValue: modeState.customizeDefault(page.mode, "starred") }
     ConfigurationValue { id: repeat; key: page.keyOf("repeat"); defaultValue: modeState.customizeDefault(page.mode, "repeat") }
     ConfigurationValue { id: media; key: page.keyOf("media"); defaultValue: modeState.customizeDefault(page.mode, "media") }
+    // gate (CR-30): nothing reads the media key yet; the row shows once the
+    // package that does sets this true
+    ConfigurationValue { id: mediaSupported; key: "/org/asteroidos/modes/media-supported"; defaultValue: false }
     ConfigurationValue { id: alarmSound; key: page.keyOf("alarm-sound"); defaultValue: modeState.customizeDefault(page.mode, "alarm-sound") }
     ConfigurationValue { id: alarmVibrate; key: page.keyOf("alarm-vibrate"); defaultValue: modeState.customizeDefault(page.mode, "alarm-vibrate") }
     ConfigurationValue { id: displayFilter; key: "/org/asteroidos/modes/bedtime/display-filter"; defaultValue: "nightlight" }
@@ -89,6 +92,7 @@ SettingsPage {
     }
     SettingsChip {
         objectName: "mediaSwitch"
+        visible: page.on(mediaSupported.value)
         //% "Media sounds"
         title: qsTrId("id-media-sounds")
         control: "toggle"

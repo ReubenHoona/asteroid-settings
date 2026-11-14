@@ -74,12 +74,6 @@ SettingsHarness {
             go(["displaySizeItem"]); page("display-size-and-text"); h.back(this)
             go(["wristOrientationItem"]); page("display-wrist-orientation"); h.back(this)
             go(["touchLockItem"]); page("display-touch-lock"); h.back(this)
-            // no Display rows for Nightstand and Extra dim (Q34, Q53): by their deep links
-            h.home(this)
-            Backend.confSet("/org/asteroidos/settings/ui/open", "nightstand@" + Date.now())
-            wait(200)
-            page("display-nightstand")
-            go(["nightstandDelay"]); page("display-nightstand-delay"); h.back(this)
             h.home(this)
 
             go(["buttonsItem"]); page("buttons")
@@ -118,7 +112,6 @@ SettingsHarness {
 
             go(["generalItem"]); page("general")
             go(["appViewItem"]); page("general-app-view"); h.back(this)
-            go(["temperatureItem"]); page("general-temperature"); h.back(this)
             h.home(this)
 
             go(["systemItem"]); page("system")
@@ -145,6 +138,21 @@ SettingsHarness {
             go(["developerItem"]); page("developer")
             h.home(this)
             verify(n > 40)
+        }
+
+        // watchface-catalogue-01: the face grid lists faces only (no folders)
+        // and the default face is the Modular one
+        function test_watchface_selector() {
+            h.start(this)
+            var c = Qt.createComponent(Qt.resolvedUrl("../src/qml/WatchfacePage.qml"))
+            compare(c.status, Component.Ready, c.errorString())
+            var wf = c.createObject(h, {})
+            verify(wf !== null)
+            compare(wf.watchface, "file:///usr/share/asteroid-launcher/watchfaces/018-modular.qml")
+            var grids = h.findAll(wf, function (o) { return o.hasOwnProperty("cellWidth") })
+            compare(grids.length, 1)
+            compare(grids[0].model.showDirs, false)
+            wf.destroy()
         }
     }
 }

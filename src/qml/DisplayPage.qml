@@ -16,8 +16,8 @@ import Nemo.Mce
 // Always-on screen, right under it Always-on when off wrist (the user's
 // choice 3), Wrist orientation, Touch lock. No other rows: the Extra dim,
 // Always-on brightness, Burn-in protection and Nightstand rows went with
-// DECISIONS Q53, Q20 and Q34 (stock has none; the launcher keeps reading
-// their dconf keys). A mode that holds the brightness or the always-on
+// DECISIONS Q53, Q20 and Q34 (stock has none; the Nightstand page itself is
+// gone, FP-S1). A mode that holds the brightness or the always-on
 // screen greys it out with the mode as its summary ("Bedtime mode is on"),
 // the switch showing it off, as stock.
 //
@@ -37,7 +37,6 @@ SettingsPage {
     title: qsTrId("id-display-page")
 
     DisplaySettings { id: displaySettings }
-    MceChargerType { id: mceChargerType }
     MceConfigValue {
         id: dimTimeout
         key: "/system/osso/dsm/display/display_dim_timeout"
@@ -63,11 +62,6 @@ SettingsPage {
     ConfigurationValue {
         id: alwaysOnOffWrist
         key: "/org/asteroidos/settings/always-on-off-wrist"
-        defaultValue: true
-    }
-    ConfigurationValue {
-        id: nightstandEnabled
-        key: "/desktop/asteroid/nightstand/enabled"
         defaultValue: true
     }
     // Go to watch face (stock Settings.Global wear_activity_auto_resume_
@@ -143,11 +137,10 @@ SettingsPage {
     readonly property int goToFaceIndex: nearest(goToFaceValues, Number(goToFace.value))
 
     // the always-on screen as the switch sets it: the intent in dconf, and
-    // mce's low power mode unless Nightstand holds it on the charger
+    // mce's low power mode
     function setAlwaysOn(on) {
         alwaysOnDisplay.value = on
-        if (!nightstandEnabled.value || mceChargerType.type == MceChargerType.None)
-            displaySettings.lowPowerModeEnabled = on
+        displaySettings.lowPowerModeEnabled = on
     }
 
     function chooseTimeout() {

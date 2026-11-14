@@ -11,8 +11,8 @@ import Nemo.Configuration
 // Show unread notification indicator (the launcher's dot on the watch face),
 // Autolaunch media controls (the launcher opens the media controls when
 // phone playback starts), Start tutorial (goes to the watch face and starts
-// the navigation tutorial) and App view (List view / Grid view); then this
-// watch's own row: the temperature unit. Stock has no quick settings editor
+// the navigation tutorial) and App view (List view / Grid view). The temperature
+// unit moved to the Weather app (stock has it there only). Stock has no quick settings editor
 // (fixed order from the resource array), so there is none here (DECISIONS Q30).
 SettingsPage {
     id: page
@@ -40,11 +40,6 @@ SettingsPage {
         id: tutorialRequest
         key: "/org/asteroidos/launcher/start-tutorial"
         defaultValue: ""
-    }
-    ConfigurationValue {
-        id: useFahrenheit
-        key: "/org/asteroidos/settings/use-fahrenheit"
-        defaultValue: false
     }
 
     // the two stock views: the Wear OS list (006) and the grid (007)
@@ -90,19 +85,6 @@ SettingsPage {
         summary: page.viewNames[page.grid ? 1 : 0]
         onClicked: app.choose(qsTrId("id-app-view"), page.viewNames, page.grid ? 1 : 0,
                               function (i) { appLauncher.value = i === 1 ? page.gridView : page.listView })
-    }
-    SettingsChip {
-        objectName: "temperatureItem"
-        //% "Temperature"
-        title: qsTrId("id-temperature")
-        summary: useFahrenheit.value ? qsTrId("id-fahrenheit-unit") : qsTrId("id-celsius-unit")
-        onClicked: app.choose(qsTrId("id-temperature"),
-                              //% "Celsius (°C)"
-                              [qsTrId("id-celsius-unit"),
-                               //% "Fahrenheit (°F)"
-                               qsTrId("id-fahrenheit-unit")],
-                              useFahrenheit.value ? 1 : 0,
-                              function (i) { useFahrenheit.value = i === 1 })
     }
 
     // the launcher has read the request when this fires (one shot)

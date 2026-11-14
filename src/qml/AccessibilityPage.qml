@@ -30,6 +30,14 @@ SettingsPage {
         defaultValue: false
     }
 
+    // gate (CR-33): the audio helper that reads mono-audio and audio-balance
+    // sets this true when it is installed; until then there is no row
+    ConfigurationValue {
+        id: audioAdjustSupported
+        key: "/org/asteroidos/a11y/audio-adjust-supported"
+        defaultValue: false
+    }
+
     SettingsCategory {
         objectName: "displayCategory"
         //% "Display"
@@ -61,7 +69,7 @@ SettingsPage {
     }
     SettingsChip {
         objectName: "audioAdjustmentItem"
-        visible: DeviceSpecs.hasSpeaker
+        visible: DeviceSpecs.hasSpeaker && (audioAdjustSupported.value === true || audioAdjustSupported.value === "true")
         //% "Audio adjustment"
         title: qsTrId("id-audio-adjustment")
         //% "Mono audio, Audio balance"

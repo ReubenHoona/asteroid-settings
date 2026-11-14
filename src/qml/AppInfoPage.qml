@@ -50,6 +50,26 @@ SettingsPage {
     }
     readonly property var entries: entriesOf(showing === 1)
 
+    // the app to show at once (the deep link app_info, CR-17): its desktop id,
+    // with or without ".desktop"; an app not found leaves the list
+    property string appId: ""
+    function showApp(id) {
+        id = String(id).replace(/\.desktop$/, "")
+        if (id === "")
+            return
+        for (var sys = 0; sys < 2; sys++) {
+            var list = entriesOf(sys === 1)
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].id === id) {
+                    showing = sys
+                    layerStack.push(detailLayer, { "entry": list[i] })
+                    return
+                }
+            }
+        }
+    }
+    Component.onCompleted: if (appId !== "") Qt.callLater(page.showApp, appId)
+
     SettingsChip {
         objectName: "showAppsItem"
         //% "Show apps"

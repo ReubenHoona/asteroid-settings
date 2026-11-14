@@ -38,6 +38,17 @@ SettingsPage {
         key: "/org/asteroidos/keyboard/handwriting-enabled"
         defaultValue: true
     }
+    // the typing keyboard's two options (CR-24; WearKeyboard reads both)
+    ConfigurationValue {
+        id: keyPopup
+        key: "/org/asteroidos/ux/keyboard-popup"
+        defaultValue: true
+    }
+    ConfigurationValue {
+        id: keyGlide
+        key: "/org/asteroidos/ux/keyboard-glide"
+        defaultValue: true
+    }
 
     SettingsChip {
         objectName: "smartReplySwitch"
@@ -60,6 +71,33 @@ SettingsPage {
         clickable: false
         //% "Handwriting"
         title: qsTrId("id-keyboard-handwriting")
+    }
+    // stock Gboard's Popup on keypress and Glide typing (setting_popup_on_
+    // keypress_title, setting_gesture_input_title and _summary): options of
+    // the typing keyboard, so they show while it is on
+    SettingsChip {
+        objectName: "keyPopupSwitch"
+        visible: typing.value
+        //% "Popup on keypress"
+        title: qsTrId("id-keyboard-popup")
+        control: "toggle"
+        checked: keyPopup.value
+        onClicked: keyPopup.value = !keyPopup.value
+    }
+    SettingsChip {
+        objectName: "keyGlideSwitch"
+        visible: typing.value
+        //% "Glide typing"
+        title: qsTrId("id-keyboard-glide")
+        control: "toggle"
+        checked: keyGlide.value
+        onClicked: keyGlide.value = !keyGlide.value
+    }
+    SettingsText {
+        objectName: "keyGlideCaption"
+        visible: typing.value
+        //% "Input a word by sliding through the letters"
+        text: qsTrId("id-keyboard-glide-explain")
     }
     SettingsChip {
         objectName: "manageKeyboardsItem"

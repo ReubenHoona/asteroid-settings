@@ -1631,6 +1631,18 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Handwriting</source>
         <translation>Handwriting</translation>
     </message>
+    <message id="id-keyboard-popup">
+        <source>Popup on keypress</source>
+        <translation>Popup on keypress</translation>
+    </message>
+    <message id="id-keyboard-glide">
+        <source>Glide typing</source>
+        <translation>Glide typing</translation>
+    </message>
+    <message id="id-keyboard-glide-explain">
+        <source>Input a word by sliding through the letters</source>
+        <translation>Input a word by sliding through the letters</translation>
+    </message>
     <message id="id-manage-keyboards">
         <source>Manage keyboards</source>
         <translation>Manage keyboards</translation>

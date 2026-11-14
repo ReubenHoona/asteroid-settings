@@ -21,8 +21,9 @@ import Nemo.Configuration
 //                                              is hidden (launcher)
 //   /org/asteroidos/assistant/press-and-hold b  true, the side button hold
 //   /org/asteroidos/assistant/speak          b  Speech output, the assistant
-//                                              speaks its answers; off until
-//                                              a speech engine ships
+//                                              speaks its answers; on by
+//                                              default (an unset key reads as
+//                                              on, CR-15)
 //   /org/asteroidos/voice/recognition        s  "watch", "auto", "phone": the
 //                                              assistant and asteroid-btsyncd
 //                                              read it each time: "watch"
@@ -57,7 +58,7 @@ SettingsPage {
     ConfigurationValue {
         id: speak
         key: "/org/asteroidos/assistant/speak"
-        defaultValue: false
+        defaultValue: true
     }
 
     Component { id: aboutLayer; AssistantAboutPage { } }

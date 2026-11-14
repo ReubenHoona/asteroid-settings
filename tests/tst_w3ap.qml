@@ -35,6 +35,9 @@ SettingsHarness {
         readonly property string kLockRequest: "/org/asteroidos/security/lock-request"
         readonly property string kLockNow: "/org/asteroidos/security/lock-now"
         readonly property string kReduce: "/org/asteroidos/a11y/reduce-motion"
+        readonly property string kAudioSupported: "/org/asteroidos/a11y/audio-adjust-supported"
+        readonly property string kUiOpen: "/org/asteroidos/settings/ui/open"
+        readonly property string kUiOpenApp: "/org/asteroidos/settings/ui/open-app"
         readonly property string kMono: "/org/asteroidos/a11y/mono-audio"
         readonly property string kBalance: "/org/asteroidos/a11y/audio-balance"
         readonly property string kGender: "/org/asteroidos/health/profile/gender"
@@ -529,6 +532,8 @@ SettingsHarness {
         // ---- Accessibility (settings-b-10, accessibility-lock-security-20)
 
         function test_18_accessibility_page() {
+            // the gate is true: the audio helper is installed (CR-33)
+            Backend.confSet(kAudioSupported, true)
             open(["accessibilityItem"])
             compare(h.current().objectName, "accessibilityPage")
             compare(title(), "Accessibility")
@@ -548,6 +553,20 @@ SettingsHarness {
             h.shot(this, "accessibility-18-page")
         }
 
+        // CR-33: no Audio adjustment row until the audio helper sets the gate
+        function test_18b_audio_adjustment_gate() {
+            open(["accessibilityItem"])
+            compare(shownRows(h.current()),
+                    ["category:Display", "row:Text size", "row:Reduce animations",
+                     "text:Reduce movement on the screen",
+                     "category:General", "row:Gestures"])
+            verify(!chip("audioAdjustmentItem").visible)
+            Backend.confSet(kAudioSupported, true)
+            verify(chip("audioAdjustmentItem").visible)
+            Backend.confSet(kAudioSupported, "false")
+            verify(!chip("audioAdjustmentItem").visible)
+        }
+
         function test_19_accessibility_links() {
             open(["accessibilityItem", "textSizeItem"])
             compare(h.current().objectName, "displaySizePage")
@@ -557,6 +576,7 @@ SettingsHarness {
         }
 
         function test_20_audio_adjustment() {
+            Backend.confSet(kAudioSupported, true)
             open(["accessibilityItem", "audioAdjustmentItem"])
             compare(h.current().objectName, "audioAdjustPage")
             compare(title(), "Audio adjustment")
@@ -715,11 +735,16 @@ SettingsHarness {
                      "row:Voice recognition", "row:About", "row:Turn off Assistant"])
             compare(chip("recognitionItem").summary, "On the watch")
             verify(chip("pressAndHoldSwitch").checked)
-            verify(!chip("speechOutputSwitch").checked)
+            // CR-15: an unset speak reads as on
+            verify(!has(kSpeak))
+            verify(chip("speechOutputSwitch").checked)
             h.tap(this, chip("pressAndHoldSwitch"))
             compare(conf(kHold), false)
             h.tap(this, chip("pressAndHoldSwitch"))
             compare(conf(kHold), true)
+            h.tap(this, chip("speechOutputSwitch"))
+            compare(conf(kSpeak), false)
+            verify(!chip("speechOutputSwitch").checked)
             h.tap(this, chip("speechOutputSwitch"))
             compare(conf(kSpeak), true)
             pick("recognitionItem", 1)
@@ -853,6 +878,68 @@ SettingsHarness {
             Backend.confSet("/org/asteroidos/settings/ui/open", "security@" + Date.now())
             wait(500)
             compare(h.current().objectName, "securityPage")
+        }
+
+        // ---- app_info with the app the launcher names (CR-17)
+
+        function request(route, age) {
+            Backend.confSet(kUiOpen, route + "@" + (Date.now() - (age || 0)))
+            wait(500)
+            h.settle(this)
+        }
+
+        function test_34_app_info_open_app() {
+            // the launcher writes the id without ".desktop", then the request
+            Backend.confSet(kUiOpenApp, "asteroid-weather")
+            request("app_info")
+            compare(h.current().objectName, "appDetailPage")
+            compare(title(), "Weather")
+            // both keys are cleared with the request
+            compare(conf(kUiOpen), "")
+            compare(conf(kUiOpenApp), "")
+            h.back(this)
+            compare(h.current().objectName, "appInfoPage")
+            h.back(this)
+            // a trailing ".desktop" is tolerated
+            Backend.confSet(kUiOpenApp, "asteroid-alarmclock.desktop")
+            request("app_info")
+            compare(h.current().objectName, "appDetailPage")
+            compare(title(), "Alarm clock")
+            compare(conf(kUiOpenApp), "")
+            // a service of the image is found in the other list
+            h.back(this)
+            h.back(this)
+            Backend.confSet(kUiOpenApp, "asteroid-btsyncd")
+            request("app_info")
+            compare(h.current().objectName, "appDetailPage")
+            compare(title(), "Phone sync")
+            h.back(this)
+            compare(h.current().objectName, "appInfoPage")
+            compare(chip("showAppsItem").summary, "System apps")
+        }
+
+        function test_35_app_info_without_app() {
+            // no app named, or one that is not on the watch: the list
+            request("app_info")
+            compare(h.current().objectName, "appInfoPage")
+            h.back(this)
+            h.back(this)
+            Backend.confSet(kUiOpenApp, "no-such-app")
+            request("app_info")
+            compare(h.current().objectName, "appInfoPage")
+            compare(conf(kUiOpenApp), "")
+            h.back(this)
+            h.back(this)
+            // a request older than a minute does nothing, and clears the app too
+            Backend.confSet(kUiOpenApp, "asteroid-weather")
+            request("app_info", 70000)
+            compare(h.stack.layers.length, 0)
+            compare(conf(kUiOpenApp), "")
+            // the app of an earlier request does not leak into another route
+            Backend.confSet(kUiOpenApp, "asteroid-weather")
+            request("apps")
+            compare(h.current().objectName, "appsPage")
+            compare(conf(kUiOpenApp), "")
         }
     }
 }

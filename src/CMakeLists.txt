@@ -70,8 +70,6 @@ asteroid_app_qml_module(asteroid-settings
 	qml/DisplayPage.qml
 	qml/BrightnessPage.qml
 	qml/ExtraDimPage.qml
-	qml/NightstandPage.qml
-	qml/NightstandWatchfacePage.qml
 	qml/StylePage.qml
 	qml/WallpaperPage.qml
 	qml/WatchfacePage.qml

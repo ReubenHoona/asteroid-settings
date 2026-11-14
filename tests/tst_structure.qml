@@ -486,17 +486,18 @@ SettingsHarness {
         // a list row of a page opens the dialog, the screen behind scaled
         function test_12_list_row_opens_dialog() {
             open(["generalItem"])
-            h.tapName(this, "temperatureItem")
+            h.tapName(this, "appViewItem")
             wait(500)
             var d = h.chooser()
             verify(d.shown)
             compare(d.behind, h.stack)
             near(h.stack.scale, 0.85, 0.01, "the screen behind at 0.85")
             compare(h.stack.layers.length, 1, "no page pushed")
-            var before = Backend.confHas("/org/asteroidos/settings/use-fahrenheit") ? Backend.confGet("/org/asteroidos/settings/use-fahrenheit") : false
-            h.tap(this, h.listItem(this, h.find(d, "choiceList"), before ? 0 : 1))
+            // the List view is on: the second choice is the Grid view
+            h.tap(this, h.listItem(this, h.find(d, "choiceList"), 1))
             waitClosed(d)
-            compare(Backend.confGet("/org/asteroidos/settings/use-fahrenheit"), !before)
+            compare(Backend.confGet("/desktop/asteroid/applauncher"),
+                    "file:///usr/share/asteroid-launcher/applauncher/007-wear-grid.qml")
             near(h.stack.scale, 1, 0.01, "back to full size")
         }
 
