@@ -99,6 +99,8 @@ Application {
     Component { id: accessibilityLayer;         AccessibilityPage { } }
     Component { id: securityLayer;              SecurityPage   { } }
     Component { id: displaySizeLayer;           DisplaySizePage { } }
+    Component { id: wristOrientationLayer;      WristOrientationPage { } }
+    Component { id: touchLockLayer;             TouchLockPage  { } }
 
     // Developer options appear at the end of the list once Build number
     // (About > Versions) was tapped seven times, as on Wear OS
@@ -129,6 +131,11 @@ Application {
         id: layerStack
         firstPage: firstPageComponent
     }
+
+    // Settings ends, back to what is under it (the face): after Change watch
+    // face and Touch lock, which the launcher carries on. A property so that
+    // the tests can swap it.
+    property var closeApp: function () { Qt.quit() }
 
     // the stock selection dialog of the list settings (SelectionDialogKt):
     // options are the labels, apply(index) applies one; it returns false
@@ -340,6 +347,14 @@ Application {
         "bluetooth": [connectivityLayer, bluetoothLayer],
         "display": [displayLayer],
         "brightness": [displayLayer, brightnessLayer],
+        "display_size": [displayLayer, displaySizeLayer],
+        "wrist_orientation": [displayLayer, wristOrientationLayer],
+        "touch_lock": [displayLayer, touchLockLayer],
+        // no Display row since DECISIONS Q53: the Extra dim quick tile's page
+        "extra_dim": [extraDimLayer],
+        // no Display row since DECISIONS Q34 either; the page goes with the
+        // launcher's Nightstand (W2-launcher-charging)
+        "nightstand": [nightstandLayer],
         "gestures": [gesturesLayer],
         "buttons": [buttonsLayer],
         "apps": [appsLayer],

@@ -23,6 +23,9 @@ Item {
     property alias app: loader.item
     property var stack: null
     property string shots: "/tmp/setstk-shots"
+    // how often a page asked the app to end (Change watch face, Touch lock):
+    // the app does not quit under test
+    property int closeCount: 0
 
     Rectangle { anchors.fill: parent; color: "black" }
 
@@ -102,6 +105,8 @@ Item {
         t.tryCompare(loader, "status", Loader.Ready)
         stack = find(loader.item, "LayerStack")
         t.verify(stack !== null, "the LayerStack")
+        closeCount = 0
+        loader.item.closeApp = function () { harness.closeCount++ }
         t.wait(300)
     }
     // the selection dialog while it is up (list settings open in it), else

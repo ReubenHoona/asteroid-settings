@@ -55,7 +55,9 @@ Item {
         return customizeDefaults.hasOwnProperty(mode) ? customizeDefaults[mode][name] === true : false
     }
 
-    readonly property string alwaysOnHolder: theater ? "theater" : bedtime ? "bedtime" : batterySaver ? "battery-saver" : ""
+    // stock AlwaysOnScreenPreference$1.invoke: Bedtime, Battery saver,
+    // (TalkBack,) Theater; the first that holds it is the summary
+    readonly property string alwaysOnHolder: bedtime ? "bedtime" : batterySaver ? "battery-saver" : theater ? "theater" : ""
     readonly property string tiltHolder: alwaysOnHolder
     readonly property string touchHolder: theater ? "theater" : bedtime ? "bedtime" : ""
     readonly property string brightnessHolder: bedtime ? "bedtime" : extraDim ? "extra-dim" : ""

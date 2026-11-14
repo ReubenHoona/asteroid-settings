@@ -5,23 +5,32 @@
 
 import QtQuick
 import org.asteroid.controls
-import org.asteroid.utils
 import org.asteroid.settings
 import Nemo.Configuration
 import Nemo.Mce
 
-// Settings > Display (stock prefs_display.xml, DisplaySettingsFragment):
-// Change watch face, Adjust brightness, Screen timeout, Always-on screen and
-// right under it Always-on when off wrist (the user's choice 3), then this
-// watch's own: Extra dim (after Adjust brightness), Always-on
-// brightness, Burn-in protection and Nightstand. A mode that holds the
-// brightness or the always-on screen greys it out with the mode as its
-// summary ("Bedtime mode is on"), the switch showing it off, as stock. Screen timeout is the whole time the screen stays on, as on
-// stock: mce turns it off (or to the always-on screen) after its dim timeout
-// plus its blank timeout. The stock choices, 15 s recommended, a longer one
-// asking first; a choice T sets the blank timeout to 5 s (stock's dim to
-// off) and the dim timeout to T - 5. Other values on the watch show as the
-// nearest choice and stay as they are until one is chosen.
+// Settings > Display, the rows of stock CP3A in stock's order
+// (PixelWatchNavRouteCollector$init$4.java:36-52): Change watch face,
+// (Color theme, W3-qa-color-theme: stock shows it once a theme is set),
+// Brightness, Display size & text, Screen timeout, Go to watch face,
+// Always-on screen, right under it Always-on when off wrist (the user's
+// choice 3), Wrist orientation, Touch lock. No other rows: the Extra dim,
+// Always-on brightness, Burn-in protection and Nightstand rows went with
+// DECISIONS Q53, Q20 and Q34 (stock has none; the launcher keeps reading
+// their dconf keys). A mode that holds the brightness or the always-on
+// screen greys it out with the mode as its summary ("Bedtime mode is on"),
+// the switch showing it off, as stock.
+//
+// Screen timeout is the whole time the screen stays on, as on stock: mce
+// turns it off (or to the always-on screen) after its dim timeout plus its
+// blank timeout. Stock has no dim phase (config_maximumScreenDimDuration 0),
+// the choices are 10 s (recommended), 15 s and 30 s, a longer one than the
+// recommended asking first. A choice T sets the dim timeout to T and the
+// blank timeout to 0, and the face (lock screen) blank timeout to 0 as well (mce
+// adds it to the dim timeout there), so the screen stays on for T on the face
+// and in apps (wake-sleep-display-09/10).
+// Other values on the watch show as the nearest choice and stay as they are
+// until one is chosen.
 SettingsPage {
     id: page
     objectName: "displayPage"
@@ -36,6 +45,13 @@ SettingsPage {
     MceConfigValue {
         id: blankTimeout
         key: "/system/osso/dsm/display/display_blank_timeout"
+    }
+    // mce spells it "locksreen": the blank timeout on the watch face (the
+    // lock screen), which mce applies after the dim step (display.c mdy_blanking_schedule_off
+    // runs in DIM), so the face stays on for dim + this, as the apps do
+    MceConfigValue {
+        id: faceBlankTimeout
+        key: "/system/osso/dsm/display/display_blank_from_locksreen_timeout"
     }
     ConfigurationValue {
         id: alwaysOnDisplay
@@ -54,47 +70,77 @@ SettingsPage {
         key: "/desktop/asteroid/nightstand/enabled"
         defaultValue: true
     }
-    // How bright the always-on screen is: the launcher hands it to the
-    // panel (its AOD brightness step: low 6, medium 8, the image's default,
-    // high 12)
+    // Go to watch face (stock Settings.Global wear_activity_auto_resume_
+    // timeout_ms, default 60000): the launcher reads it (AppLifecycle)
     ConfigurationValue {
-        id: aodBrightness
-        key: "/org/asteroidos/settings/always-on-brightness"
-        defaultValue: "medium"
+        id: goToFace
+        key: "/org/asteroidos/settings/go-to-watch-face-ms"
+        defaultValue: 60000
     }
+    // Change watch face: "picker@<ms>", the pattern of the Health app's
+    // ui/open; the launcher goes to the face and opens its picker
     ConfigurationValue {
-        id: bipLevel
-        key: "/org/asteroidos/settings/burn-in-protection-level"
-        defaultValue: DeviceSpecs.needsBurnInProtection ? 1.0 : 0.0
+        id: openFacePicker
+        key: "/org/asteroidos/launcher/open-face-picker"
+        defaultValue: ""
     }
 
+    // stock default_screen_timeout_entries_v2 (VALUES.tsv: 10000|15000|30000),
+    // default_screen_timeout_value_ms 10000
     readonly property var timeouts: [10, 15, 30]
-    readonly property int recommendedTimeout: 15
-    // stock's dim to off
-    readonly property int blankSeconds: 5
+    readonly property int recommendedTimeout: 10
+    // stock has no dim phase: the blank timeout is 0 (wake-sleep-display-10)
+    readonly property int blankSeconds: 0
     readonly property bool timeoutKnown: dimTimeout.valid && blankTimeout.valid
     // how long the screen stays on now, and the choice nearest to it
     readonly property int screenOn: timeoutKnown ? Number(dimTimeout.value) + Number(blankTimeout.value) : 0
-    readonly property int timeoutIndex: {
+    readonly property int timeoutIndex: nearest(timeouts, screenOn)
+    function nearest(values, v) {
         var best = 0
-        for (var i = 1; i < timeouts.length; i++)
-            if (Math.abs(timeouts[i] - screenOn) < Math.abs(timeouts[best] - screenOn))
+        for (var i = 1; i < values.length; i++)
+            if (Math.abs(values[i] - v) < Math.abs(values[best] - v))
                 best = i
         return best
     }
     function applyTimeout(s) {
         if (Number(blankTimeout.value) !== blankSeconds)
             blankTimeout.value = blankSeconds
-        dimTimeout.value = s - blankSeconds
+        dimTimeout.value = s
+        faceBlankTimeout.value = blankSeconds
     }
     function timeoutLabel(s) {
         //% "%1 seconds"
         return qsTrId("id-seconds").arg(s)
     }
-    readonly property var aodLabels: [qsTrId("id-low"), qsTrId("id-medium"), qsTrId("id-high")]
-    readonly property var aodValues: ["low", "medium", "high"]
-    readonly property var bipLabels: [qsTrId("id-off"), qsTrId("id-low"), qsTrId("id-medium"), qsTrId("id-high")]
-    readonly property var bipValues: [0.0, 0.25, 0.5, 1.0]
+    // the option as stock lists and summarises it: the recommended one
+    // says so (pref_screenTimeout_default_value)
+    function timeoutOption(s) {
+        return s === recommendedTimeout
+               //% "%1 seconds (recommended)"
+               ? qsTrId("id-seconds-recommended").arg(s)
+               : timeoutLabel(s)
+    }
+
+    // Go to watch face: activity_auto_resume_timeout_values_ms, in the
+    // order of activity_auto_resume_timeout_labels
+    readonly property var goToFaceValues: [0, 15000, 30000, 60000, 120000, 300000, 86400000]
+    readonly property var goToFaceLabels: [
+        //% "Immediately"
+        qsTrId("id-go-immediately"),
+        //% "After 15 seconds"
+        qsTrId("id-go-15s"),
+        //% "After 30 seconds"
+        qsTrId("id-go-30s"),
+        //% "After 1 minute"
+        qsTrId("id-go-1m"),
+        //% "After 2 minutes"
+        qsTrId("id-go-2m"),
+        //% "After 5 minutes"
+        qsTrId("id-go-5m"),
+        //% "Never"
+        qsTrId("id-go-never")
+    ]
+    readonly property int goToFaceIndex: nearest(goToFaceValues, Number(goToFace.value))
 
     // the always-on screen as the switch sets it: the intent in dconf, and
     // mce's low power mode unless Nightstand holds it on the charger
@@ -107,14 +153,14 @@ SettingsPage {
     function chooseTimeout() {
         var labels = []
         for (var i = 0; i < timeouts.length; i++)
-            labels.push(timeouts[i] === recommendedTimeout
-                        //% "%1 seconds (recommended)"
-                        ? qsTrId("id-seconds-recommended").arg(timeouts[i])
-                        : timeoutLabel(timeouts[i]))
+            labels.push(timeoutOption(timeouts[i]))
         var chooser = app.choose(qsTrId("id-screen-timeout"), labels, timeoutIndex,
                                  function (i) {
             var s = page.timeouts[i]
-            if (s <= page.recommendedTimeout || s <= page.screenOn) {
+            // stock asks for every choice above the recommended one
+            // (ScreenTimeoutEntryPreference.java:89), also when it is
+            // shorter than today's
+            if (s <= page.recommendedTimeout) {
                 page.applyTimeout(s)
                 return true
             }
@@ -124,45 +170,68 @@ SettingsPage {
                         qsTrId("id-reduces-battery").arg(page.timeoutLabel(s)),
                         function () { page.applyTimeout(s); chooser.pop() })
             return false
-        })
+        }, [],
+        //% "When display will turn off after inactivity"
+        qsTrId("id-screen-timeout-message"))
+    }
+
+    function chooseGoToFace() {
+        app.choose(qsTrId("id-go-to-watch-face"), goToFaceLabels, goToFaceIndex,
+                   function (i) { goToFace.value = page.goToFaceValues[i] }, [],
+                   //% "Return to the watch face after inactivity"
+                   qsTrId("id-go-to-watch-face-message"))
+    }
+
+    // stock goes to the watch face and opens the picker over it (Home +
+    // CHOOSE_FACE); the launcher does that on the key, then Settings ends
+    function changeWatchFace() {
+        openFacePicker.value = "picker@" + Date.now()
+        closeTimer.restart()
+    }
+    Timer {
+        id: closeTimer
+        interval: 150
+        onTriggered: app.closeApp()
     }
 
     SettingsChip {
         objectName: "watchfaceItem"
         //% "Change watch face"
         title: qsTrId("id-change-watchface")
-        onClicked: layerStack.push(watchfaceLayer)
+        onClicked: page.changeWatchFace()
     }
     SettingsChip {
         objectName: "brightnessItem"
-        //% "Adjust brightness"
-        title: qsTrId("id-adjust-brightness")
+        title: qsTrId("id-brightness")
         active: modeState.brightnessHolder === ""
         summary: modeState.summary(modeState.brightnessHolder)
         onClicked: layerStack.push(brightnessLayer)
     }
     SettingsChip {
-        objectName: "extraDimItem"
-        //% "Extra dim"
-        title: qsTrId("id-extra-dim")
-        summary: modeState.extraDim ? qsTrId("id-on") : qsTrId("id-off")
-        onClicked: layerStack.push(extraDimLayer)
+        objectName: "displaySizeItem"
+        title: qsTrId("id-display-size-page")
+        onClicked: layerStack.push(displaySizeLayer)
     }
     SettingsChip {
         objectName: "timeoutItem"
         visible: page.timeoutKnown
-        //% "Screen timeout"
         title: qsTrId("id-screen-timeout")
-        summary: page.timeoutKnown ? page.timeoutLabel(page.timeouts[page.timeoutIndex]) : ""
+        summary: page.timeoutKnown ? page.timeoutOption(page.timeouts[page.timeoutIndex]) : ""
         onClicked: page.chooseTimeout()
+    }
+    SettingsChip {
+        objectName: "goToFaceItem"
+        title: qsTrId("id-go-to-watch-face")
+        summary: page.goToFaceLabels[page.goToFaceIndex]
+        onClicked: page.chooseGoToFace()
     }
     // Always-on screen (choice 3; stock AlwaysOnScreenPreference): off at
     // once; on after stock's question, title "Turn on always-on screen?" and
     // text "Always-on screen reduces battery life." (enable_ambient_screen_
     // dialog_title, enable_ambient_screen: AlwaysOnScreenPreference.java:
     // 145-146). A mode holds it greyed, showing off, with the mode as its
-    // summary (:55-75). Stock has it after Go to watch face, which
-    // W2-settings-display adds above it.
+    // summary (:55-75), Bedtime first, then Battery saver, then Theater
+    // (ModeState).
     SettingsChip {
         objectName: "aodSwitch"
         //% "Always-on screen"
@@ -206,31 +275,18 @@ SettingsPage {
         //% "Always-on screen stays on when watch is off wrist or charging"
         text: qsTrId("id-aod-off-wrist-explain")
     }
+    // plain button rows, no summary (WristOrientationPreference.java:56,
+    // TouchLockPreference.java:35)
     SettingsChip {
-        objectName: "aodBrightnessItem"
-        visible: alwaysOnDisplay.value && modeState.alwaysOnHolder === ""
-        title: qsTrId("id-always-on-brightness")
-        summary: page.aodLabels[Math.max(0, page.aodValues.indexOf(aodBrightness.value))]
-        onClicked: app.choose(qsTrId("id-always-on-brightness"), page.aodLabels,
-                              Math.max(0, page.aodValues.indexOf(aodBrightness.value)),
-                              function (i) { aodBrightness.value = page.aodValues[i] })
+        objectName: "wristOrientationItem"
+        //% "Wrist orientation"
+        title: qsTrId("id-wrist-orientation")
+        onClicked: layerStack.push(wristOrientationLayer)
     }
     SettingsChip {
-        objectName: "burnInItem"
-        visible: DeviceSpecs.needsBurnInProtection
-        //% "Burn-in protection"
-        title: qsTrId("id-burn-in")
-        summary: page.bipLabels[Math.max(0, page.bipValues.indexOf(Number(bipLevel.value)))]
-        onClicked: app.choose(qsTrId("id-burn-in"), page.bipLabels,
-                              page.bipValues.indexOf(Number(bipLevel.value)),
-                              function (i) { bipLevel.value = page.bipValues[i] })
-    }
-    SettingsChip {
-        objectName: "nightstandItem"
-        title: qsTrId("id-nightstand-page")
-        //% "On"
-        summary: nightstandEnabled.value ? qsTrId("id-on")
-                 : qsTrId("id-off")
-        onClicked: layerStack.push(nightstandLayer)
+        objectName: "touchLockItem"
+        //% "Touch lock"
+        title: qsTrId("id-touch-lock")
+        onClicked: layerStack.push(touchLockLayer)
     }
 }

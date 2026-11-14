@@ -1282,6 +1282,214 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Notifications won't sound or vibrate when watch is off wrist or charging</source>
         <translation>Notifications won't sound or vibrate when watch is off wrist or charging</translation>
     </message>
+    <message id="id-screen-timeout-message">
+        <source>When display will turn off after inactivity</source>
+        <translation>When display will turn off after inactivity</translation>
+    </message>
+    <message id="id-go-to-watch-face">
+        <source>Go to watch face</source>
+        <translation>Go to watch face</translation>
+    </message>
+    <message id="id-go-to-watch-face-message">
+        <source>Return to the watch face after inactivity</source>
+        <translation>Return to the watch face after inactivity</translation>
+    </message>
+    <message id="id-go-immediately">
+        <source>Immediately</source>
+        <translation>Immediately</translation>
+    </message>
+    <message id="id-go-15s">
+        <source>After 15 seconds</source>
+        <translation>After 15 seconds</translation>
+    </message>
+    <message id="id-go-30s">
+        <source>After 30 seconds</source>
+        <translation>After 30 seconds</translation>
+    </message>
+    <message id="id-go-1m">
+        <source>After 1 minute</source>
+        <translation>After 1 minute</translation>
+    </message>
+    <message id="id-go-2m">
+        <source>After 2 minutes</source>
+        <translation>After 2 minutes</translation>
+    </message>
+    <message id="id-go-5m">
+        <source>After 5 minutes</source>
+        <translation>After 5 minutes</translation>
+    </message>
+    <message id="id-go-never">
+        <source>Never</source>
+        <translation>Never</translation>
+    </message>
+    <message id="id-wrist-orientation">
+        <source>Wrist orientation</source>
+        <translation>Wrist orientation</translation>
+    </message>
+    <message id="id-touch-lock">
+        <source>Touch lock</source>
+        <translation>Touch lock</translation>
+    </message>
+    <message id="id-touch-lock-explain">
+        <source>Turns off touch screen. Press &amp; hold crown for 2 sec. to turn it back on.</source>
+        <translation>Turns off touch screen. Press &amp; hold crown for 2 sec. to turn it back on.</translation>
+    </message>
+    <message id="id-tilt-confirm-title">
+        <source>Turn on tilt-to-wake?</source>
+        <translation>Turn on tilt-to-wake?</translation>
+    </message>
+    <message id="id-long-press-face">
+        <source>Long press watch face</source>
+        <translation>Long press watch face</translation>
+    </message>
+    <message id="id-long-press-face-explain">
+        <source>Hold the watch face to change or edit it</source>
+        <translation>Hold the watch face to change or edit it</translation>
+    </message>
+    <message id="id-long-press-face-off">
+        <source>You can still change and edit watch faces using Settings &gt; Display &gt; Change watch face.</source>
+        <translation>You can still change and edit watch faces using Settings &gt; Display &gt; Change watch face.</translation>
+    </message>
+    <message id="id-turn-off">
+        <source>Turn off?</source>
+        <translation>Turn off?</translation>
+    </message>
+    <message id="id-fixed-brightness">
+        <source>Fixed brightness</source>
+        <translation>Fixed brightness</translation>
+    </message>
+    <message id="id-brightness-dim">
+        <source>Dim</source>
+        <translation>Dim</translation>
+    </message>
+    <message id="id-brightness-normal">
+        <source>Normal</source>
+        <translation>Normal</translation>
+    </message>
+    <message id="id-brightness-bright">
+        <source>Bright</source>
+        <translation>Bright</translation>
+    </message>
+    <message id="id-decrease-brightness">
+        <source>Decrease brightness</source>
+        <translation>Decrease brightness</translation>
+    </message>
+    <message id="id-increase-brightness">
+        <source>Increase brightness</source>
+        <translation>Increase brightness</translation>
+    </message>
+    <message id="id-brightness-state">
+        <source>%1 percent screen brightness</source>
+        <translation>%1 percent screen brightness</translation>
+    </message>
+    <message id="id-display-size-category">
+        <source>Display size</source>
+        <translation>Display size</translation>
+    </message>
+    <message id="id-display-size-explain">
+        <source>Make everything bigger or smaller</source>
+        <translation>Make everything bigger or smaller</translation>
+    </message>
+    <message id="id-decrease-display-size">
+        <source>Decrease display size</source>
+        <translation>Decrease display size</translation>
+    </message>
+    <message id="id-increase-display-size">
+        <source>Increase display size</source>
+        <translation>Increase display size</translation>
+    </message>
+    <message id="id-font-size-category">
+        <source>Font size</source>
+        <translation>Font size</translation>
+    </message>
+    <message id="id-font-size-explain">
+        <source>Make text bigger or smaller</source>
+        <translation>Make text bigger or smaller</translation>
+    </message>
+    <message id="id-decrease-font-size">
+        <source>Decrease font size</source>
+        <translation>Decrease font size</translation>
+    </message>
+    <message id="id-increase-font-size">
+        <source>Increase font size</source>
+        <translation>Increase font size</translation>
+    </message>
+    <message id="id-text-small">
+        <source>Small</source>
+        <translation>Small</translation>
+    </message>
+    <message id="id-text-default">
+        <source>Default</source>
+        <translation>Default</translation>
+    </message>
+    <message id="id-text-medium">
+        <source>Medium</source>
+        <translation>Medium</translation>
+    </message>
+    <message id="id-text-large">
+        <source>Large</source>
+        <translation>Large</translation>
+    </message>
+    <message id="id-text-larger">
+        <source>Larger</source>
+        <translation>Larger</translation>
+    </message>
+    <message id="id-text-largest">
+        <source>Largest</source>
+        <translation>Largest</translation>
+    </message>
+    <message id="id-bold-text">
+        <source>Bold text</source>
+        <translation>Bold text</translation>
+    </message>
+    <message id="id-display-reset">
+        <source>Reset settings</source>
+        <translation>Reset settings</translation>
+    </message>
+    <message id="id-applying">
+        <source>Applying…</source>
+        <translation>Applying…</translation>
+    </message>
+    <message id="id-wrist">
+        <source>Wrist</source>
+        <translation>Wrist</translation>
+    </message>
+    <message id="id-wrist-description">
+        <source>Which wrist do you want to wear your watch on?</source>
+        <translation>Which wrist do you want to wear your watch on?</translation>
+    </message>
+    <message id="id-left-wrist">
+        <source>Left wrist</source>
+        <translation>Left wrist</translation>
+    </message>
+    <message id="id-right-wrist">
+        <source>Right wrist</source>
+        <translation>Right wrist</translation>
+    </message>
+    <message id="id-left">
+        <source>Left</source>
+        <translation>Left</translation>
+    </message>
+    <message id="id-right">
+        <source>Right</source>
+        <translation>Right</translation>
+    </message>
+    <message id="id-crown">
+        <source>Crown</source>
+        <translation>Crown</translation>
+    </message>
+    <message id="id-crown-description">
+        <source>Where do you want the crown? Changing the location will flip the display.</source>
+        <translation>Where do you want the crown? Changing the location will flip the display.</translation>
+    </message>
+    <message id="id-left-crown">
+        <source>Crown on the left</source>
+        <translation>Crown on the left</translation>
+    </message>
+    <message id="id-right-crown">
+        <source>Crown on the right</source>
+        <translation>Crown on the right</translation>
+    </message>
 </context>
 <context>
     <name>AboutPage</name>

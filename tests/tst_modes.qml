@@ -7,7 +7,8 @@
  * mode as its summary (Bedtime, Theater, Battery saver, Extra dim);
  * Bedtime mode under Do Not Disturb; Battery saver on the Battery page
  * (asking first, greyed out on the charger) and suggested at low battery;
- * Extra dim and its intensity under Display. Screenshots of each go to
+ * Extra dim and its intensity on its own page (no Display row since
+ * DECISIONS Q53; deep link extra_dim). Screenshots of each go to
  * shots/settings/ as modes-*.png.
  */
 
@@ -55,7 +56,8 @@ SettingsHarness {
             open(["displayItem"])
             held("brightnessItem", "Bedtime mode is on")
             held("aodSwitch", "Bedtime mode is on")
-            verify(!h.shown(chip("aodBrightnessItem")), "no always-on brightness while it is held off")
+            // stock's Display page has no Always-on brightness row (DECISIONS Q20)
+            verify(h.find(h.current(), "aodBrightnessItem") === null, "no always-on brightness row")
             // a tap does nothing
             var calls = Backend.calls.length
             h.tap(this, chip("aodSwitch"))
@@ -84,10 +86,11 @@ SettingsHarness {
             open(["displayItem"])
             held("aodSwitch", "Theater mode is on")
             verify(chip("brightnessItem").active, "Theater leaves the brightness")
-            // Theater and Battery saver: Theater names it, as stock's order
+            // Theater and Battery saver: Battery saver names it, as stock's order
+            // (Bedtime, Battery saver, TalkBack, Theater: ambient-aod-17)
             Backend.confSet(saverKey, true)
             wait(50)
-            compare(chip("aodSwitch").summary, "Theater mode is on")
+            compare(chip("aodSwitch").summary, "Battery saver mode is on")
             Backend.confSet(theaterKey, false)
             wait(50)
             held("aodSwitch", "Battery saver mode is on")
@@ -102,12 +105,14 @@ SettingsHarness {
             open(["displayItem"])
             held("brightnessItem", "Extra dim is on")
             verify(chip("aodSwitch").active)
-            compare(chip("extraDimItem").summary, "On")
+            // no Extra dim row on Display (DECISIONS Q53): its page is the quick tile's
+            verify(h.find(h.current(), "extraDimItem") === null, "no extraDimItem on displayPage")
             h.shot(this, "modes-03-display-extra-dim")
         }
 
         function test_03_extra_dim_page() {
-            open(["displayItem", "extraDimItem"])
+            Backend.confSet("/org/asteroidos/settings/ui/open", "extra_dim@" + Date.now())
+            wait(200)
             compare(h.current().objectName, "extraDimPage")
             compare(chip("extraDimIntensity").summary, "Medium")
             h.tapName(this, "extraDimSwitch")
@@ -126,8 +131,8 @@ SettingsHarness {
             compare(chip("extraDimIntensity").summary, "High")
             h.tapName(this, "extraDimSwitch")
             compare(conf(extraDimKey), false)
-            h.back(this)
-            compare(chip("extraDimItem").summary, "Off")
+            h.home(this)
+            open(["displayItem"])
             verify(chip("brightnessItem").active)
         }
 

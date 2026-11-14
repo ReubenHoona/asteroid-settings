@@ -134,7 +134,7 @@ SettingsHarness {
             crawl(0)
             compare(problems, [])
             var expected = ["mainPage", "connectivityPage", "bluetoothPage", "wifiPage", "wifiAddPage", "wifiSavedPage",
-                            "displayPage", "brightnessPage", "extraDimPage", "nightstandPage", "gesturesPage", "buttonsPage", "appsPage", "modesPage",
+                            "displayPage", "brightnessPage", "displaySizePage", "wristOrientationPage", "touchLockPage", "gesturesPage", "buttonsPage", "appsPage", "modesPage",
                             "dndPage", "dndCustomizePage", "bedtimePage", "bedtimeCustomizePage", "theaterPage", "theaterCustomizePage", "assistantPage", "soundPage", "vibrationPage", "batteryPage", "generalPage", "systemPage",
                             "dateTimePage", "aboutPage", "versionsPage", "developerPage"]
             for (var i = 0; i < expected.length; i++)
@@ -268,24 +268,27 @@ SettingsHarness {
         function test_04_display() {
             var dim = "/system/osso/dsm/display/display_dim_timeout"
             var blank = "/system/osso/dsm/display/display_blank_timeout"
+            // mce's 10 s is already the recommended choice: start from 12 s so
+            // that choosing 10 s is a change the mock records
+            Backend.mce[dim] = 12
             open(["displayItem"])
-            // the screen is on for dim + blank: 10 + 5 s is stock's 15 s
+            // the screen is on for dim + blank: 12 + 5 s is nearest to stock's 15 s
             var timeout = h.find(h.current(), "timeoutItem")
             compare(timeout.summary, "15 seconds")
-            // a shorter timeout: at once, dim = T - 5; blank is 5 already
+            // the recommended 10 s: at once, no dim phase (dim = T, blank = 0)
             h.tap(this, timeout)
             h.settle(this)
             var list = h.find(h.current(), "choiceList")
             compare(list.count, 3)
             compare(list.currentIndex, 1)
-            compare(h.listItem(this, list, 1).children[0].title, "15 seconds (recommended)")
+            compare(h.listItem(this, list, 0).children[0].title, "10 seconds (recommended)")
             h.tap(this, h.listItem(this, list, 0))
             h.settle(this)
-            compare(last("mce", dim).args, [5])
-            compare(last("mce", blank), null)
+            compare(last("mce", dim).args, [10])
+            compare(last("mce", blank).args, [0])
             compare(h.current().objectName, "displayPage")
-            compare(timeout.summary, "10 seconds")
-            // longer than the recommended 15 s: asks first
+            compare(timeout.summary, "10 seconds (recommended)")
+            // longer than the recommended 10 s: asks first
             h.tap(this, timeout)
             h.settle(this)
             list = h.find(h.current(), "choiceList")
@@ -295,13 +298,13 @@ SettingsHarness {
             compare(dialog().message, "30 seconds reduces battery life")
             accept()
             h.settle(this)
-            compare(last("mce", dim).args, [25])
+            compare(last("mce", dim).args, [30])
             compare(timeout.summary, "30 seconds")
             compare(h.current().objectName, "displayPage")
         }
 
         // a timeout set some other way (eos-cool): the nearest choice shows,
-        // nothing is written until one is chosen; then blank becomes 5 s
+        // nothing is written until one is chosen; then blank becomes 0
         function test_04b_odd_timeouts() {
             var dim = "/system/osso/dsm/display/display_dim_timeout"
             var blank = "/system/osso/dsm/display/display_blank_timeout"
@@ -316,19 +319,20 @@ SettingsHarness {
             h.back(this)
             compare(last("mce", dim), null)
             compare(last("mce", blank), null)
-            // 15 s is shorter than the 50 s it is: no question
+            // 15 s asks, as stock does for everything above 10 s
             h.tap(this, timeout)
             h.settle(this)
             h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 1))
+            verify(dialog().shown)
+            accept()
             h.settle(this)
-            verify(!dialog().shown)
-            compare(last("mce", blank).args, [5])
-            compare(last("mce", dim).args, [10])
+            compare(last("mce", blank).args, [0])
+            compare(last("mce", dim).args, [15])
             compare(timeout.summary, "15 seconds")
             // 3 + 3 = 6 s shows as 10 s
             Backend.mceSet(dim, 3)
             Backend.mceSet(blank, 3)
-            compare(timeout.summary, "10 seconds")
+            compare(timeout.summary, "10 seconds (recommended)")
         }
 
         function test_04c_display_more() {
@@ -337,7 +341,8 @@ SettingsHarness {
             h.tapName(this, "aodSwitch")
             compare(conf("/org/asteroidos/settings/always-on-display"), false)
             compare(last("mce", "use_low_power_mode").args, [false])
-            verify(!h.shown(h.find(h.current(), "aodBrightnessItem")))
+            // no Always-on brightness, Burn-in protection or Nightstand rows (Q20, Q34)
+            verify(h.find(h.current(), "aodBrightnessItem") === null)
             h.tapName(this, "aodSwitch")
             compare(dialog().title, "Turn on always-on screen?")
             compare(dialog().message, "Always-on screen reduces battery life.")
@@ -353,32 +358,21 @@ SettingsHarness {
             Backend.chargerType = 0
             h.tapName(this, "aodSwitch")
             accept()
-            // always-on brightness and burn-in protection: lists
-            h.tapName(this, "aodBrightnessItem")
-            h.settle(this)
-            h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 2))
-            h.settle(this)
-            compare(conf("/org/asteroidos/settings/always-on-brightness"), "high")
-            compare(h.find(h.current(), "aodBrightnessItem").summary, "High")
-            h.tapName(this, "burnInItem")
-            h.settle(this)
-            h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 1))
-            h.settle(this)
-            compare(conf("/org/asteroidos/settings/burn-in-protection-level"), 0.25)
-            // brightness: the slider's + and adaptive brightness
+            // brightness: the slider's + (adaptive: Dim, Normal, Bright) and adaptive brightness
             h.tapName(this, "brightnessItem")
             h.settle(this)
             h.tap(this, h.find(h.current(), "sliderPlus"))
-            compare(last("mce", "display_brightness").args, [70])
+            compare(last("mce", "display_brightness").args, [85])
             h.tap(this, h.find(h.current(), "sliderMinus"))
             h.tap(this, h.find(h.current(), "sliderMinus"))
-            compare(last("mce", "display_brightness").args, [50])
+            compare(last("mce", "display_brightness").args, [20])
             h.tapName(this, "adaptiveSwitch")
             compare(last("mce", "als_enabled").args, [false])
             h.back(this)
-            // Nightstand
-            h.tapName(this, "nightstandItem")
-            h.settle(this)
+            // Nightstand: no Display row, the page by its deep link
+            Backend.confSet("/org/asteroidos/settings/ui/open", "nightstand@" + Date.now())
+            wait(200)
+            compare(h.current().objectName, "nightstandPage")
             h.tapName(this, "nightstandDelay")
             h.settle(this)
             h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 2))
@@ -396,7 +390,8 @@ SettingsHarness {
             h.tapName(this, "tiltSwitch")
             compare(last("mce", "wrist_sensor_enabled").args, [false])
             h.tapName(this, "tiltSwitch")
-            compare(dialog().title, "Tilt-to-wake reduces battery life.")
+            compare(dialog().title, "Turn on tilt-to-wake?")
+            compare(dialog().message, "Tilt-to-wake reduces battery life.")
             accept()
             compare(last("mce", "wrist_sensor_enabled").args, [true])
             h.tapName(this, "touchSwitch")

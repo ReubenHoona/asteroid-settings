@@ -44,7 +44,15 @@ Item {
     property real to: 100
     property real stepSize: 10
     property real value: 0
+    /* the lowest step the buttons reach: stock's slider runs from 0 but the
+       Brightness and Display & text sliders start on step 1 (value i + 1) */
+    property real lowest: from
     property bool active: true
+    /* stock content descriptions: the buttons ("Decrease brightness") and
+       the state ("50 percent screen brightness") */
+    property string decreaseDescription: ""
+    property string increaseDescription: ""
+    property string valueDescription: ""
     // stock SliderUiState.segmented: step dots and the longer selected part
     property bool segmented: false
     property alias edgeEffect: edge.enabled
@@ -56,13 +64,13 @@ Item {
     signal moved(real newValue)
 
     function stepBy(n) {
-        var v = Math.max(from, Math.min(to, Math.round((value - from) / stepSize + n) * stepSize + from))
+        var v = Math.max(lowest, Math.min(to, Math.round((value - from) / stepSize + n) * stepSize + from))
         // a press that moves nothing plays nothing; the step onto the first
         // or last value is GESTURE_END (click 1.0), every other SEGMENT_FREQUENT_TICK
         // (tick 1.0), both touch class (SliderKt$$ExternalSyntheticLambda8.java:20-40)
         if (v === value)
             return
-        if (v === from || v === to)
+        if (v === lowest || v === to)
             Haptics.gestureEnd()
         else
             Haptics.segmentTick()
@@ -75,6 +83,9 @@ Item {
 
     width: parent ? parent.width : Theme.dp(172)
     height: Theme.size.slider
+
+    Accessible.role: Accessible.Slider
+    Accessible.description: slider.valueDescription
 
     EdgeEffect { id: edge; item: slider }
     transform: Scale {
@@ -128,6 +139,8 @@ Item {
             height: parent.height
             anchors.left: parent.left
             onClicked: slider.stepBy(-1)
+            Accessible.role: Accessible.Button
+            Accessible.name: slider.decreaseDescription
             Ripple {
                 radius: container.radius
                 color: slider.iconColor
@@ -138,7 +151,7 @@ Item {
             Glyph {
                 objectName: "sliderMinusGlyph"
                 anchors.centerIn: parent
-                color: slider.active && slider.value > slider.from ? slider.iconColor : slider.iconDisabledColor
+                color: slider.active && slider.value > slider.lowest ? slider.iconColor : slider.iconDisabledColor
             }
         }
 
@@ -150,6 +163,8 @@ Item {
             height: parent.height
             anchors.right: parent.right
             onClicked: slider.stepBy(1)
+            Accessible.role: Accessible.Button
+            Accessible.name: slider.increaseDescription
             Ripple {
                 radius: container.radius
                 color: slider.iconColor

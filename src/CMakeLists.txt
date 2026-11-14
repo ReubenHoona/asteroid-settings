@@ -88,6 +88,9 @@ asteroid_app_qml_module(asteroid-settings
 	qml/AccessibilityPage.qml
 	qml/SecurityPage.qml
 	qml/DisplaySizePage.qml
+	qml/TouchLockPage.qml
+	qml/WristOrientationPage.qml
+	qml/WristToggle.qml
 )
 message(${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(
