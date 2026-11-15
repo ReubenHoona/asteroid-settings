@@ -204,7 +204,7 @@ SettingsHarness {
             verify(!dialog().shown)
             compare(last("mce", kDim).args, [10])
             compare(last("mce", kBlank).args, [0])
-            compare(last("mce", kFace).args, [0], "the face adds this to the dim timeout")
+            compare(last("mce", kFace).args, [10], "the face stays on for this time alone")
             compare(chip("timeoutItem").summary, "10 seconds (recommended)")
             // 15 s asks first, "<label> reduces battery life"
             Backend.clearCalls()
@@ -228,7 +228,7 @@ SettingsHarness {
             accept()
             h.settle(this)
             compare(last("mce", kDim).args, [15])
-            compare(Backend.mce[kFace], 0)
+            compare(Backend.mce[kFace], 15)
             compare(chip("timeoutItem").summary, "15 seconds")
             // 30 s
             h.tap(this, chip("timeoutItem"))
@@ -238,7 +238,7 @@ SettingsHarness {
             accept()
             h.settle(this)
             compare(last("mce", kDim).args, [30])
-            compare(Backend.mce[kFace], 0)
+            compare(Backend.mce[kFace], 30)
             compare(chip("timeoutItem").summary, "30 seconds")
             // stock asks for every choice above 10 s, also going down: 30 -> 15
             h.tap(this, chip("timeoutItem"))
@@ -248,6 +248,7 @@ SettingsHarness {
             accept()
             h.settle(this)
             compare(last("mce", kDim).args, [15])
+            compare(Backend.mce[kFace], 15)
             compare(Backend.mce[kBlank], 0, "the blank timeout is 0 from the first choice on")
         }
 

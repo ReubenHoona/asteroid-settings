@@ -21,14 +21,18 @@ import Nemo.Mce
 // screen greys it out with the mode as its summary ("Bedtime mode is on"),
 // the switch showing it off, as stock.
 //
-// Screen timeout is the whole time the screen stays on, as on stock: mce
-// turns it off (or to the always-on screen) after its dim timeout plus its
-// blank timeout. Stock has no dim phase (config_maximumScreenDimDuration 0),
-// the choices are 10 s (recommended), 15 s and 30 s, a longer one than the
-// recommended asking first. A choice T sets the dim timeout to T and the
-// blank timeout to 0, and the face (lock screen) blank timeout to 0 as well (mce
-// adds it to the dim timeout there), so the screen stays on for T on the face
-// and in apps (wake-sleep-display-09/10).
+// Screen timeout is the whole time the screen stays on, as on stock. In an
+// app mce turns it off (or to the always-on screen) after its dim timeout
+// plus its blank timeout. On the watch face (mce's lock screen) there is no
+// dim step: the screen goes off after the blank-from-lock-screen timeout
+// alone, counted from the screen coming on (mce modules/display.c,
+// mdy_blanking_rethink_timers, the MCE_DISPLAY_ON case). Stock has no dim
+// phase (config_maximumScreenDimDuration 0), the choices are 10 s
+// (recommended), 15 s and 30 s, a longer one than the recommended asking
+// first. A choice T sets the dim timeout to T, the blank timeout to 0 and
+// the face (lock screen) blank timeout to T, so the screen stays on for T
+// on the face and in apps (wake-sleep-display-09/10). A face timeout of 0
+// turns the screen off the moment it comes on (images 45 to 50 did that).
 // Other values on the watch show as the nearest choice and stay as they are
 // until one is chosen.
 SettingsPage {
@@ -46,8 +50,8 @@ SettingsPage {
         key: "/system/osso/dsm/display/display_blank_timeout"
     }
     // mce spells it "locksreen": the blank timeout on the watch face (the
-    // lock screen), which mce applies after the dim step (display.c mdy_blanking_schedule_off
-    // runs in DIM), so the face stays on for dim + this, as the apps do
+    // lock screen). mce arms it when the screen comes on there and skips
+    // the dim step, so the face stays on for this time alone
     MceConfigValue {
         id: faceBlankTimeout
         key: "/system/osso/dsm/display/display_blank_from_locksreen_timeout"
@@ -100,7 +104,7 @@ SettingsPage {
         if (Number(blankTimeout.value) !== blankSeconds)
             blankTimeout.value = blankSeconds
         dimTimeout.value = s
-        faceBlankTimeout.value = blankSeconds
+        faceBlankTimeout.value = s
     }
     function timeoutLabel(s) {
         //% "%n seconds"
