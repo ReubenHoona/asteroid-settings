@@ -612,7 +612,7 @@ SettingsHarness {
             Backend.confSet("/org/asteroidos/eos-update/version", "44")
             open(["systemItem", "aboutItem"])
             compare(shownRows(h.current()),
-                    ["row:AsteroidOS", "row:System version", "row:Model", "row:Device name", "row:Versions",
+                    ["row:AsteroidOS", "row:Model", "row:Device name", "row:Versions",
                      "row:Serial number", "row:Manufactured year", "row:Connection", "row:Battery",
                      "row:System licenses", "row:Legal notices"])
             // no status group, no uptime timer, no Wi-Fi address (stock has none)

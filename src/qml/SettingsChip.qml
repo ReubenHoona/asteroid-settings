@@ -34,6 +34,16 @@ import org.asteroid.controls
  * - an information row (clickable: false) is a Button with a transparent
  *   container, 16 dp (32 px) corners, content onSurface, icon onSurface at
  *   38 % (InfoChipItemKt.java:55-69);
+ * - a data row (dataRow: true) is the plain two-line row of the legacy
+ *   About and Versions pages (SettingsDataPreference.java:37-62,
+ *   layout/settings_data_preference.xml): no container, 8 dp (16 px) above
+ *   and below, two TextViews in textStyleWearBody4, the title on one line,
+ *   the value under it on at most 4. The Settings theme is the Flex one
+ *   (Theme.Settings.WearMaterial -> Base.WearMaterialTheme.Flex), so Body4
+ *   is body_medium: 14 sp (28 px), weight 450, 16 sp lines, the first
+ *   baseline 12 sp under the top of each text, the last 4 sp over its
+ *   bottom; both onSurface #E8E7EE. One line each: 32 px from baseline to
+ *   baseline, 96 px tall (D60-40);
  * - the label takes at most 5 lines with no second line and no control,
  *   else 3; the second line at most 2
  *   (ButtonItemKt$$ExternalSyntheticLambda0.java:87,100,
@@ -59,11 +69,13 @@ Item {
     property bool checked: false
     /* false: greyed out, taps do nothing (stock: a mode holds it, e.g. Theater mode) */
     property bool active: true
-    /* false: an information row (About), not a button */
+    /* false: an information row, not a button */
     property bool clickable: true
+    /* the legacy About and Versions row (SettingsDataPreference): plain text */
+    property bool dataRow: false
     property alias edgeEffect: edge.enabled
-    /* the row grows from this height with its text: 52 dp */
-    property real minHeight: Theme.size.button
+    /* the row grows from this height with its text: 52 dp (a data row: its text) */
+    property real minHeight: dataRow ? 0 : Theme.size.button
     readonly property bool pressed: button.pressed
     /* the Button inside (tests, and rows that need more) */
     readonly property alias button: button
@@ -75,12 +87,13 @@ Item {
     function _a(c, a) { return Qt.rgba(c.r, c.g, c.b, a) }
 
     /* the stock colours of the row in its state */
-    readonly property color containerColor: !clickable ? "transparent"
+    readonly property color containerColor: !clickable || dataRow ? "transparent"
         : !active ? _a(Theme.color.onSurface, Theme.alpha.disabledContainer)
         : _on ? Theme.color.primaryContainer : Theme.color.surfaceContainer
     readonly property color titleColor: !active ? _a(Theme.color.onSurface, Theme.alpha.disabledContent)
         : _on ? Theme.color.onPrimaryContainer : Theme.color.onSurface
-    readonly property color summaryColor: !active ? _a(Theme.color.onSurface, Theme.alpha.disabledContent)
+    readonly property color summaryColor: dataRow ? titleColor
+        : !active ? _a(Theme.color.onSurface, Theme.alpha.disabledContent)
         : _on ? _a(Theme.color.onPrimaryContainer, Theme.alpha.secondaryOnChecked)
         : Theme.color.onSurfaceVariant
     readonly property color iconColor: (!clickable || !active)
@@ -97,6 +110,36 @@ Item {
     height: Math.max(minHeight, button.implicitHeight)
 
     EdgeEffect { id: edge; item: chip }
+
+    // a data row: each TextView's first baseline 12 sp under its top and its
+    // last 4 sp over its bottom (Body4 Flex firstBaselineToTopHeight,
+    // lastBaselineToBottomHeight), whatever the font's own ascent and descent
+    readonly property real _sp: Theme.density * Theme.fontScale
+    FontMetrics {
+        id: dataMetrics
+        font: button.label.font
+    }
+    // what Qt lays out under the last baseline: its last line keeps the
+    // font's whole (rounded up) height
+    function _lastDescent(t) {
+        return t.contentHeight - (t.lineCount - 1) * t.lineHeight - dataMetrics.ascent
+    }
+    Binding {
+        target: button.label; property: "topPadding"; when: chip.dataRow
+        value: 12 * chip._sp - dataMetrics.ascent
+    }
+    Binding {
+        target: button.label; property: "bottomPadding"; when: chip.dataRow
+        value: 4 * chip._sp - chip._lastDescent(button.label)
+    }
+    Binding {
+        target: button.secondaryLabel; property: "topPadding"; when: chip.dataRow
+        value: 12 * chip._sp - dataMetrics.ascent
+    }
+    Binding {
+        target: button.secondaryLabel; property: "bottomPadding"; when: chip.dataRow
+        value: 4 * chip._sp - chip._lastDescent(button.secondaryLabel)
+    }
     transform: Scale {
         origin.x: chip.width / 2
         origin.y: chip.height / 2
@@ -114,15 +157,19 @@ Item {
         secondaryText: chip.summary
         iconName: chip.iconName
         horizontalPadding: Theme.space.xl
-        verticalPadding: chip.selectable ? Theme.space.m : Theme.space.s
+        verticalPadding: chip.selectable || chip.dataRow ? Theme.space.m : Theme.space.s
         // 24 dp drawn at the start of the 26 dp slot: the 2 dp left over
         // go after it, the text keeps its place (D60-45)
         iconSize: Theme.size.iconSmall
         iconSpacing: Theme.space.s + Theme.size.icon - Theme.size.iconSmall
         minimumHeight: chip.minHeight
-        radius: chip.clickable ? Theme.shape.large : Theme.dp(16)
-        maximumLineCount: chip.summary === "" && chip.control === "none" ? 5 : 3
-        secondaryMaximumLineCount: 2
+        radius: chip.clickable && !chip.dataRow ? Theme.shape.large : Theme.dp(16)
+        // a data row: the title on one line, the value on at most 4
+        // (SettingsDataPreference mSummaryMaxLines)
+        maximumLineCount: chip.dataRow ? 1 : chip.summary === "" && chip.control === "none" ? 5 : 3
+        secondaryMaximumLineCount: chip.dataRow ? 4 : 2
+        labelRole: chip.dataRow ? "bodyMedium" : "labelMedium"
+        secondaryLabelRole: chip.dataRow ? "bodyMedium" : "labelSmall"
         trailingWidth: chip.selectable ? Theme.dp(32) : 0
         trailingSpacing: Theme.space.s
 

@@ -10,7 +10,10 @@ import org.asteroid.settings
 import Nemo.Configuration
 
 // About > Versions (stock DeviceVersionFragment:38,120-160): Build number,
-// System UI (the launcher's version), then the kernel and Qt. Seven taps on
+// System UI (the launcher's version), then the kernel and Qt, each a plain
+// SettingsDataPreference row (SettingsChip dataRow, :126-129). The Build
+// number is the eos image version eos-update installed (stock: the system
+// image's build), the os-release build id while there is none. Seven taps on
 // Build number turn on Developer options, as on Wear OS; the toast "You are
 // now # steps away from being a developer." shows only with 2 or 1 taps left,
 // and "No need, you are already a developer." only after more than 3 taps.
@@ -26,13 +29,24 @@ SettingsPage {
         key: "/org/asteroidos/settings/developer-options"
         defaultValue: false
     }
+    // the image eos-update installed ("0" or "" before its first install)
+    ConfigurationValue {
+        id: eosVersion
+        key: "/org/asteroidos/eos-update/version"
+        defaultValue: ""
+    }
+    readonly property string imageVersion: {
+        var v = String(eosVersion.value === undefined || eosVersion.value === null ? "" : eosVersion.value)
+        return v === "0" ? "" : v
+    }
     property int taps: 0
 
     SettingsChip {
         objectName: "buildItem"
+        dataRow: true
         //% "Build number"
         title: qsTrId("id-about-build")
-        summary: DeviceSpecs.buildID
+        summary: page.imageVersion !== "" ? page.imageVersion : DeviceSpecs.buildID
         onClicked: {
             page.taps++
             if (developerOptions.value) {
@@ -55,6 +69,7 @@ SettingsPage {
     SettingsChip {
         objectName: "systemUiItem"
         clickable: false
+        dataRow: true
         //% "System UI"
         title: qsTrId("id-about-system-ui")
         summary: packages.version("asteroid-launcher")
@@ -63,12 +78,14 @@ SettingsPage {
     SettingsChip {
         objectName: "kernelItem"
         clickable: false
+        dataRow: true
         title: qsTr("Kernel version")
         summary: kernelVersion
     }
     SettingsChip {
         objectName: "qtItem"
         clickable: false
+        dataRow: true
         title: qsTr("Qt version")
         summary: qtVersion
     }

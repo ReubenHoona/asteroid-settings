@@ -2,6 +2,7 @@ import QtQuick
 import QtTest
 import SettingsTest
 import org.asteroid.controls
+import org.asteroid.utils
 
 /*
  * WO-07 of the image 60 defect list (D60-38 ... D60-45): the Settings page
@@ -83,6 +84,94 @@ SettingsHarness {
             verify(label.n > 50, "label drawn")
             near(label.x0, 114, 1, "label ink x")
             h.shot(this, "d60-45-icon-slot")
+        }
+
+        // ---- D60-40: About rows are plain text, the value as the title
+
+        // the brightest pixel in a box: the colour of the text's stems
+        function brightest(img, x0, y0, x1, y1) {
+            var best = [0, 0, 0]
+            for (var y = y0; y < y1; y++)
+                for (var x = x0; x < x1; x++) {
+                    var r = img.red(x, y), g = img.green(x, y), b = img.blue(x, y)
+                    if (r + g + b > best[0] + best[1] + best[2])
+                        best = [r, g, b]
+                }
+            return best
+        }
+        function test_40_about_rows() {
+            Backend.confSet("/org/asteroidos/eos-update/version", "59")
+            open(["systemItem", "aboutItem"])
+            compare(h.current().objectName, "aboutPage")
+            verify(chip("aboutEos") === null, "no System version row")
+            var rows = ["aboutSystem", "aboutModel", "aboutDeviceName", "aboutSerial", "aboutManufactured",
+                        "aboutConnection", "aboutBattery"]
+            for (var i = 0; i < rows.length; i++) {
+                var r = chip(rows[i])
+                verify(r.dataRow && !r.clickable, rows[i] + " is a data row")
+                var b = r.button
+                compare(b.containerColor.a, 0, rows[i] + ": no container")
+                // Body4 of the Flex theme: body_medium 14 sp, weight 450
+                compare(b.label.font.pixelSize, 28, rows[i] + ": title 14 sp")
+                compare(b.secondaryLabel.font.pixelSize, 28, rows[i] + ": value 14 sp")
+                compare(b.label.font.weight, 450)
+                compare(b.secondaryLabel.font.weight, 450)
+                rgb(b.label.color, "#e8e7ee", rows[i] + ": title onSurface")
+                rgb(b.secondaryLabel.color, "#e8e7ee", rows[i] + ": value onSurface")
+                compare(b.label.maximumLineCount, 1)
+                compare(b.secondaryLabel.maximumLineCount, 4)
+                compare(b.verticalPadding, 16)
+            }
+            // the one-line rows: 16 + 32 + 32 + 16 = 96 px, 104 px apart
+            // (the 8 px gap of the list); each text's first baseline 24 px
+            // under its top, its last 8 px over its bottom
+            var m = chip("aboutModel"), d = chip("aboutDeviceName")
+            near(m.height, 96, 1, "row height")
+            near(d.y - m.y, 104, 1, "row pitch")
+            var mb = m.button
+            near(mb.label.baselineOffset, 24, 0.5, "title first baseline")
+            near(mb.label.height - mb.label.baselineOffset, 8, 0.5, "title last baseline to bottom")
+            // in the row's own coordinates (the edge effect scales it on the screen)
+            near(mb.label.mapToItem(m, 0, 0).y, 16, 0.5, "8 dp above")
+            var pitch = mb.secondaryLabel.mapToItem(m, 0, mb.secondaryLabel.baselineOffset).y
+                        - mb.label.mapToItem(m, 0, mb.label.baselineOffset).y
+            near(pitch, 32, 0.5, "line pitch")
+            // Versions is still a button row
+            verify(!chip("versionsItem").dataRow && chip("versionsItem").clickable)
+            // on the screen: the value drawn #E8E7EE from x 50 (stock x 50)
+            h.bringIntoView(this, m)
+            wait(200)
+            var img = screen()
+            var vy = Math.round(at(mb.secondaryLabel).y)
+            var vh = Math.round(mb.secondaryLabel.height)
+            var c = brightest(img, 40, vy, 300, vy + vh)
+            verify(Math.abs(c[0] - 0xe8) <= 3 && Math.abs(c[1] - 0xe7) <= 3 && Math.abs(c[2] - 0xee) <= 3,
+                   "value colour " + c)
+            var v = ink(img, 30, vy, 340, vy + vh, function (r, g, b) { return r > 120 })
+            near(v.x0, 50, 2, "value ink x")
+            var t = ink(img, 30, Math.round(at(mb.label).y), 340, Math.round(at(mb.label).y + mb.label.height),
+                        function (r, g, b) { return r > 120 })
+            near(t.x0, 50, 2, "title ink x")
+            h.shot(this, "d60-40-about")
+        }
+
+        // the image version moved to Versions > Build number (stock: the
+        // system image's build); before an install the os-release build id
+        function test_40_build_number() {
+            Backend.confSet("/org/asteroidos/eos-update/version", "59")
+            open(["systemItem", "aboutItem", "versionsItem"])
+            var b = chip("buildItem")
+            verify(b.dataRow && b.clickable, "a data row that takes the seven taps")
+            compare(b.button.containerColor.a, 0)
+            compare(b.summary, "59")
+            Backend.confSet("/org/asteroidos/eos-update/version", "0")
+            compare(b.summary, DeviceSpecs.buildID)
+            Backend.confSet("/org/asteroidos/eos-update/version", "")
+            compare(b.summary, DeviceSpecs.buildID)
+            var names = ["systemUiItem", "kernelItem", "qtItem"]
+            for (var i = 0; i < names.length; i++)
+                verify(chip(names[i]).dataRow, names[i] + " is a data row")
+            near(chip("kernelItem").height, 96, 1, "row height")
         }
     }
 }

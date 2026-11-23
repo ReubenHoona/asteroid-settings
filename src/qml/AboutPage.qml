@@ -11,13 +11,15 @@ import Nemo.Configuration
 import Nemo.Mce
 
 // System > About as stock CP3A (prefs_device_info.xml, DeviceInfoFragment:
-// 90-212): one row per fact, the title and its value (SettingsDataPreference):
-// the system and its version (Wear OS by Google "7.0" on stock), Model,
-// Device name, Versions ("Tap to view"), Serial number, Manufactured year (the
-// first digit of the serial + 2020, "Unknown" when it is not a digit),
-// Connection, Battery, System licenses and Legal notices. Stock has no status
-// rows, and none is added (DECISIONS rule 2): the uptime, load and memory
-// rows, their one-second timer and the Wi-Fi address are gone. IMEI and MSN
+// 90-212): one row per fact, the title and its value (SettingsDataPreference,
+// SettingsChip dataRow: plain text, both lines alike): the system and its
+// version (Wear OS by Google "7.0" on stock), Model, Device name, Versions
+// ("Tap to view", a button row), Serial number, Manufactured year (the first
+// digit of the serial + 2020, "Unknown" when it is not a digit), Connection,
+// Battery, then the button rows System licenses and Legal notices. Stock has
+// no status rows, and none is added (DECISIONS rule 2): the uptime, load and
+// memory rows, their one-second timer and the Wi-Fi address are gone, and
+// the image version is the Build number of Versions (D60-40). IMEI and MSN
 // come with the LTE milestone (Q61).
 SettingsPage {
     id: page
@@ -28,11 +30,6 @@ SettingsPage {
     BluetoothStatus { id: btStatus }
     MceBatteryLevel { id: batteryLevel }
     MceChargerType { id: chargerType }
-    ConfigurationValue {
-        id: eosVersion
-        key: "/org/asteroidos/eos-update/version"
-        defaultValue: ""
-    }
 
     // DeviceInfoFragment: the year is 2020 + the first digit of the serial
     function manufacturedYear(serial) {
@@ -45,21 +42,15 @@ SettingsPage {
     SettingsChip {
         objectName: "aboutSystem"
         clickable: false
+        dataRow: true
         title: about.operatingSystemName
         summary: about.softwareVersion
         visible: title !== ""
     }
     SettingsChip {
-        objectName: "aboutEos"
-        clickable: false
-        //% "System version"
-        title: qsTrId("id-about-system-version")
-        summary: eosVersion.value
-        visible: summary !== ""
-    }
-    SettingsChip {
         objectName: "aboutModel"
         clickable: false
+        dataRow: true
         //% "Model"
         title: qsTrId("id-about-model")
         summary: DeviceSpecs.machineName
@@ -68,6 +59,7 @@ SettingsPage {
     SettingsChip {
         objectName: "aboutDeviceName"
         clickable: false
+        dataRow: true
         //% "Device name"
         title: qsTrId("id-about-device-name")
         summary: DeviceSpecs.hostname
@@ -84,6 +76,7 @@ SettingsPage {
     SettingsChip {
         objectName: "aboutSerial"
         clickable: false
+        dataRow: true
         //% "Serial number"
         title: qsTrId("id-about-serial")
         summary: about.serial
@@ -92,6 +85,7 @@ SettingsPage {
     SettingsChip {
         objectName: "aboutManufactured"
         clickable: false
+        dataRow: true
         //% "Manufactured year"
         title: qsTrId("id-about-manufactured")
         summary: page.manufacturedYear(about.serial)
@@ -100,6 +94,7 @@ SettingsPage {
     SettingsChip {
         objectName: "aboutConnection"
         clickable: false
+        dataRow: true
         //% "Connection"
         title: qsTrId("id-about-connection")
         summary: btStatus.connected ? qsTrId("id-connected") : qsTrId("id-disconnected")
@@ -107,6 +102,7 @@ SettingsPage {
     SettingsChip {
         objectName: "aboutBattery"
         clickable: false
+        dataRow: true
         title: qsTrId("id-battery-page")
         //% "%1% - plugged in"
         summary: !batteryLevel.valid ? "" : chargerType.type != MceChargerType.None

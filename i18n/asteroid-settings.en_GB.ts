@@ -458,10 +458,6 @@
         <source>Available</source>
         <translation>Available</translation>
     </message>
-    <message id="id-about-system-version">
-        <source>System version</source>
-        <translation>System version</translation>
-    </message>
     <message id="id-about-model">
         <source>Model</source>
         <translation>Model</translation>
