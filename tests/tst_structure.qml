@@ -652,5 +652,26 @@ SettingsHarness {
             compare(stackNames(), ["displayPage"])
             verify(!h.chooser().shown)
         }
+
+        // D60-26: the launcher icon keys of the template (whole lines), as the
+        // launcher reads them for its disc and glyph. The stock Wear OS 6
+        // emulator draws Settings as a #FCF7EB disc with a #1D1C15 gear (S05-b);
+        // CP3A's adaptive icon is a #ffffff disc with a #3186ff gear
+        // (mipmap-anydpi/ic_launcher_settings.xml:3-4, values/colors.xml:105,
+        // drawable/ic_settings_icon_foreground.xml:14). The user's rule of
+        // 2026-11-24 takes the emulator's look where the two differ.
+        function test_17_launcher_icon() {
+            var x = new XMLHttpRequest()
+            x.open("GET", Qt.resolvedUrl("../asteroid-settings.desktop.template"), false)
+            x.send()
+            var t = x.responseText
+            verify(t.indexOf("[Desktop Entry]\n") === 0, "the template is read")
+            verify(t.indexOf("\nIcon=ios-settings-outline\n") >= 0, "the gear glyph")
+            verify(t.indexOf("\nX-Asteroid-Center-Color=#FCF7EB\n") >= 0, "disc #FCF7EB")
+            verify(t.indexOf("\nX-Eos-Glyph-Color=#1D1C15\n") >= 0, "glyph #1D1C15")
+            compare(t.split("\nX-Asteroid-Center-Color=").length, 2, "one disc colour")
+            compare(t.split("\nX-Eos-Glyph-Color=").length, 2, "one glyph colour")
+            verify(t.indexOf("X-Eos-Own-Icon") < 0, "a tinted glyph, not an own icon")
+        }
     }
 }
