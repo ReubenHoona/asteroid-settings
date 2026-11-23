@@ -22,6 +22,8 @@ SettingsPage {
     objectName: "versionsPage"
     //% "Versions"
     title: qsTrId("id-about-versions")
+    // DeviceVersionFragment is a legacy preference screen: its title (D60-40)
+    legacyHeader: true
 
     PackageInfo { id: packages }
     ConfigurationValue {

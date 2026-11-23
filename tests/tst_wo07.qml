@@ -114,6 +114,43 @@ SettingsHarness {
             open(["systemItem", "aboutItem"])
             compare(h.current().objectName, "aboutPage")
             verify(chip("aboutEos") === null, "no System version row")
+            // the title of the legacy DeviceInfoFragment: labelMedium (Flex
+            // label_medium, 15 sp on 18 sp lines) in onSurface, centred, 64 px
+            // from the screen edges, its first baseline 14 sp under the list
+            // top (y 64), 36 px tall, then the column's 8 px to the first row
+            var about = h.current()
+            var title = h.find(about, "settingsTitle")
+            compare(title.text, "About")
+            verify(h.shown(title))
+            verify(h.findAll(about, function (o) { return h.typeName(o) === "ListHeader" && h.shown(o) }).length === 0,
+                   "no M3 ListHeader")
+            compare(title.font.pixelSize, 30)
+            compare(title.font.weight, 500)
+            compare(title.lineHeight, 36)
+            rgb(title.color, "#e8e7ee", "title onSurface")
+            compare(title.horizontalAlignment, Text.AlignHCenter)
+            compare(title.maximumLineCount, 3)
+            compare(title.mapToItem(about, title.leftPadding, 0).x, 64)
+            compare(title.mapToItem(about, title.width - title.rightPadding, 0).x, 384 - 64)
+            near(title.mapToItem(about, 0, 0).y, 64, 0.5, "title at the list top")
+            near(title.baselineOffset, 28, 0.5, "title baseline 14 sp under its top")
+            near(title.height, 36, 0.5, "title box")
+            near(chip("aboutSystem").mapToItem(about, 0, 0).y, 108, 0.5, "first row 8 px under it")
+            // drawn: the title's cap at y 68, the first row's 61 px under it
+            // (S22-b: "About" 68, "Wear OS" 129); no edge effect on the title
+            wait(200)
+            var top = screen()
+            var ti = ink(top, 60, 48, 324, 104, function (r, g, b) { return r > 120 })
+            var fl = chip("aboutSystem").button.label
+            var fi = ink(top, 30, Math.round(at(fl).y), 340, Math.round(at(fl).y + fl.height),
+                         function (r, g, b) { return r > 120 })
+            near(ti.y0, 68, 2, "title cap")
+            near(fi.y0 - ti.y0, 61, 2, "title cap to the first row's cap")
+            near((ti.x0 + ti.x1) / 2, 192, 2, "title centred")
+            var tcol = brightest(top, 60, 48, 324, 104)
+            verify(Math.abs(tcol[0] - 0xe8) <= 3 && Math.abs(tcol[1] - 0xe7) <= 3 && Math.abs(tcol[2] - 0xee) <= 3,
+                   "title ink " + tcol)
+            h.shot(this, "d60-40-about-top")
             var rows = ["aboutSystem", "aboutModel", "aboutDeviceName", "aboutSerial", "aboutManufactured",
                         "aboutConnection", "aboutBattery"]
             for (var i = 0; i < rows.length; i++) {
@@ -182,6 +219,16 @@ SettingsHarness {
             Backend.confSet("/org/asteroidos/eos-update/version", "59")
             open(["systemItem", "aboutItem", "versionsItem"])
             var b = chip("buildItem")
+            // DeviceVersionFragment: the same legacy title as About
+            var vp = h.current()
+            var vt = h.find(vp, "settingsTitle")
+            compare(vt.text, "Versions")
+            compare(vt.font.pixelSize, 30)
+            rgb(vt.color, "#e8e7ee", "title onSurface")
+            near(vt.mapToItem(vp, 0, vt.baselineOffset).y, 92, 0.5, "title baseline")
+            near(b.mapToItem(vp, 0, 0).y, 108, 0.5, "first row 8 px under the title")
+            near(b.button.label.mapToItem(vp, 0, b.button.label.baselineOffset).y, 150, 0.5,
+                 "first row baseline (S22-b: 149)")
             verify(b.dataRow && b.clickable, "a data row that takes the seven taps")
             compare(b.button.containerColor.a, 0)
             compare(b.summary, "59")

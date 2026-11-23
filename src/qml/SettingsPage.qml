@@ -22,6 +22,8 @@ import org.asteroid.controls
  * ListHeaderKt.java:58,84, CustomDimensions.java:25,
  * PaddingDefaultValuesKt.java:156-158,
  * ItemLazyColumnKt$$ExternalSyntheticLambda7.java:37).
+ * A page that is a legacy preference screen in stock (About, Versions) sets
+ * legacyHeader: its title is drawn as that screen draws it (legacyTitle).
  * The crown scrolls it (the controls' RotaryInput takes the Flickable under
  * the middle of the window); the TimeText at the top scrolls away with it
  * (Application).
@@ -37,6 +39,9 @@ Item {
     property int depth
     property var pop
     property string title: ""
+    /* the title of a stock legacy preference screen (legacyTitle) instead
+       of the M3 ListHeader */
+    property bool legacyHeader: false
     default property alias content: column.data
     property alias flickable: flick
     property alias column: column
@@ -60,8 +65,8 @@ Item {
 
             ListHeader {
                 id: titleHeader
-                objectName: "settingsTitle"
-                visible: page.title !== ""
+                objectName: page.legacyHeader ? "" : "settingsTitle"
+                visible: page.title !== "" && !page.legacyHeader
                 text: page.title
                 horizontalPadding: Math.round(page.width * 0.12)
                 topPadding: Theme.dp(4)
@@ -76,6 +81,49 @@ Item {
                     xScale: titleEdge.scale
                     yScale: titleEdge.scale
                 }
+            }
+            // The title of the legacy preference screens (stock About and
+            // Versions, DeviceInfoFragment and DeviceVersionFragment, are
+            // WearPreferenceFragments: WearPreferenceScreenTitleAdapter,
+            // layout/wear_title_preference.xml): textStyleWearButton1 of the
+            // Flex theme, label_medium (15 sp on 18 sp lines, the first
+            // baseline 14 sp under its top, the last 4 sp over its bottom,
+            // includeFontPadding false; settings values/styles.xml:8296-8302,
+            // 1954-2074, dimens.xml:962,1000,1038,1076), in colorOnSurface
+            // (Base.V33.PreferenceThemeOverlay.WearMaterial
+            // preferenceTitleTextColor), centred, at most 3 lines, 16.64 %
+            // of the width from the screen edges (values-round
+            // wear_preference_title_horizontal_padding_percent), at the list
+            // top (wear_preference_fragment_top_padding_percent 0.1664). It
+            // never shrinks or fades at the top (FadingWearableRecyclerView
+            // shouldFadeFromTop: not for the first item). The column's 4 dp
+            // follow it: with the data rows' own top padding the first row's
+            // cap comes 61 px under the title's, where the emulator draws
+            // them (S22-b: title cap y 68, first row cap y 129).
+            Label {
+                id: legacyTitle
+                objectName: page.legacyHeader ? "settingsTitle" : ""
+                visible: page.legacyHeader && page.title !== ""
+                width: column.width
+                leftPadding: Math.round(page.width * 0.1664) - column.x
+                rightPadding: leftPadding
+                role: "labelMedium"
+                color: Theme.color.onSurface
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap
+                maximumLineCount: 3
+                elide: Text.ElideRight
+                clip: false
+                text: page.title
+                Accessible.role: Accessible.Heading
+                Accessible.name: text
+                readonly property real _sp: Theme.density * Theme.fontScale
+                // the first baseline 14 sp under the top; Qt lays out the
+                // font's whole (rounded up) height under the last baseline,
+                // so the bottom padding takes that off 4 sp
+                topPadding: 14 * _sp - legacyMetrics.ascent
+                bottomPadding: 4 * _sp - (contentHeight - (lineCount - 1) * lineHeight - legacyMetrics.ascent)
+                FontMetrics { id: legacyMetrics; font: legacyTitle.font }
             }
         }
     }

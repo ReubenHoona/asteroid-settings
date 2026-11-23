@@ -25,6 +25,8 @@ SettingsPage {
     id: page
     objectName: "aboutPage"
     title: qsTrId("id-about-page")
+    // DeviceInfoFragment is a legacy preference screen: its title (D60-40)
+    legacyHeader: true
 
     AboutSettings { id: about }
     BluetoothStatus { id: btStatus }
