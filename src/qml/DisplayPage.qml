@@ -11,8 +11,9 @@ import Nemo.Mce
 
 // Settings > Display, the rows of stock CP3A in stock's order
 // (PixelWatchNavRouteCollector$init$4.java:36-52): Change watch face,
-// (Color theme, W3-qa-color-theme: stock shows it once a theme is set),
-// Brightness, Display size & text, Screen timeout, Go to watch face,
+// Color theme (stock shows it while theme overlays exist, which the Theme
+// keys of qml-asteroid always give here: D60-38), Brightness, Display size
+// & text, Screen timeout, Go to watch face,
 // Always-on screen, right under it Always-on when off wrist (the user's
 // choice 3), Wrist orientation, Touch lock. No other rows: the Extra dim,
 // Always-on brightness, Burn-in protection and Nightstand rows went with
@@ -196,6 +197,14 @@ SettingsPage {
         //% "Change watch face"
         title: qsTrId("id-change-watchface")
         onClicked: page.changeWatchFace()
+    }
+    // Color theme (ColorThemePreference.java:53-81: no icon, no second
+    // line) opens the theme page (ColorThemePage)
+    SettingsChip {
+        objectName: "colorThemeItem"
+        //% "Color theme"
+        title: qsTrId("id-color-theme")
+        onClicked: layerStack.push(colorThemeLayer)
     }
     SettingsChip {
         objectName: "brightnessItem"

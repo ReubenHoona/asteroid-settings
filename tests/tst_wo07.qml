@@ -21,6 +21,11 @@ SettingsHarness {
             h.start(this)
             Backend.clearCalls()
         }
+        // Theme is one for the whole run: No theme again after each test
+        function cleanup() {
+            if (Theme.colorSource !== "static")
+                Theme.setColorTheme("static", "")
+        }
 
         function chip(name) { return h.find(h.current(), name) }
         function open(names) {
@@ -340,6 +345,120 @@ SettingsHarness {
             open(["licensesOthers"])
             compare(h.find(h.current(), "licenseHeading").text, "Other parts")
             verify(h.find(h.current(), "licenseText").text.indexOf("asteroidos.org") >= 0)
+        }
+
+        // ---- D60-38: Display > Color theme opens the theme page
+
+        function titlesOf(page) {
+            var rows = rowsOf(page), out = []
+            for (var i = 0; i < rows.length; i++)
+                out.push(rows[i].title)
+            return out
+        }
+        function px(img, x, y) {
+            return [img.red(Math.round(x), Math.round(y)), img.green(Math.round(x), Math.round(y)),
+                    img.blue(Math.round(x), Math.round(y))]
+        }
+        function same(p, hex, tol, what) {
+            var c = Qt.color(hex)
+            var want = [Math.round(c.r * 255), Math.round(c.g * 255), Math.round(c.b * 255)]
+            verify(Math.abs(p[0] - want[0]) <= tol && Math.abs(p[1] - want[1]) <= tol && Math.abs(p[2] - want[2]) <= tol,
+                   what + ": " + p + " want " + want)
+        }
+        function test_38_color_theme() {
+            compare(Theme.colorSource, "static")
+            open(["displayItem"])
+            compare(titlesOf(h.current()).slice(0, 3), ["Change watch face", "Color theme", "Brightness"])
+            var item = chip("colorThemeItem")
+            compare(item.summary, "")
+            compare(item.iconName, "")
+            compare(item.control, "none")
+            wait(600)
+            h.shot(this, "d60-38-display")
+            open(["colorThemeItem"])
+            var page = h.current()
+            compare(page.objectName, "colorThemePage")
+            compare(h.find(page, "settingsTitle").text, "Color theme")
+            var rows = rowsOf(page)
+            compare(titlesOf(page), ["Match watch face", "Moonstone", "Ivy", "Porcelain", "Iris", "Lemongrass",
+                                     "Jade", "Indigo", "Peony", "No theme"])
+            // No theme is checked until the faces report colours (Q1c)
+            for (var i = 0; i < rows.length; i++) {
+                compare(rows[i].control, "select")
+                compare(rows[i].summary, "")
+                compare(rows[i].checked, i === 9, rows[i].title + " checked")
+                compare(rows[i].button.trailingWidth, 0)
+            }
+            rgb(rows[9].button.containerColor, Theme.color.primaryContainer.toString(), "checked container")
+            rgb(rows[9].button.contentColor, Theme.color.onPrimaryContainer.toString(), "checked text")
+            rgb(rows[1].button.containerColor, "#2f3036", "container")
+            rgb(rows[1].button.contentColor, "#e8e7ee", "text")
+            // the avatar: 38 dp, 10 dp from the chip's start, the text 8 dp after it
+            var av = h.find(rows[1], "colorThemeAvatar")
+            compare(av.width, 76)
+            compare(av.height, 76)
+            compare(av.mapToItem(rows[1], 0, 0).x, 20)
+            near(av.mapToItem(rows[1], 0, 38).y, rows[1].height / 2, 0.5, "avatar centred")
+            var lb = rows[1].button.label
+            compare(lb.mapToItem(rows[1], lb.leftPadding, 0).x, 112)
+            verify(h.shown(h.find(rows[9], "colorThemePalette")), "No theme: the palette")
+            verify(!h.shown(h.find(rows[1], "colorThemePalette")))
+            // Moonstone's swatch: the top half primary_fixed_dim, the bottom
+            // left secondary_fixed, the bottom right secondary_container
+            var sw = page.swatchOf("#9A9EAD", "")
+            compare(sw.length, 3)
+            h.bringIntoView(this, rows[1])
+            wait(300)
+            var img = screen()
+            var o = at(av)
+            var cx = o.x + 38, cy = o.y + 38
+            same(px(img, cx - 14, cy - 14), sw[0], 2, "top left")
+            same(px(img, cx + 14, cy - 14), sw[0], 2, "top right")
+            same(px(img, cx - 14, cy + 14), sw[1], 2, "bottom left")
+            same(px(img, cx + 14, cy + 14), sw[2], 2, "bottom right")
+            // the disc: radius rint(38 - 0.75 dp - 3 dp) = 30 px, nothing out to the ring
+            same(px(img, cx, cy - 28), sw[0], 2, "inside the disc")
+            same(px(img, cx - 34, cy), Theme.color.surfaceContainer.toString(), 2, "no ring unchecked")
+            h.shot(this, "d60-38-themes")
+            // a tap applies the preset at once, the page stays
+            h.tap(this, rows[2])
+            compare(Backend.confGet("/org/asteroidos/theme/color-source"), "preset")
+            compare(Backend.confGet("/org/asteroidos/theme/seed"), "#404945")
+            compare(Theme.colorSource, "preset")
+            compare(Theme.colorSeed, "#404945")
+            verify(Theme.colorThemed)
+            verify(rows[2].checked && !rows[9].checked, "Ivy checked, No theme not")
+            compare(h.current().objectName, "colorThemePage")
+            tryVerify(function () {
+                var c = rows[2].button.containerColor, w = Theme.color.primaryContainer
+                return Math.abs(c.r - w.r) < 0.01 && Math.abs(c.g - w.g) < 0.01 && Math.abs(c.b - w.b) < 0.01
+            }, 2000, "Ivy's container the themed primaryContainer")
+            verify(Theme.color.primary.toString() !== "#dbe2f9", "the palette changed")
+            // the checked swatch has its ring in onPrimaryContainer at the edge
+            h.bringIntoView(this, rows[2])
+            wait(600)
+            img = screen()
+            av = h.find(rows[2], "colorThemeAvatar")
+            o = at(av)
+            same(px(img, o.x + 38, o.y + 1.5), Theme.color.onPrimaryContainer.toString(), 6, "ring")
+            h.shot(this, "d60-38-ivy")
+            // Match watch face, then No theme again
+            h.tap(this, rows[0])
+            compare(Theme.colorSource, "watchface")
+            verify(rows[0].checked && !rows[2].checked)
+            h.tap(this, rows[9])
+            compare(Backend.confGet("/org/asteroidos/theme/color-source"), "static")
+            compare(Theme.colorSource, "static")
+            verify(!Theme.colorThemed)
+            compare(Theme.color.primary.toString(), "#dbe2f9")
+            verify(rows[9].checked)
+        }
+        // stock route names: color_theme opens Display, then the theme page
+        function test_38_color_theme_deep_link() {
+            Backend.confSet("/org/asteroidos/settings/ui/open", "color_theme@" + Date.now())
+            tryVerify(function () { return h.stack.layers.length === 2 }, 5000, "two pages pushed")
+            compare(h.stack.layers[0].objectName, "displayPage")
+            compare(h.stack.layers[1].objectName, "colorThemePage")
         }
     }
 }

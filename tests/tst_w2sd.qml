@@ -128,7 +128,7 @@ SettingsHarness {
             // off-wrist row under Always-on screen; no Extra dim, Always-on
             // brightness, Burn-in protection or Nightstand rows (Q53, Q20, Q34)
             compare(shownRows(h.current()),
-                    ["row:Change watch face", "row:Brightness", "row:Display size & text",
+                    ["row:Change watch face", "row:Color theme", "row:Brightness", "row:Display size & text",
                      "row:Screen timeout", "row:Go to watch face", "row:Always-on screen",
                      "row:Always-on when off wrist",
                      "text:Always-on screen stays on when watch is off wrist or charging",

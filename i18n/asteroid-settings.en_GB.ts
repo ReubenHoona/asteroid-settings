@@ -612,6 +612,18 @@
         <source>Change watch face</source>
         <translation>Change watch face</translation>
     </message>
+    <message id="id-color-theme">
+        <source>Color theme</source>
+        <translation>Color theme</translation>
+    </message>
+    <message id="id-color-theme-match-face">
+        <source>Match watch face</source>
+        <translation>Match watch face</translation>
+    </message>
+    <message id="id-color-theme-none">
+        <source>No theme</source>
+        <translation>No theme</translation>
+    </message>
     <message id="id-adjust-brightness">
         <source>Adjust brightness</source>
         <translation>Adjust brightness</translation>

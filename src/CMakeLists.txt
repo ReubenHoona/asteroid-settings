@@ -97,6 +97,7 @@ asteroid_app_qml_module(asteroid-settings
 	qml/AboutPage.qml
 	qml/LicensesPage.qml
 	qml/LicenseTextPage.qml
+	qml/ColorThemePage.qml
 	qml/InputMethodsPage.qml
 	qml/ManageKeyboardsPage.qml
 	qml/FactoryResetScreen.qml

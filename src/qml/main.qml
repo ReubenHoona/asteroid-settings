@@ -103,6 +103,7 @@ Application {
     PageType { id: wifiLayer;                  page: "WiFiPage" }
     PageType { id: displayLayer;               page: "DisplayPage" }
     PageType { id: brightnessLayer;            page: "BrightnessPage" }
+    PageType { id: colorThemeLayer;            page: "ColorThemePage" }
     PageType { id: extraDimLayer;              page: "ExtraDimPage" }
     PageType { id: watchfaceLayer;             page: "WatchfacePage" }
     PageType { id: gesturesLayer;              page: "GesturesPage" }
@@ -445,6 +446,7 @@ Application {
         "wifi": [connectivityLayer, wifiLayer],
         "bluetooth": [connectivityLayer, bluetoothLayer],
         "display": [displayLayer],
+        "color_theme": [displayLayer, colorThemeLayer],
         "brightness": [displayLayer, brightnessLayer],
         "display_size": [displayLayer, displaySizeLayer],
         "wrist_orientation": [displayLayer, wristOrientationLayer],

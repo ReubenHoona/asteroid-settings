@@ -44,6 +44,10 @@ import org.asteroid.controls
  *   baseline 12 sp under the top of each text, the last 4 sp over its
  *   bottom; both onSurface #E8E7EE. One line each: 32 px from baseline to
  *   baseline, 96 px tall (D60-40);
+ * - control "select" is a checkable row with no control drawn (the
+ *   checkable WearChipButton of the Color theme page,
+ *   SystemThemePreference.java:28-49): checked primaryContainer with
+ *   onPrimaryContainer text, as a checked SwitchButton row;
  * - the label takes at most 5 lines with no second line and no control,
  *   else 3; the second line at most 2
  *   (ButtonItemKt$$ExternalSyntheticLambda0.java:87,100,
@@ -64,7 +68,7 @@ Item {
     property string title: ""
     property string summary: ""
     property string iconName: ""
-    /* "none", "toggle" or "radio" */
+    /* "none", "toggle", "radio" or "select" */
     property string control: "none"
     property bool checked: false
     /* false: greyed out, taps do nothing (stock: a mode holds it, e.g. Theater mode) */
@@ -77,9 +81,15 @@ Item {
     /* the row grows from this height with its text: 52 dp (a data row: its text) */
     property real minHeight: dataRow ? 0 : Theme.size.button
     readonly property bool pressed: button.pressed
+    /* more room before the text, for something drawn there (the Color
+       theme swatches); 0: the text where the Button puts it */
+    property real textInset: 0
+    /* the alpha of the row's content near the screen edge (EdgeEffect), for
+       what a page draws on the row */
+    readonly property real contentAlpha: button.opacity
     /* the Button inside (tests, and rows that need more) */
     readonly property alias button: button
-    readonly property bool selectable: control === "toggle" || control === "radio"
+    readonly property bool selectable: control === "toggle" || control === "radio" || control === "select"
     readonly property bool _on: selectable && checked
 
     signal clicked()
@@ -110,6 +120,15 @@ Item {
     height: Math.max(minHeight, button.implicitHeight)
 
     EdgeEffect { id: edge; item: chip }
+
+    Binding {
+        target: button.label; property: "leftPadding"; when: chip.textInset > 0
+        value: chip.textInset
+    }
+    Binding {
+        target: button.secondaryLabel; property: "leftPadding"; when: chip.textInset > 0
+        value: chip.textInset
+    }
 
     // a data row: each TextView's first baseline 12 sp under its top and its
     // last 4 sp over its bottom (Body4 Flex firstBaselineToTopHeight,
@@ -170,7 +189,7 @@ Item {
         secondaryMaximumLineCount: chip.dataRow ? 4 : 2
         labelRole: chip.dataRow ? "bodyMedium" : "labelMedium"
         secondaryLabelRole: chip.dataRow ? "bodyMedium" : "labelSmall"
-        trailingWidth: chip.selectable ? Theme.dp(32) : 0
+        trailingWidth: chip.control === "toggle" || chip.control === "radio" ? Theme.dp(32) : 0
         trailingSpacing: Theme.space.s
 
         containerColor: chip.containerColor
@@ -191,7 +210,7 @@ Item {
         }
 
         Accessible.role: chip.control === "toggle" ? Accessible.CheckBox
-                       : chip.control === "radio" ? Accessible.RadioButton
+                       : chip.control === "radio" || chip.control === "select" ? Accessible.RadioButton
                        : chip.clickable ? Accessible.Button : Accessible.StaticText
         Accessible.checkable: chip.selectable
         Accessible.checked: chip.checked
@@ -200,7 +219,7 @@ Item {
             if (chip.control === "toggle") {
                 if (typeof Haptics.toggle === "function")
                     Haptics.toggle(!chip.checked)
-            } else if (chip.control === "radio" && !chip.checked) {
+            } else if ((chip.control === "radio" || chip.control === "select") && !chip.checked) {
                 if (typeof Haptics.select === "function")
                     Haptics.select()
             }

@@ -141,7 +141,7 @@ SettingsHarness {
             crawl(0)
             compare(problems, [])
             var expected = ["mainPage", "connectivityPage", "bluetoothPage", "wifiPage", "wifiAddPage", "wifiSavedPage",
-                            "displayPage", "brightnessPage", "displaySizePage", "wristOrientationPage", "touchLockPage", "gesturesPage", "buttonsPage", "appsPage", "modesPage",
+                            "displayPage", "colorThemePage", "brightnessPage", "displaySizePage", "wristOrientationPage", "touchLockPage", "gesturesPage", "buttonsPage", "appsPage", "modesPage",
                             "dndPage", "dndCustomizePage", "bedtimePage", "bedtimeCustomizePage", "theaterPage", "theaterCustomizePage", "assistantPage", "soundPage", "vibrationPage", "batteryPage", "generalPage", "systemPage",
                             "notificationsPage", "appNotificationsPage", "appInfoPage", "appStoragePage", "locationPage",
                             "securityPage", "accessibilityPage", "audioAdjustPage", "healthProfilePage", "safetyPage",
