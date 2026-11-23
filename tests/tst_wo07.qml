@@ -265,5 +265,81 @@ SettingsHarness {
             verify(lInk.x1 <= 48 + label.contentWidth + 2, "label left-aligned, not centred: ends at " + lInk.x1)
             h.shot(this, "d60-39-battery")
         }
+
+        // ---- D60-42: System licenses lists the parts, each opens its text
+
+        // the rows a page shows, top to bottom
+        function rowsOf(page) {
+            var rows = h.findAll(page, function (o) {
+                return o.hasOwnProperty("control") && o.hasOwnProperty("summary") && h.shown(o)
+            })
+            rows.sort(function (a, b) { return at(a).y - at(b).y })
+            return rows
+        }
+        function test_42_licences() {
+            open(["systemItem", "aboutItem", "licensesItem"])
+            compare(h.current().objectName, "licensesPage")
+            compare(h.find(h.current(), "settingsTitle").text, "System licenses")
+            var rows = rowsOf(h.current())
+            var titles = []
+            for (var i = 0; i < rows.length; i++) {
+                titles.push(rows[i].title)
+                compare(rows[i].summary, "", rows[i].title + ": no second line")
+                compare(rows[i].iconName, "", rows[i].title + ": no icon")
+                verify(rows[i].clickable)
+            }
+            compare(titles, ["AsteroidOS", "Linux kernel", "Qt", "Other parts"])
+            verify(h.findAll(h.current(), function (o) { return h.typeName(o) === "SettingsText" }).length === 0,
+                   "no paragraphs on the list")
+            h.shot(this, "d60-42-list")
+            open(["licensesLinux"])
+            var page = h.current()
+            compare(page.objectName, "licenseTextPage")
+            var head = h.find(page, "licenseHeading"), text = h.find(page, "licenseText")
+            compare(head.text, "Linux kernel")
+            compare(text.text, "GNU General Public License, version 2.")
+            verify(!h.shown(h.find(page, "settingsTitle")), "the header is the part's name, no page title")
+            // the header: Title3 (titleMedium 32 px) onSurfaceVariant, centred
+            compare(head.font.pixelSize, 32)
+            rgb(head.color, "#cecdd4", "header colour")
+            compare(head.horizontalAlignment, Text.AlignHCenter)
+            // the text: 12 sp on 14 sp lines in outline, from x 59, 12 dp under the header
+            compare(text.font.pixelSize, 24)
+            compare(text.lineHeight, 28)
+            rgb(text.color, "#a5a5ac", "text colour")
+            tryVerify(function () { return Math.abs(page.mapToItem(h, 0, 0).x) < 0.01 && Math.abs(at(page, 384, 0).x - 384) < 0.01 },
+                      3000, "the page at rest")
+            compare(text.mapToItem(page, text.leftPadding, 0).x, 59)
+            compare(text.mapToItem(page, text.width - text.rightPadding, 0).x, 384 - 59)
+            near(text.mapToItem(page, 0, 0).y - head.mapToItem(page, 0, head.height - head.bottomPadding).y,
+                 24, 0.5, "12 dp under the header")
+            // the pushed page fades in after it has moved: let it settle
+            wait(400)
+            var img = screen()
+            var hy = Math.round(at(head).y), hh = Math.round(head.height - head.bottomPadding)
+            var hInk = ink(img, 20, hy, 364, hy + hh, function (r, g, b) { return r > 120 })
+            near((hInk.x0 + hInk.x1) / 2, 192, 3, "header centred")
+            var hc = brightest(img, 20, hy, 364, hy + hh)
+            verify(Math.abs(hc[0] - 0xce) <= 3 && Math.abs(hc[2] - 0xd4) <= 3, "header ink " + hc)
+            var ty = Math.round(at(text).y), th = Math.round(text.height)
+            var tInk = ink(img, 20, ty, 364, ty + th, function (r, g, b) { return r > 90 })
+            near(tInk.x0, 59, 2, "text ink x")
+            near(tInk.y0, 134, 4, "first line's cap top (stock 134)")
+            var tc = brightest(img, 20, ty, 364, ty + th)
+            verify(Math.abs(tc[0] - 0xa5) <= 3 && Math.abs(tc[2] - 0xac) <= 3, "text ink " + tc)
+            h.shot(this, "d60-42-text")
+            // a longer text wraps in the 266 px between the paddings, 28 px apart
+            h.back(this)
+            open(["licensesAsteroid"])
+            text = h.find(h.current(), "licenseText")
+            compare(h.find(h.current(), "licenseHeading").text, "AsteroidOS")
+            verify(text.lineCount >= 3, "wrapped: " + text.lineCount)
+            compare(text.lineHeightMode, Text.FixedHeight)
+            verify(!text.truncated)
+            h.back(this)
+            open(["licensesOthers"])
+            compare(h.find(h.current(), "licenseHeading").text, "Other parts")
+            verify(h.find(h.current(), "licenseText").text.indexOf("asteroidos.org") >= 0)
+        }
     }
 }

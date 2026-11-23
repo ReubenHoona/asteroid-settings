@@ -145,7 +145,7 @@ SettingsHarness {
                             "dndPage", "dndCustomizePage", "bedtimePage", "bedtimeCustomizePage", "theaterPage", "theaterCustomizePage", "assistantPage", "soundPage", "vibrationPage", "batteryPage", "generalPage", "systemPage",
                             "notificationsPage", "appNotificationsPage", "appInfoPage", "appStoragePage", "locationPage",
                             "securityPage", "accessibilityPage", "audioAdjustPage", "healthProfilePage", "safetyPage",
-                            "dateTimePage", "aboutPage", "versionsPage", "developerPage", "batterySaverPage", "inputMethodsPage", "manageKeyboardsPage", "licensesPage"]
+                            "dateTimePage", "aboutPage", "versionsPage", "developerPage", "batterySaverPage", "inputMethodsPage", "manageKeyboardsPage", "licensesPage", "licenseTextPage"]
             for (var i = 0; i < expected.length; i++)
                 verify(visited.indexOf(expected[i]) >= 0, expected[i] + " reached")
         }

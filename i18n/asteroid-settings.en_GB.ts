@@ -1595,17 +1595,25 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>For licences and source code, see asteroidos.org</source>
         <translation>For licences and source code, see asteroidos.org</translation>
     </message>
+    <message id="id-licenses-kernel-title">
+        <source>Linux kernel</source>
+        <translation>Linux kernel</translation>
+    </message>
     <message id="id-licenses-kernel">
-        <source>Linux kernel: GNU General Public License, version 2.</source>
-        <translation>Linux kernel: GNU General Public License, version 2.</translation>
+        <source>GNU General Public License, version 2.</source>
+        <translation>GNU General Public License, version 2.</translation>
     </message>
     <message id="id-licenses-asteroid">
-        <source>AsteroidOS apps and system UI: GNU General Public License version 3, GNU Lesser General Public License version 2.1 and BSD 3-clause licences.</source>
-        <translation>AsteroidOS apps and system UI: GNU General Public License version 3, GNU Lesser General Public License version 2.1 and BSD 3-clause licences.</translation>
+        <source>The apps and the system UI: GNU General Public License version 3, GNU Lesser General Public License version 2.1 and BSD 3-clause licences.</source>
+        <translation>The apps and the system UI: GNU General Public License version 3, GNU Lesser General Public License version 2.1 and BSD 3-clause licences.</translation>
     </message>
     <message id="id-licenses-qt">
-        <source>Qt: GNU Lesser General Public License version 3.</source>
-        <translation>Qt: GNU Lesser General Public License version 3.</translation>
+        <source>GNU Lesser General Public License version 3.</source>
+        <translation>GNU Lesser General Public License version 3.</translation>
+    </message>
+    <message id="id-licenses-others-title">
+        <source>Other parts</source>
+        <translation>Other parts</translation>
     </message>
     <message id="id-licenses-others">
         <source>Other parts keep their own licences. The full texts and the source are at asteroidos.org.</source>
