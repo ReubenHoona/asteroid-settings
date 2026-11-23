@@ -165,7 +165,14 @@ SettingsHarness {
             verify(title.height >= 96, "at least 48 dp")
             var l = title.label
             compare(l.font.pixelSize, 32)
-            compare(l.font.weight, 550)
+            // CP3A's titleMedium is weight 550 in Google Sans Flex (Settings v2
+            // TypeScaleTokens.java:206); the image's static Noto Sans has no 550
+            // face (Qt took SemiBold), so the Theme asks for Medium (500) and
+            // keeps 550 as axes.wght for a variable font (D60-37)
+            compare(l.font.weight, 500)
+            compare(l.fontInfo.styleName, "Medium", "title drawn in the Medium face")
+            compare(Theme.type.titleMedium.weight, 500)
+            compare(Theme.type.titleMedium.axes.wght, 550)
             rgb(l.color, "#ffffff", "title colour")
             compare(l.horizontalAlignment, Text.AlignHCenter)
             compare(l.maximumLineCount, 3)
@@ -300,7 +307,14 @@ SettingsHarness {
             verify(cats.length >= 2, "the Do Not Disturb customize page has categories")
             var first = cats[0], second = cats[1]
             compare(first.font.pixelSize, 28)
-            compare(first.font.weight, 550)
+            // CP3A's titleSmall is weight 550 in Google Sans Flex (Settings v2
+            // TypeScaleTokens.java:212); the image's static Noto Sans has no 550
+            // face (Qt took SemiBold), so the Theme asks for Medium (500) and
+            // keeps 550 as axes.wght for a variable font (D60-37)
+            compare(first.font.weight, 500)
+            compare(first.fontInfo.styleName, "Medium", "category drawn in the Medium face")
+            compare(Theme.type.titleSmall.weight, 500)
+            compare(Theme.type.titleSmall.axes.wght, 550)
             rgb(first.color, "#e8e7ee", "category colour")
             compare(first.leftPadding, 16)
             compare(first.rightPadding, 16)
@@ -442,7 +456,9 @@ SettingsHarness {
             var title = h.find(d, "choiceTitle"), msg = h.find(d, "choiceMessage")
             compare(title.text, "Screen timeout")
             compare(title.font.pixelSize, 32)
-            compare(title.font.weight, 550)
+            // titleMedium: Medium (500) for CP3A's 550, as the page title (D60-37)
+            compare(title.font.weight, 500)
+            compare(title.fontInfo.styleName, "Medium", "dialog title drawn in the Medium face")
             compare(title.horizontalAlignment, Text.AlignHCenter)
             compare(title.maximumLineCount, 3)
             compare(title.mapToItem(list, 0, 0).x, 46)
