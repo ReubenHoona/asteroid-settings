@@ -15,7 +15,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QElapsedTimer>
 #include <QGuiApplication>
+#include <QLoggingCategory>
+#include <QQuickItem>
 #include <QQuickView>
 #include <QScreen>
 #include <QtQml>
@@ -34,8 +37,13 @@
 #include "packageinfo.h"
 #include "timezonemodel.h"
 
+// how long Settings takes to show (D60-46), one line in the journal per start
+Q_LOGGING_CATEGORY(lcStart, "asteroid.settings.start", QtInfoMsg)
+
 int main(int argc, char *argv[])
 {
+    QElapsedTimer started;
+    started.start();
     utsname buf;
     uname(&buf);
     QScopedPointer<QGuiApplication> app(AsteroidApp::application(argc, argv));
@@ -51,9 +59,18 @@ int main(int argc, char *argv[])
     qmlRegisterType<BluetoothDevices>("org.asteroid.settings", 1, 0, "BluetoothDevices");
     qmlRegisterType<HiddenWifi>("org.asteroid.settings", 1, 0, "HiddenWifi");
     view->setSource(QUrl("qrc:/Settings/qml/main.qml"));
+    const qint64 qmlReady = started.elapsed();
     view->rootContext()->setContextProperty("qtVersion", QString(qVersion()));
     view->rootContext()->setContextProperty("kernelVersion", QString(buf.release));
     view->resize(app->primaryScreen()->size());
+    // the first frame is on screen: main.qml makes its dialogs from now on
+    // (firstFrameDrawn) and the journal gets the times since main(). The
+    // render thread sends frameSwapped: queued to this thread, once.
+    QObject::connect(view.data(), &QQuickWindow::frameSwapped, app.data(), [&view, &started, qmlReady]() {
+        qCInfo(lcStart, "main.qml ready after %lld ms, first frame after %lld ms", qmlReady, started.elapsed());
+        if (QObject *root = view->rootObject())
+            root->setProperty("firstFrameDrawn", true);
+    }, Qt::ConnectionType(Qt::QueuedConnection | Qt::SingleShotConnection));
     view->show();
     return app->exec();
 }

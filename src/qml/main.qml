@@ -60,56 +60,94 @@ Application {
     topIndicVisible: false
     bottomIndicVisible: false
 
-    Component { id: connectivityLayer;          ConnectivityPage { } }
-    Component { id: bluetoothLayer;             BluetoothPage  { } }
-    Component { id: wifiLayer;                  WiFiPage       { } }
-    Component { id: displayLayer;               DisplayPage    { } }
-    Component { id: brightnessLayer;            BrightnessPage { } }
-    Component { id: extraDimLayer;              ExtraDimPage   { } }
-    Component { id: watchfaceLayer;             WatchfacePage  { } }
-    Component { id: gesturesLayer;              GesturesPage   { } }
-    Component { id: appsLayer;                  AppsPage       { } }
-    Component { id: dndLayer;                   DndPage        { } }
-    Component { id: bedtimeLayer;               BedtimePage    { } }
-    Component { id: theaterLayer;               TheaterPage    { } }
-    Component { id: dndCustomizeLayer;          ModeCustomizePage { mode: "do-not-disturb" } }
-    Component { id: bedtimeCustomizeLayer;      ModeCustomizePage { mode: "bedtime" } }
-    Component { id: theaterCustomizeLayer;      ModeCustomizePage { mode: "theater" } }
-    Component { id: assistantLayer;             AssistantPage  { } }
-    Component { id: soundLayer;                 SoundPage      { } }
-    Component { id: vibrationLayer;             VibrationPage  { } }
-    Component { id: batteryLayer;               BatteryPage    { } }
-    Component { id: batterySaverLayer;          BatterySaverPage { } }
-    Component { id: chargingLayer;              ChargingPage   { } }
-    Component { id: generalLayer;               GeneralPage    { } }
-    Component { id: systemLayer;                SystemPage     { } }
-    Component { id: dateTimeLayer;              DateTimePage   { } }
-    Component { id: timeLayer;                  TimePage       { } }
-    Component { id: dateLayer;                  DatePage       { } }
-    Component { id: languageLayer;              LanguagePage   { } }
-    Component { id: updatesLayer;               UpdatesPage    { } }
-    Component { id: aboutLayer;                 AboutPage      { } }
-    Component { id: licensesLayer;              LicensesPage   { } }
-    Component { id: inputMethodsLayer;          InputMethodsPage { } }
-    Component { id: manageKeyboardsLayer;       ManageKeyboardsPage { } }
-    Component { id: versionsLayer;              VersionsPage   { } }
-    Component { id: developerLayer;             DeveloperPage  { } }
-    Component { id: buttonsLayer;               ButtonsPage    { } }
-    Component { id: modesLayer;                 ModesPage      { } }
-    Component { id: locationLayer;              LocationPage   { } }
-    Component { id: accessibilityLayer;         AccessibilityPage { } }
-    Component { id: securityLayer;              SecurityPage   { } }
-    Component { id: lockFlowLayer;              LockFlowPage   { } }
-    Component { id: displaySizeLayer;           DisplaySizePage { } }
-    Component { id: wristOrientationLayer;      WristOrientationPage { } }
-    Component { id: touchLockLayer;             TouchLockPage  { } }
-    Component { id: healthProfileLayer;         HealthProfilePage { } }
-    Component { id: safetyLayer;                SafetyPage     { } }
-    Component { id: notificationsLayer;         NotificationsPage { } }
-    Component { id: appNotificationsLayer;      AppNotificationsPage { } }
-    Component { id: appInfoLayer;               AppInfoPage    { } }
-    Component { id: appStorageLayer;            AppStoragePage { } }
-    Component { id: audioAdjustLayer;           AudioAdjustPage { } }
+    /*
+     * The pages, each made from its file at its first push (D60-46). An
+     * inline Component { XxxPage { } } for every page here made Qt load all
+     * the page types, their imports and plugins before the first frame;
+     * stock composes a route only when it is navigated to (CP3A Compose
+     * NavHost, ComposeRouteNavHostKt). A PageType is what LayerStack.push()
+     * takes as the page's Component (status, createObject), under the same
+     * ids, so the pages and the deep links push them as before.
+     */
+    component PageType: QtObject {
+        // the page's file, without ".qml"
+        required property string page
+        // set on the page as it is made, unless push() sets them
+        property var initial: ({})
+        // the page's type once loaded: null before the first push
+        property Component loaded: null
+        // push() takes a ready Component: the type loads in createObject()
+        readonly property int status: Component.Ready
+        function createObject(into, params) {
+            if (!loaded)
+                loaded = app.pageType(page)
+            var p = params || {}
+            for (var k in initial) {
+                if (!p.hasOwnProperty(k))
+                    p[k] = initial[k]
+            }
+            return loaded.createObject(into, p)
+        }
+    }
+    // the type of <page>.qml, made in this file's context as the inline
+    // Components were: the pages see its ids (layerStack, confirm, app ...)
+    function pageType(page) {
+        var c = Qt.createComponent(page + ".qml")
+        if (c.status !== Component.Ready)
+            console.warn("Settings: " + page + ": " + c.errorString())
+        return c
+    }
+
+    PageType { id: connectivityLayer;          page: "ConnectivityPage" }
+    PageType { id: bluetoothLayer;             page: "BluetoothPage" }
+    PageType { id: wifiLayer;                  page: "WiFiPage" }
+    PageType { id: displayLayer;               page: "DisplayPage" }
+    PageType { id: brightnessLayer;            page: "BrightnessPage" }
+    PageType { id: extraDimLayer;              page: "ExtraDimPage" }
+    PageType { id: watchfaceLayer;             page: "WatchfacePage" }
+    PageType { id: gesturesLayer;              page: "GesturesPage" }
+    PageType { id: appsLayer;                  page: "AppsPage" }
+    PageType { id: dndLayer;                   page: "DndPage" }
+    PageType { id: bedtimeLayer;               page: "BedtimePage" }
+    PageType { id: theaterLayer;               page: "TheaterPage" }
+    PageType { id: dndCustomizeLayer;          page: "ModeCustomizePage"; initial: ({ "mode": "do-not-disturb" }) }
+    PageType { id: bedtimeCustomizeLayer;      page: "ModeCustomizePage"; initial: ({ "mode": "bedtime" }) }
+    PageType { id: theaterCustomizeLayer;      page: "ModeCustomizePage"; initial: ({ "mode": "theater" }) }
+    PageType { id: assistantLayer;             page: "AssistantPage" }
+    PageType { id: soundLayer;                 page: "SoundPage" }
+    PageType { id: vibrationLayer;             page: "VibrationPage" }
+    PageType { id: batteryLayer;               page: "BatteryPage" }
+    PageType { id: batterySaverLayer;          page: "BatterySaverPage" }
+    PageType { id: chargingLayer;              page: "ChargingPage" }
+    PageType { id: generalLayer;               page: "GeneralPage" }
+    PageType { id: systemLayer;                page: "SystemPage" }
+    PageType { id: dateTimeLayer;              page: "DateTimePage" }
+    PageType { id: timeLayer;                  page: "TimePage" }
+    PageType { id: dateLayer;                  page: "DatePage" }
+    PageType { id: languageLayer;              page: "LanguagePage" }
+    PageType { id: updatesLayer;               page: "UpdatesPage" }
+    PageType { id: aboutLayer;                 page: "AboutPage" }
+    PageType { id: licensesLayer;              page: "LicensesPage" }
+    PageType { id: inputMethodsLayer;          page: "InputMethodsPage" }
+    PageType { id: manageKeyboardsLayer;       page: "ManageKeyboardsPage" }
+    PageType { id: versionsLayer;              page: "VersionsPage" }
+    PageType { id: developerLayer;             page: "DeveloperPage" }
+    PageType { id: buttonsLayer;               page: "ButtonsPage" }
+    PageType { id: modesLayer;                 page: "ModesPage" }
+    PageType { id: locationLayer;              page: "LocationPage" }
+    PageType { id: accessibilityLayer;         page: "AccessibilityPage" }
+    PageType { id: securityLayer;              page: "SecurityPage" }
+    PageType { id: lockFlowLayer;              page: "LockFlowPage" }
+    PageType { id: displaySizeLayer;           page: "DisplaySizePage" }
+    PageType { id: wristOrientationLayer;      page: "WristOrientationPage" }
+    PageType { id: touchLockLayer;             page: "TouchLockPage" }
+    PageType { id: healthProfileLayer;         page: "HealthProfilePage" }
+    PageType { id: safetyLayer;                page: "SafetyPage" }
+    PageType { id: notificationsLayer;         page: "NotificationsPage" }
+    PageType { id: appNotificationsLayer;      page: "AppNotificationsPage" }
+    PageType { id: appInfoLayer;               page: "AppInfoPage" }
+    PageType { id: appStorageLayer;            page: "AppStoragePage" }
+    PageType { id: audioAdjustLayer;           page: "AudioAdjustPage" }
 
     // Developer options appear at the end of the list once Build number
     // (About > Versions) was tapped seven times, as on Wear OS
@@ -139,38 +177,98 @@ Application {
     // the tests can swap it.
     property var closeApp: function () { Qt.quit() }
 
+    /*
+     * The selection dialog, the confirmation, the toast and the reset screen
+     * are made after the first frame (D60-46), at once if one is wanted
+     * sooner: made with the app, they and their types held up the first
+     * frame. main.cpp sets firstFrameDrawn once the first frame is on
+     * screen. A Later fills the app at the z its item had; now() gives the
+     * item, finishing a creation under way (a Loader set to synchronous
+     * completes it) or making it there and then.
+     */
+    property bool firstFrameDrawn: false
+    component Later: Loader {
+        anchors.fill: parent
+        asynchronous: true
+        active: app.firstFrameDrawn
+        // the item once made (untyped: its type loads with it)
+        readonly property var made: item
+        function now() {
+            asynchronous = false
+            active = true
+            return item
+        }
+    }
+
     // the stock selection dialog of the list settings (SelectionDialogKt):
     // options are the labels, apply(index) applies one; it returns false
     // to keep the dialog open (the caller then calls pop() on what choose()
     // returned, e.g. after a confirmation); message is stock's optional line
     // under the title ("When display will turn off after inactivity")
-    ChoicePage { id: chooser; behind: layerStack }
+    Later {
+        id: chooser
+        z: 1000
+        source: "ChoicePage.qml"
+        onLoaded: item.behind = layerStack
+        readonly property bool shown: made !== null && made.shown
+        function show(title, options, current, apply, summaries, message) {
+            return now().show(title, options, current, apply, summaries, message)
+        }
+        function pop() {
+            if (made)
+                made.pop()
+        }
+    }
     function choose(title, options, current, apply, summaries, message) {
         return chooser.show(title, options, current, apply, summaries || [], message || "")
     }
 
     // the stock settings confirmation (X / check), over every page and the
     // selection dialog
-    ConfirmDialog {
+    Later {
         id: confirm
-        objectName: "confirmDialog"
-        // the screen under it: the selection dialog when it asks for one
-        behind: chooser.shown ? chooser : layerStack
+        z: 1100
+        source: "ConfirmDialog.qml"
+        onLoaded: {
+            item.objectName = "confirmDialog"
+            // the screen under it: the selection dialog when it asks for one
+            item.behind = Qt.binding(function () { return chooser.shown ? chooser.made : layerStack })
+        }
+        function ask(title, message, onAccept, onReject) {
+            now().ask(title, message, onAccept, onReject)
+        }
+        function tell(title, message, onAccept) {
+            now().tell(title, message, onAccept)
+        }
+        function close() {
+            if (made)
+                made.close()
+        }
     }
 
     // the screen of Disconnect & reset: over everything, no way back
-    FactoryResetScreen {
+    Later {
         id: resetScreen
-        anchors.fill: parent
         z: 1500
+        source: "FactoryResetScreen.qml"
+        function start() {
+            now().start()
+        }
     }
 
     // the Android toast (org.asteroid.controls Toast: centred, 2 s)
-    Toast {
+    Later {
         id: toast
-        objectName: "toast"
         z: 1200
-        Component.onCompleted: toast.label.objectName = "toastText"
+        sourceComponent: Component {
+            Toast {
+                objectName: "toast"
+                Component.onCompleted: label.objectName = "toastText"
+            }
+        }
+        function show(message, isLong, icon) {
+            now().show(message, isLong, icon)
+        }
     }
 
     Component {

@@ -98,15 +98,32 @@ Item {
                 return false
         return true
     }
-    function start(t) {
+    // Settings made afresh. prepare(): run on the reset backend before the
+    // app is made (a page request waiting at start). Then the first frame,
+    // as main.cpp reports it on the watch: the dialogs, the toast and the
+    // reset screen are made after it (D60-46); cold leaves that out (what
+    // the app has before its first frame, tst_start.qml).
+    function start(t, prepare, cold) {
         Backend.reset()
         loader.active = false
+        if (prepare) {
+            // the app before has gone: the request is not seen by it
+            t.wait(0)
+            prepare()
+        }
         loader.active = true
         t.tryCompare(loader, "status", Loader.Ready)
         stack = find(loader.item, "LayerStack")
         t.verify(stack !== null, "the LayerStack")
         closeCount = 0
         loader.item.closeApp = function () { harness.closeCount++ }
+        if (!cold) {
+            loader.item.firstFrameDrawn = true
+            t.tryVerify(function () {
+                return find(loader.item, "choiceDialog") !== null && find(loader.item, "confirmDialog") !== null
+                    && find(loader.item, "toast") !== null && find(loader.item, "factoryResetScreen") !== null
+            }, 20000, "the dialogs, the toast and the reset screen are made after the first frame")
+        }
         t.wait(300)
     }
     // the selection dialog while it is up (list settings open in it), else
