@@ -100,30 +100,40 @@ Item {
             // follow it: with the data rows' own top padding the first row's
             // cap comes 61 px under the title's, where the emulator draws
             // them (S22-b: title cap y 68, first row cap y 129).
-            Label {
-                id: legacyTitle
-                objectName: page.legacyHeader ? "settingsTitle" : ""
-                visible: page.legacyHeader && page.title !== ""
+            // created only on the legacy pages: its bottom padding reads its own
+            // layout, which on every other page only cost time and logged binding loops
+            Loader {
+                id: legacyLoader
+                active: page.legacyHeader
+                visible: active && page.title !== ""
                 width: column.width
-                leftPadding: Math.round(page.width * 0.1664) - column.x
-                rightPadding: leftPadding
-                role: "labelMedium"
-                color: Theme.color.onSurface
-                horizontalAlignment: Text.AlignHCenter
-                wrapMode: Text.Wrap
-                maximumLineCount: 3
-                elide: Text.ElideRight
-                clip: false
-                text: page.title
-                Accessible.role: Accessible.Heading
-                Accessible.name: text
-                readonly property real _sp: Theme.density * Theme.fontScale
-                // the first baseline 14 sp under the top; Qt lays out the
-                // font's whole (rounded up) height under the last baseline,
-                // so the bottom padding takes that off 4 sp
-                topPadding: 14 * _sp - legacyMetrics.ascent
-                bottomPadding: 4 * _sp - (contentHeight - (lineCount - 1) * lineHeight - legacyMetrics.ascent)
-                FontMetrics { id: legacyMetrics; font: legacyTitle.font }
+                sourceComponent: Component {
+                    Label {
+                        id: legacyTitle
+                        objectName: page.legacyHeader ? "settingsTitle" : ""
+                        visible: page.legacyHeader && page.title !== ""
+                        width: legacyLoader.width
+                        leftPadding: Math.round(page.width * 0.1664) - column.x
+                        rightPadding: leftPadding
+                        role: "labelMedium"
+                        color: Theme.color.onSurface
+                        horizontalAlignment: Text.AlignHCenter
+                        wrapMode: Text.Wrap
+                        maximumLineCount: 3
+                        elide: Text.ElideRight
+                        clip: false
+                        text: page.title
+                        Accessible.role: Accessible.Heading
+                        Accessible.name: text
+                        readonly property real _sp: Theme.density * Theme.fontScale
+                        // the first baseline 14 sp under the top; Qt lays out the
+                        // font's whole (rounded up) height under the last baseline,
+                        // so the bottom padding takes that off 4 sp
+                        topPadding: 14 * _sp - legacyMetrics.ascent
+                        bottomPadding: 4 * _sp - (contentHeight - (lineCount - 1) * lineHeight - legacyMetrics.ascent)
+                        FontMetrics { id: legacyMetrics; font: legacyTitle.font }
+                    }
+                }
             }
         }
     }
