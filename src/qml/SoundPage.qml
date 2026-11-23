@@ -32,7 +32,8 @@ import Nemo.Configuration
  * - the switches Screen unlocking sound and Charging sounds (stock Global
  *   screen_unlock_sound_enabled and wear_charging_sounds_enabled, both on)
  *   on /org/asteroidos/sound/screen-unlock and .../charging, read by whatever
- *   plays them.
+ *   plays them;
+ * - Wireless emergency alerts, the LTE watch's last row (below).
  * Hidden until /org/asteroidos/sound/volume-control-supported is true (CR-31):
  * Ring, Notification and Alarm volume and Mute alarm, which no reader honours
  * yet.
@@ -213,5 +214,24 @@ SettingsPage {
         control: "toggle"
         checked: page.on(chargingSounds.value)
         onClicked: chargingSounds.value = !page.on(chargingSounds.value)
+    }
+
+    // Stock's last rows are Audio adjustment (here on Accessibility, CR-33),
+    // Watch ringtone and Wireless emergency alerts (D60-43). No Watch
+    // ringtone: its row shows only with config_enableRingtoneSelection
+    // (DefaultRingtonePreference.java, ButtonUiState visible = that bool),
+    // which the Pixel Watch overlay sets false (settings.overlay.pixel.watch
+    // values/bools.xml; calls audit E59). Wireless emergency alerts
+    // (WirelessEmergencyAlertsPreference.java:66-111): a plain row, no icon
+    // and no second line, shown where the cell broadcast receiver is (the
+    // LTE watch) and opening its settings. Built UI-first (DECISIONS Q61):
+    // until the modem work of M7 brings a receiver, a tap says the alerts
+    // are not available yet.
+    SettingsChip {
+        objectName: "emergencyAlertsItem"
+        //% "Wireless emergency alerts"
+        title: qsTrId("id-wireless-emergency-alerts")
+        //% "Emergency alerts are not available on this watch yet"
+        onClicked: confirm.tell("", qsTrId("id-wireless-emergency-alerts-unavailable"))
     }
 }

@@ -333,7 +333,8 @@ SettingsHarness {
                             "text:Silences alarm when Mute ring is enabled while worn. Watch will still vibrate",
                             "category:Media volume", "slider:volumeSlider",
                             "category:Call volume", "slider:callVolumeSlider",
-                            "row:Screen unlocking sound", "row:Charging sounds"]
+                            "row:Screen unlocking sound", "row:Charging sounds",
+                            "row:Wireless emergency alerts"]
             compare(shownRows(h.current()), expected)
             // the defaults
             verify(chip("muteRingSwitch").checked, "muted by default (the engine's default)")
@@ -666,7 +667,8 @@ SettingsHarness {
                     ["row:Mute ring & notifications",
                      "category:Media volume", "slider:volumeSlider",
                      "category:Call volume", "slider:callVolumeSlider",
-                     "row:Screen unlocking sound", "row:Charging sounds"])
+                     "row:Screen unlocking sound", "row:Charging sounds",
+                     "row:Wireless emergency alerts"])
             verify(!chip("ringVolumeSlider").visible && !chip("notificationVolumeSlider").visible
                    && !chip("alarmVolumeSlider").visible && !chip("muteAlarmSwitch").visible)
             // the gate turns them on

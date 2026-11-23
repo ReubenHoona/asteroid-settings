@@ -1247,6 +1247,14 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Charging sounds</source>
         <translation>Charging sounds</translation>
     </message>
+    <message id="id-wireless-emergency-alerts">
+        <source>Wireless emergency alerts</source>
+        <translation>Wireless emergency alerts</translation>
+    </message>
+    <message id="id-wireless-emergency-alerts-unavailable">
+        <source>Emergency alerts are not available on this watch yet</source>
+        <translation>Emergency alerts are not available on this watch yet</translation>
+    </message>
     <message id="id-ring-vibration">
         <source>Ring vibration</source>
         <translation>Ring vibration</translation>

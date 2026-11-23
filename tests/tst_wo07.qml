@@ -460,5 +460,36 @@ SettingsHarness {
             compare(h.stack.layers[0].objectName, "displayPage")
             compare(h.stack.layers[1].objectName, "colorThemePage")
         }
+
+        // ---- D60-43: Sound ends with Wireless emergency alerts (no Watch
+        // ringtone: CP3A hides it on the Pixel Watch)
+
+        function test_43_sound_rows() {
+            open(["soundItem"])
+            compare(h.current().objectName, "soundPage")
+            var titles = titlesOf(h.current())
+            compare(titles.slice(-3), ["Screen unlocking sound", "Charging sounds", "Wireless emergency alerts"])
+            verify(titles.indexOf("Watch ringtone") < 0, "no Watch ringtone row")
+            var row = chip("emergencyAlertsItem")
+            compare(row.summary, "")
+            compare(row.iconName, "")
+            compare(row.control, "none")
+            verify(row.clickable && row.active)
+            verify(h.scrollToEnd(this), "the list scrolls")
+            wait(300)
+            h.shot(this, "d60-43-sound-end")
+            // UI-first (Q61): no receiver before M7, the info popup says so
+            Backend.clearCalls()
+            h.tap(this, row)
+            var d = dialog()
+            tryVerify(function () { return d.shown && d.contentScale === 1 && d.alpha === 1 }, 3000, "settled")
+            compare(d.buttons, "info")
+            compare(d.text, "Emergency alerts are not available on this watch yet")
+            compare(d.textLabel.lineCount, 3)
+            compare(Backend.calls.length, 0, "nothing written")
+            h.tap(this, h.find(h.app, "dialogYes"))
+            tryVerify(function () { return !d.shown }, 3000, "closed")
+            compare(h.current().objectName, "soundPage")
+        }
     }
 }
