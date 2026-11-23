@@ -14,6 +14,13 @@ import org.asteroid.settings
 //   24, 48 and 100 % (the Pixel Watch overlay's brightness_percentages
 //   100|48|24|12|6, shown smallest first), the state "%s percent screen
 //   brightness".
+//   The header is CP3A's: SliderController$Brightness$$ExternalSynthetic
+//   Lambda0.java:26-31 picks pref_fixed_brightness (pref_adaptive_brightness
+//   when adaptive) for the 4th argument of SliderUiState.copy$default, the
+//   headerLabel (mask 527 leaves bit 16 clear), which SliderItemKt.java:110
+//   draws. pref_brightness ("Brightness") goes only to
+//   progressContentDescription, which the M3 slider never reads (D60-44:
+//   the emulator's "Brightness" is not CP3A's).
 // - Adaptive brightness on, header "Adaptive brightness": 3 steps Dim,
 //   Normal and Bright (screen_brightness_for_als 1, 2, 3).
 // The slider runs 0 to the step count with the value on the step (1 to n),
