@@ -315,8 +315,13 @@ SettingsHarness {
             compare(head.text, "Linux kernel")
             compare(text.text, "GNU General Public License, version 2.")
             verify(!h.shown(h.find(page, "settingsTitle")), "the header is the part's name, no page title")
-            // the header: Title3 (titleMedium 32 px) onSurfaceVariant, centred
-            compare(head.font.pixelSize, 32)
+            // the header: textAppearanceMedium over Title3: 14 sp (titleSmall
+            // 28 px, weight 500, no tracking) onSurfaceVariant, centred, on
+            // Title3's 18 sp lines
+            compare(head.font.pixelSize, 28)
+            compare(head.font.weight, 500)
+            compare(head.font.letterSpacing, 0)
+            compare(head.lineHeight, 36)
             rgb(head.color, "#cecdd4", "header colour")
             compare(head.horizontalAlignment, Text.AlignHCenter)
             // the text: 12 sp on 14 sp lines in outline, from x 59, 12 dp under the header
@@ -327,14 +332,25 @@ SettingsHarness {
                       3000, "the page at rest")
             compare(text.mapToItem(page, text.leftPadding, 0).x, 59)
             compare(text.mapToItem(page, text.width - text.rightPadding, 0).x, 384 - 59)
-            near(text.mapToItem(page, 0, 0).y - head.mapToItem(page, 0, head.height - head.bottomPadding).y,
-                 24, 0.5, "12 dp under the header")
+            // the header's baseline at y 94 (S35-c; Title3's box from 14 sp
+            // above it to 4 sp under it, so 66-102), 12 dp to the text, whose
+            // first baseline is 26 px under its top (S35-c: y 152)
+            var hb = head.mapToItem(page, 0, head.baselineOffset).y
+            near(hb, 94, 0.5, "header baseline")
+            var tTop = text.mapToItem(page, 0, 0).y
+            near(tTop - (hb + 8), 24, 0.5, "12 dp under the header's box")
+            near(text.baselineOffset, 26, 0.5, "text first baseline under its top")
+            near(tTop + text.baselineOffset, 152, 0.5, "text first baseline")
             // the pushed page fades in after it has moved: let it settle
             wait(400)
             var img = screen()
             var hy = Math.round(at(head).y), hh = Math.round(head.height - head.bottomPadding)
             var hInk = ink(img, 20, hy, 364, hy + hh, function (r, g, b) { return r > 120 })
             near((hInk.x0 + hInk.x1) / 2, 192, 3, "header centred")
+            // "Linux kernel" has no descenders: its ink ends on the baseline
+            // (stock: to y 93), its ascenders 22 px or less (32 px text: 25)
+            near(hInk.y1, 93, 1, "header ink bottom")
+            verify(hInk.y1 - hInk.y0 + 1 <= 22, "header ink height " + (hInk.y1 - hInk.y0 + 1))
             var hc = brightest(img, 20, hy, 364, hy + hh)
             verify(Math.abs(hc[0] - 0xce) <= 3 && Math.abs(hc[2] - 0xd4) <= 3, "header ink " + hc)
             var ty = Math.round(at(text).y), th = Math.round(text.height)
