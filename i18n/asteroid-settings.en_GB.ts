@@ -1592,8 +1592,8 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <translation>Legal notices</translation>
     </message>
     <message id="id-about-legal-text">
-        <source>AsteroidOS is free software. Its licences, and the source of this system, are at asteroidos.org.</source>
-        <translation>AsteroidOS is free software. Its licences, and the source of this system, are at asteroidos.org.</translation>
+        <source>For licences and source code, see asteroidos.org</source>
+        <translation>For licences and source code, see asteroidos.org</translation>
     </message>
     <message id="id-licenses-kernel">
         <source>Linux kernel: GNU General Public License, version 2.</source>

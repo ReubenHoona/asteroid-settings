@@ -119,8 +119,11 @@ SettingsPage {
         objectName: "legalNoticesItem"
         //% "Legal notices"
         title: qsTrId("id-about-legal")
-        onClicked: confirm.tell(qsTrId("id-about-legal"),
-                                //% "AsteroidOS is free software. Its licences, and the source of this system, are at asteroidos.org."
-                                qsTrId("id-about-legal-text"))
+        // stock shows the message alone with one check (DeviceInfoFragment
+        // $$ExternalSyntheticLambda0.java:33-41, DialogUtils.showPopup), in
+        // three lines as stock's "For legal notices, see device paired with
+        // your watch"
+        //% "For licences and source code, see asteroidos.org"
+        onClicked: confirm.tell("", qsTrId("id-about-legal-text"))
     }
 }

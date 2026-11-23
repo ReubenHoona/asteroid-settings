@@ -173,5 +173,47 @@ SettingsHarness {
                 verify(chip(names[i]).dataRow, names[i] + " is a data row")
             near(chip("kernelItem").height, 96, 1, "row height")
         }
+
+        // ---- D60-41: Legal notices is the stock info popup
+
+        function dialog() { return h.find(h.app, "confirmDialog") }
+        function test_41_legal_notices_popup() {
+            open(["systemItem", "aboutItem"])
+            h.tapName(this, "legalNoticesItem")
+            var d = dialog()
+            tryVerify(function () { return d.shown && d.contentScale === 1 && d.alpha === 1 }, 3000, "settled")
+            compare(d.buttons, "info")
+            verify(d.info)
+            compare(d.title, "")
+            compare(d.text, "For licences and source code, see asteroidos.org")
+            verify(!h.shown(d.titleLabel) || d.titleLabel.text === "", "no title")
+            // the message: titleMedium 32 px, onSurface, centred, 3 lines
+            var t = d.textLabel
+            compare(t.font.pixelSize, 32)
+            rgb(t.color, "#e8e7ee", "message colour")
+            compare(t.horizontalAlignment, Text.AlignHCenter)
+            compare(t.lineCount, 3)
+            verify(!d.scrolling, "fits without scrolling")
+            // one round check, named for the tests and the screen reader
+            var ok = h.find(h.app, "dialogYes")
+            compare(ok, d.infoButton)
+            compare(ok.width, 104)
+            compare(ok.Accessible.name, "OK")
+            verify(!h.shown(d.edgeButton), "no edge button")
+            var img = screen()
+            // the first line's caps from y 111 (stock 111 / 147 / 183)
+            var msg = ink(img, 40, 40, 344, 250, function (r, g, b) { return r > 150 && Math.abs(b - r) < 14 })
+            near(msg.y0, 111, 3, "first cap top")
+            // the circle: primary #DBE2F9, 104 px at x 140-243, y 257-360
+            var c = ink(img, 100, 230, 284, 384, function (r, g, b) { return b > 220 && r > 190 })
+            near(c.x0, 140, 1, "circle left")
+            near(c.x1, 243, 1, "circle right")
+            near(c.y0, 257, 1, "circle top")
+            near(c.y1, 360, 1, "circle bottom")
+            h.shot(this, "d60-41-legal")
+            h.tap(this, ok)
+            tryVerify(function () { return !d.shown }, 3000, "the check closes it")
+            compare(h.current().objectName, "aboutPage")
+        }
     }
 }
