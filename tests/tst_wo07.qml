@@ -127,20 +127,23 @@ SettingsHarness {
                 compare(b.secondaryLabel.maximumLineCount, 4)
                 compare(b.verticalPadding, 16)
             }
-            // the one-line rows: 16 + 32 + 32 + 16 = 96 px, 104 px apart
-            // (the 8 px gap of the list); each text's first baseline 24 px
-            // under its top, its last 8 px over its bottom
+            // the one-line rows: 16 + 34 + 34 + 16 = 100 px, 108 px apart
+            // (the 8 px gap of the list; S22-b 108); each text's first
+            // baseline 26 px under its top (the stock font's ascent, over
+            // Body4's 12 sp), its last 8 px over its bottom
             var m = chip("aboutModel"), d = chip("aboutDeviceName")
-            near(m.height, 96, 1, "row height")
-            near(d.y - m.y, 104, 1, "row pitch")
+            near(m.height, 100, 1, "row height")
+            near(d.y - m.y, 108, 1, "row pitch")
             var mb = m.button
-            near(mb.label.baselineOffset, 24, 0.5, "title first baseline")
+            near(mb.label.baselineOffset, 26, 0.5, "title first baseline")
+            near(mb.secondaryLabel.baselineOffset, 26, 0.5, "value first baseline")
+            near(mb.secondaryLabel.height - mb.secondaryLabel.baselineOffset, 8, 0.5, "value last baseline to bottom")
             near(mb.label.height - mb.label.baselineOffset, 8, 0.5, "title last baseline to bottom")
             // in the row's own coordinates (the edge effect scales it on the screen)
             near(mb.label.mapToItem(m, 0, 0).y, 16, 0.5, "8 dp above")
             var pitch = mb.secondaryLabel.mapToItem(m, 0, mb.secondaryLabel.baselineOffset).y
                         - mb.label.mapToItem(m, 0, mb.label.baselineOffset).y
-            near(pitch, 32, 0.5, "line pitch")
+            near(pitch, 34, 0.5, "line pitch")
             // Versions is still a button row
             verify(!chip("versionsItem").dataRow && chip("versionsItem").clickable)
             // on the screen: the value drawn #E8E7EE from x 50 (stock x 50)
@@ -157,6 +160,14 @@ SettingsHarness {
             var t = ink(img, 30, Math.round(at(mb.label).y), 340, Math.round(at(mb.label).y + mb.label.height),
                         function (r, g, b) { return r > 120 })
             near(t.x0, 50, 2, "title ink x")
+            // on the screen, cap to cap (S22-b: Wear OS 129, 6.0 163,
+            // Model 236: 34 and 107 px; the rows near the middle are not scaled)
+            var dl = d.button.label
+            var tm = ink(img, 30, Math.round(at(mb.label).y), 340, Math.round(at(mb.label).y + mb.label.height),
+                         function (r, g, b) { return r > 120 })
+            var td = ink(img, 30, Math.round(at(dl).y), 340, Math.round(at(dl).y + dl.height),
+                         function (r, g, b) { return r > 120 })
+            near(td.y0 - tm.y0, 108, 2, "row pitch on the screen")
             h.shot(this, "d60-40-about")
         }
 
@@ -176,7 +187,7 @@ SettingsHarness {
             var names = ["systemUiItem", "kernelItem", "qtItem"]
             for (var i = 0; i < names.length; i++)
                 verify(chip(names[i]).dataRow, names[i] + " is a data row")
-            near(chip("kernelItem").height, 96, 1, "row height")
+            near(chip("kernelItem").height, 100, 1, "row height")
         }
 
         // ---- D60-41: Legal notices is the stock info popup

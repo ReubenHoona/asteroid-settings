@@ -41,9 +41,13 @@ import org.asteroid.controls
  *   the value under it on at most 4. The Settings theme is the Flex one
  *   (Theme.Settings.WearMaterial -> Base.WearMaterialTheme.Flex), so Body4
  *   is body_medium: 14 sp (28 px), weight 450, 16 sp lines, the first
- *   baseline 12 sp under the top of each text, the last 4 sp over its
- *   bottom; both onSurface #E8E7EE. One line each: 32 px from baseline to
- *   baseline, 96 px tall (D60-40);
+ *   baseline at least 12 sp under the top of each text, the last at least
+ *   4 sp over its bottom (TextView.setFirstBaselineToTopHeight and
+ *   setLastBaselineToBottomHeight pad only past the font's own ascent and
+ *   descent, and the stock font's ascent wins: 13 sp, 26 px); both
+ *   onSurface #E8E7EE. One line each: 34 px from baseline to baseline,
+ *   100 px tall, 108 px apart in the list (the emulator's About, S22-b;
+ *   D60-40);
  * - control "select" is a checkable row with no control drawn (the
  *   checkable WearChipButton of the Color theme page,
  *   SystemThemePreference.java:28-49): checked primaryContainer with
@@ -130,10 +134,15 @@ Item {
         value: chip.textInset
     }
 
-    // a data row: each TextView's first baseline 12 sp under its top and its
-    // last 4 sp over its bottom (Body4 Flex firstBaselineToTopHeight,
-    // lastBaselineToBottomHeight), whatever the font's own ascent and descent
+    // a data row: each TextView's first baseline 13 sp under its top and its
+    // last 4 sp over its bottom, whatever this font's own ascent and
+    // descent. Body4 Flex asks for at least 12 sp and 4 sp
+    // (firstBaselineToTopHeight, lastBaselineToBottomHeight), but Android
+    // pads only past the font's ascent and descent: the stock font's ascent
+    // at 14 sp is 13 sp (26 px), its descent under 4 sp, so stock draws
+    // 34 px from baseline to baseline (S22-b)
     readonly property real _sp: Theme.density * Theme.fontScale
+    readonly property real _dataBaseline: 13 * _sp
     FontMetrics {
         id: dataMetrics
         font: button.label.font
@@ -145,7 +154,7 @@ Item {
     }
     Binding {
         target: button.label; property: "topPadding"; when: chip.dataRow
-        value: 12 * chip._sp - dataMetrics.ascent
+        value: chip._dataBaseline - dataMetrics.ascent
     }
     Binding {
         target: button.label; property: "bottomPadding"; when: chip.dataRow
@@ -153,7 +162,7 @@ Item {
     }
     Binding {
         target: button.secondaryLabel; property: "topPadding"; when: chip.dataRow
-        value: 12 * chip._sp - dataMetrics.ascent
+        value: chip._dataBaseline - dataMetrics.ascent
     }
     Binding {
         target: button.secondaryLabel; property: "bottomPadding"; when: chip.dataRow
