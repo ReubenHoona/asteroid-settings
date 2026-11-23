@@ -9,9 +9,10 @@ import Nemo.Configuration
 import Nemo.Mce
 
 // Settings > Battery as stock CP3A (PixelWatchNavRouteCollector$init$2:39-47,
-// BatteryStatusItemKt:80-81,202,270): the charge in large letters, "Charge
-// remaining" under it (the charger words of the older Wear OS are gone, and
-// there is no time left), then the rows Battery Saver (its own page, with
+// BatteryStatusItemKt:80-81,202,270): the charge in large letters, start
+// aligned, a progress bar of it, "Charge remaining" under it (the charger
+// words of the older Wear OS are gone, and there is no time left), then the
+// rows Battery Saver (its own page, with
 // "Will turn on at 15%" while the automatic saver is on and the saver is
 // off), Battery percentage (a switch, with its caption), and, once the
 // charger driver can limit charging, Battery health assistance and Charging
@@ -55,14 +56,20 @@ SettingsPage {
     // config_automaticBatterySaverModeEntryPercentage 15)
     readonly property int onLevel: Number(autoOnLevel.value)
 
-    // BatteryStatusItem: numeralSmall digits (30 sp = 60 px, weight 550) with
-    // the % sign in titleLarge (18 sp = 36 px), both onSurfaceVariant, and
-    // "Charge remaining" in labelSmall (13 sp = 26 px) under them
+    // BatteryStatusItem (BatteryStatusItemKt.java:138-275): a Column in the
+    // button content padding (uiControlContentPadding = ButtonDefaults.
+    // ContentPadding, 14 dp at the sides, 6 dp above and below:
+    // PaddingDefaultValuesKt.java:50), aligned to the start (:141-142):
+    // numeralSmall digits (30 sp = 60 px) with the % sign in titleLarge
+    // (18 sp = 36 px), both onSurfaceVariant, TextAlign.Start (:202); right
+    // under them the M3 LinearProgressIndicator of the charge, tertiary on
+    // surfaceContainer (:241); then "Charge remaining" in labelSmall (13 sp =
+    // 26 px) onSurfaceVariant, 6 dp above and below it (:243-270) (D60-39)
     Item {
         id: header
         objectName: "batteryHeader"
         width: parent.width
-        height: headerColumn.height + Theme.dp(6)
+        height: headerColumn.height + 2 * Theme.space.s
         visible: batteryLevel.valid
         EdgeEffect { id: headerEdge; item: header }
         opacity: headerEdge.alpha
@@ -74,12 +81,13 @@ SettingsPage {
         }
         Column {
             id: headerColumn
-            width: parent.width
+            x: Theme.space.xl
+            y: Theme.space.s
+            width: parent.width - 2 * Theme.space.xl
             Item {
                 width: parent.width
                 height: digits.height
                 Row {
-                    anchors.horizontalCenter: parent.horizontalCenter
                     Label {
                         id: digits
                         objectName: "batteryPercent"
@@ -99,15 +107,29 @@ SettingsPage {
                     }
                 }
             }
-            Label {
-                objectName: "batteryRemaining"
+            LinearProgressIndicator {
+                objectName: "batteryBar"
                 width: parent.width
-                role: "labelSmall"
-                color: Theme.color.onSurfaceVariant
-                horizontalAlignment: Text.AlignHCenter
-                //% "Charge remaining"
-                text: qsTrId("id-battery-charge-remaining")
-                clip: false
+                progress: batteryLevel.valid ? batteryLevel.percent / 100 : 0
+                color: Theme.color.tertiary
+                trackColor: Theme.color.surfaceContainer
+            }
+            Item {
+                width: parent.width
+                height: remaining.height + 2 * Theme.space.s
+                Label {
+                    id: remaining
+                    objectName: "batteryRemaining"
+                    y: Theme.space.s
+                    width: parent.width
+                    role: "labelSmall"
+                    color: Theme.color.onSurfaceVariant
+                    // TextAlign.Start: the natural alignment (left, right in
+                    // a right-to-left language)
+                    //% "Charge remaining"
+                    text: qsTrId("id-battery-charge-remaining")
+                    clip: false
+                }
             }
         }
     }
