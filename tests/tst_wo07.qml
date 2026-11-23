@@ -21,10 +21,15 @@ SettingsHarness {
             h.start(this)
             Backend.clearCalls()
         }
-        // Theme is one for the whole run: No theme again after each test
+        // Theme is one for the whole run: No theme and no face colours
+        // again after each test
         function cleanup() {
             if (Theme.colorSource !== "static")
                 Theme.setColorTheme("static", "")
+            if (Theme._faceSeedValue)
+                Backend.confSet("/org/asteroidos/theme/face-seed", "")
+            if (Theme._faceAccentValue)
+                Backend.confSet("/org/asteroidos/theme/face-accent", "")
         }
 
         function chip(name) { return h.find(h.current(), name) }
@@ -409,7 +414,8 @@ SettingsHarness {
             var rows = rowsOf(page)
             compare(titlesOf(page), ["Match watch face", "Moonstone", "Ivy", "Porcelain", "Iris", "Lemongrass",
                                      "Jade", "Indigo", "Peony", "No theme"])
-            // No theme is checked until the faces report colours (Q1c)
+            // the harness has no dconf defaults: qml-asteroid's own, No
+            // theme, is checked (the image sets Match watch face)
             for (var i = 0; i < rows.length; i++) {
                 compare(rows[i].control, "select")
                 compare(rows[i].summary, "")
@@ -479,6 +485,66 @@ SettingsHarness {
             verify(!Theme.colorThemed)
             compare(Theme.color.primary.toString(), "#dbe2f9")
             verify(rows[9].checked)
+        }
+        // Match watch face shows the colours the face reported whatever
+        // theme is in use (sysui jbp.java:41, jrx.java:139-142, 251-253),
+        // Moonstone before the face reports any
+        function swatchAt(img, av, sw, what) {
+            var o = at(av)
+            var cx = o.x + 38, cy = o.y + 38
+            same(px(img, cx - 14, cy - 14), sw[0], 2, what + ": top left")
+            same(px(img, cx + 14, cy - 14), sw[0], 2, what + ": top right")
+            same(px(img, cx - 14, cy + 14), sw[1], 2, what + ": bottom left")
+            same(px(img, cx + 14, cy + 14), sw[2], 2, what + ": bottom right")
+        }
+        function test_38_match_face_swatch() {
+            open(["displayItem", "colorThemeItem"])
+            var page = h.current()
+            compare(page.objectName, "colorThemePage")
+            var row = h.find(page, "colorTheme_watchface")
+            var av = h.find(row, "colorThemeAvatar")
+            compare(row.seed, "#9A9EAD", "no face colours: Moonstone")
+            compare(row.accent, "")
+            var moon = page.swatchOf("#9A9EAD", "")
+            compare(JSON.stringify(av.swatch), JSON.stringify(moon))
+            // the face reports its colours while No theme is in use
+            Backend.confSet("/org/asteroidos/theme/face-seed", "#C04030")
+            Backend.confSet("/org/asteroidos/theme/face-accent", "#30A0C0")
+            compare(Theme.colorSource, "static")
+            compare(row.seed, "#C04030", "No theme: the face's seed")
+            compare(row.accent, "#30A0C0", "No theme: the face's accent")
+            var sw = page.swatchOf("#C04030", "#30A0C0")
+            compare(JSON.stringify(av.swatch), JSON.stringify(sw))
+            verify(JSON.stringify(sw) !== JSON.stringify(moon), "not Moonstone's swatch")
+            verify(!row.checked, "No theme stays the checked row")
+            h.bringIntoView(this, row)
+            wait(300)
+            swatchAt(screen(), av, sw, "No theme")
+            h.shot(this, "d60-38-face-static")
+            // a preset in use: the row keeps the face's colours
+            h.tap(this, h.find(page, "colorTheme_ivy"))
+            compare(Theme.colorSource, "preset")
+            compare(Theme.colorSeed, "#404945")
+            compare(row.seed, "#C04030", "a preset: the face's seed")
+            compare(row.accent, "#30A0C0", "a preset: the face's accent")
+            compare(JSON.stringify(av.swatch), JSON.stringify(sw))
+            h.bringIntoView(this, row)
+            wait(600)
+            swatchAt(screen(), av, sw, "Ivy")
+            h.shot(this, "d60-38-face-preset")
+            // Match watch face itself: the same colours, now the theme's
+            h.tap(this, row)
+            compare(Theme.colorSource, "watchface")
+            compare(Theme.colorSeed, "#C04030")
+            compare(Theme.colorAccent, "#30A0C0")
+            compare(row.seed, "#C04030")
+            compare(JSON.stringify(av.swatch), JSON.stringify(sw))
+            // a face that reports nothing: Moonstone again
+            Backend.confSet("/org/asteroidos/theme/face-seed", "")
+            Backend.confSet("/org/asteroidos/theme/face-accent", "")
+            compare(row.seed, "#9A9EAD")
+            compare(row.accent, "")
+            compare(JSON.stringify(av.swatch), JSON.stringify(moon))
         }
         // stock route names: color_theme opens Display, then the theme page
         function test_38_color_theme_deep_link() {

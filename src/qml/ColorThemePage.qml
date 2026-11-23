@@ -19,8 +19,10 @@ import org.asteroid.controls
 // onPrimaryContainer when checked), for No theme the palette in primary
 // with a white ring when checked (drawable/paint_palette_stateful.xml).
 // A tap applies the theme at once and the page stays (jbp N(): the tapped
-// chip checked, the others not). The keys say No theme until the faces
-// report their colours (DECISIONS Q1c), so No theme is the checked row.
+// chip checked, the others not). The checked row follows the keys: the
+// image sets Match watch face, stock's default now that the faces report
+// their colours (meta-eos64 dconf-eos.d/00-eos-defaults, color-source
+// 'watchface'); without the key qml-asteroid falls back to No theme.
 // Theme (qml-asteroid) holds the colour logic; this page lists and writes.
 SettingsPage {
     id: page
@@ -94,12 +96,17 @@ SettingsPage {
             control: "select"
             checked: page.current === modelData.id
             onClicked: page.choose(modelData)
-            // Match watch face: the face's colours once it reports them
-            // (Theme), Moonstone before (jbp.java:41, O().a())
+            // Match watch face: the colours the face reported, whatever
+            // theme is in use, Moonstone before it reports any (sysui
+            // jbp.java:41 P(O().a(), O().f): jrx.a() is the face colour n
+            // once one is set, else the default, jrx.java:139-142; jrx.d()
+            // keeps n and f on every face colour change whatever the theme,
+            // :251-253; the launcher writes face-seed and face-accent the
+            // same way, FaceColors.qml)
             readonly property bool _face: modelData.source === "watchface"
-            readonly property string seed: _face ? (Theme.colorSource === "watchface" ? Theme.colorSeed : Theme.colorDefaultSeed)
+            readonly property string seed: _face ? (Theme._normalColor(Theme._faceSeedValue) || Theme.colorDefaultSeed)
                                                  : modelData.seed
-            readonly property string accent: _face && Theme.colorSource === "watchface" ? Theme.colorAccent : ""
+            readonly property string accent: _face ? Theme._normalColor(Theme._faceAccentValue) : ""
 
             // the text after the avatar (the row's own padding is 14 dp)
             textInset: page.textStart - Theme.space.xl
