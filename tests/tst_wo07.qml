@@ -346,28 +346,47 @@ SettingsHarness {
             rows.sort(function (a, b) { return at(a).y - at(b).y })
             return rows
         }
+        // the row (SettingsChip) of part i of a ChoiceList, made and
+        // scrolled to first (a ListView makes the rows near the screen only)
+        function listChip(view, i) {
+            var row = h.listItem(this, view, i)
+            return h.findAll(row, function (o) { return o.hasOwnProperty("control") && o.hasOwnProperty("summary") })[0]
+        }
         function test_42_licences() {
             open(["systemItem", "aboutItem", "licensesItem"])
-            compare(h.current().objectName, "licensesPage")
-            compare(h.find(h.current(), "settingsTitle").text, "System licenses")
-            var rows = rowsOf(h.current())
+            var list = h.current()
+            compare(list.objectName, "licensesPage")
+            compare(h.find(list, "choiceTitle").text, "System licenses")
+            // one plain row per part (a source recipe of the installed
+            // packages, PackageInfo.readLicenses(): the test double has six of
+            // the image's), sorted by name, listed once they are read
+            tryVerify(function () { return list.loaded }, 3000, "the parts are read")
+            compare(list.parts.length, 6)
+            var view = h.find(list, "choiceList")
+            compare(view.count, 6)
             var titles = []
-            for (var i = 0; i < rows.length; i++) {
-                titles.push(rows[i].title)
-                compare(rows[i].summary, "", rows[i].title + ": no second line")
-                compare(rows[i].iconName, "", rows[i].title + ": no icon")
-                verify(rows[i].clickable)
+            for (var i = 0; i < view.count; i++) {
+                var row = listChip(view, i)
+                titles.push(row.title)
+                compare(row.summary, "", row.title + ": no second line")
+                compare(row.iconName, "", row.title + ": no icon")
+                compare(row.control, "none", row.title + ": no radio mark")
+                verify(row.clickable)
             }
-            compare(titles, ["AsteroidOS", "Linux kernel", "Qt", "Other parts"])
-            verify(h.findAll(h.current(), function (o) { return h.typeName(o) === "SettingsText" }).length === 0,
+            compare(titles, ["asteroid-settings", "eos-kernel-boot", "glibc", "kmod", "qml-asteroid", "qtbase"])
+            view.positionViewAtBeginning()
+            wait(100)
+            verify(!h.shown(h.find(list, "choiceMessage")), "no message while there are parts")
+            verify(h.findAll(list, function (o) { return h.typeName(o) === "SettingsText" }).length === 0,
                    "no paragraphs on the list")
             h.shot(this, "d60-42-list")
-            open(["licensesLinux"])
+            h.tap(this, listChip(view, 1))
+            h.settle(this)
             var page = h.current()
             compare(page.objectName, "licenseTextPage")
             var head = h.find(page, "licenseHeading"), text = h.find(page, "licenseText")
-            compare(head.text, "Linux kernel")
-            compare(text.text, "GNU General Public License, version 2.")
+            compare(head.text, "eos-kernel-boot")
+            compare(text.text, "GPL-2.0-only")
             verify(!h.shown(h.find(page, "settingsTitle")), "the header is the part's name, no page title")
             // the header: textAppearanceMedium over Title3: 14 sp (titleSmall
             // 28 px, weight 500, no tracking) onSurfaceVariant, centred, on
@@ -411,7 +430,7 @@ SettingsHarness {
             var hy = Math.round(at(head).y), hh = Math.round(head.height - head.bottomPadding)
             var hInk = ink(img, 20, hy, 364, hy + hh, function (r, g, b) { return r > 120 })
             near((hInk.x0 + hInk.x1) / 2, 192, 3, "header centred")
-            // "Linux kernel" has no descenders: its ink ends on the baseline
+            // "eos-kernel-boot" has no descenders: its ink ends on the baseline
             // (stock: to y 93), its ascenders 22 px or less (32 px text: 25)
             near(hInk.y1, 93, 1, "header ink bottom")
             verify(hInk.y1 - hInk.y0 + 1 <= 22, "header ink height " + (hInk.y1 - hInk.y0 + 1))
@@ -426,16 +445,52 @@ SettingsHarness {
             h.shot(this, "d60-42-text")
             // a longer text wraps in the 266 px between the paddings, 28 px apart
             h.back(this)
-            open(["licensesAsteroid"])
+            h.tap(this, listChip(view, 5))
+            h.settle(this)
             text = h.find(h.current(), "licenseText")
-            compare(h.find(h.current(), "licenseHeading").text, "AsteroidOS")
+            compare(h.find(h.current(), "licenseHeading").text, "qtbase")
+            verify(text.text.indexOf("LGPL-3.0-only") >= 0)
             verify(text.lineCount >= 3, "wrapped: " + text.lineCount)
             compare(text.lineHeightMode, Text.FixedHeight)
             verify(!text.truncated)
+            // packages of one part with different licences: one line each
             h.back(this)
-            open(["licensesOthers"])
-            compare(h.find(h.current(), "licenseHeading").text, "Other parts")
-            verify(h.find(h.current(), "licenseText").text.indexOf("asteroidos.org") >= 0)
+            h.tap(this, listChip(view, 3))
+            h.settle(this)
+            compare(h.find(h.current(), "licenseText").text,
+                    "kmod: GPL-2.0-or-later & LGPL-2.1-or-later\nlibkmod2: LGPL-2.1-or-later")
+            // no package data: no rows, the list says where the licences are
+            h.back(this)
+            h.back(this)
+            compare(h.current().objectName, "aboutPage")
+            Backend.confSet("/test/package-info/no-licenses", true)
+            open(["licensesItem"])
+            list = h.current()
+            tryVerify(function () { return list.loaded }, 3000, "read")
+            compare(h.find(list, "choiceList").count, 0)
+            compare(rowsOf(list).length, 0)
+            var msg = h.find(list, "choiceMessage")
+            verify(h.shown(msg))
+            verify(msg.text.indexOf("asteroidos.org") >= 0, msg.text)
+        }
+        // the list is a ListView: with the image's ~260 parts only the rows
+        // near the screen are made
+        function test_42_licences_many() {
+            open(["systemItem", "aboutItem", "licensesItem"])
+            var list = h.current()
+            tryVerify(function () { return list.loaded }, 3000, "the parts are read")
+            var many = []
+            for (var i = 0; i < 260; i++)
+                many.push({ "name": "part-" + (1000 + i), "license": "MIT", "packages": ["part-" + (1000 + i)] })
+            list.parts = many
+            var view = h.find(list, "choiceList")
+            tryCompare(view, "count", 260)
+            wait(100)
+            var made = h.findAll(list, function (o) { return o.hasOwnProperty("control") && o.hasOwnProperty("summary") })
+            verify(made.length < 30, "rows made: " + made.length)
+            var last = h.listItem(this, view, 259)
+            compare(h.findAll(last, function (o) { return o.hasOwnProperty("control") && o.hasOwnProperty("summary") })[0].title,
+                    "part-1259")
         }
 
         // ---- D60-38: Display > Color theme opens the theme page

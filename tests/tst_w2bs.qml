@@ -634,7 +634,7 @@ SettingsHarness {
             h.tapName(this, "licensesItem")
             h.settle(this)
             compare(h.current().objectName, "licensesPage")
-            compare(title(), "System licenses")
+            compare(h.find(h.current(), "choiceTitle").text, "System licenses")
         }
 
         function test_25_versions_rows_and_toasts() {

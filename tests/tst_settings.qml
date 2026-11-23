@@ -115,7 +115,8 @@ SettingsHarness {
                 } else if (pushed) {
                     h.settle(this)
                     var top = h.current()
-                    if (h.find(top, "settingsFlickable") && depth < 6)
+                    // System licenses is a list (ChoiceList) of parts, each opening a page
+                    if ((h.find(top, "settingsFlickable") || top.objectName === "licensesPage") && depth < 6)
                         crawl(depth + 1)
                     while (h.stack.layers.length > layers)
                         h.back(this)

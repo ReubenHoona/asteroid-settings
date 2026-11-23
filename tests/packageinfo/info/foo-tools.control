@@ -1,0 +1,5 @@
+Package: foo-tools
+Version: 1.0-r0
+License: GPL-2.0-only
+OE: foo
+Source: foo_1.0.bb

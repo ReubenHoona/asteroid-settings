@@ -4,51 +4,56 @@
  */
 
 import QtQuick
-import org.asteroid.controls
+import org.asteroid.settings
 
 // System > About > System licenses as stock CP3A's
-// (SystemLicenseLibrariesFragment: one plain row per library, sorted by
-// name, no second line, each opening its licence text,
-// SystemLicenseDetailsFragment): one row per part of this system, sorted,
-// the rest last, each opening its text (LicenseTextPage). This watch's
-// system is free software, so the text names the part's licences; the full
-// texts and the source are with the AsteroidOS project and the
-// eos-mainline repositories (the image ships no licence files to show).
-SettingsPage {
+// (SystemLicenseLibrariesFragment: one plain row per library, no second
+// line, sorted by name (SystemLicenseRepo.java:59, Collections.sort), read
+// off the main thread and listed when it is there (supplyAsync, then
+// thenAcceptAsync, SystemLicenseLibrariesFragment.java:24-42), each opening
+// its licence, SystemLicenseDetailsFragment): one row per part of this
+// system, a source recipe of the installed packages, sorted by name, each
+// opening its text page (LicenseTextPage) with the part's licence as the
+// package manager records it (PackageInfo.readLicenses(), the License field
+// of /var/lib/opkg/info/<package>.control), e.g. "LGPL-2.1-only". The image
+// ships no full licence texts (the layer would add them with
+// LICENSE_CREATE_PACKAGE). The image has some 260 parts: a list that makes
+// only the rows near the screen (ChoiceList, as Language).
+Item {
     id: page
     objectName: "licensesPage"
-    //% "System licenses"
-    title: qsTrId("id-about-licenses")
+    property int depth
+    property var pop
+
+    // the parts, read in the background (stock: supplyAsync) and listed
+    // when they are there
+    property var parts: []
+    property bool loaded: false
+    PackageInfo {
+        id: packages
+        onLicensesRead: (parts) => {
+            page.parts = parts
+            page.loaded = true
+        }
+    }
+    Component.onCompleted: packages.readLicenses()
 
     Component { id: textLayer; LicenseTextPage { } }
     function show(heading, body) {
         layerStack.push(textLayer, { "heading": heading, "body": body })
     }
 
-    SettingsChip {
-        objectName: "licensesAsteroid"
-        title: "AsteroidOS"
-        //% "The apps and the system UI: GNU General Public License version 3, GNU Lesser General Public License version 2.1 and BSD 3-clause licences."
-        onClicked: page.show(title, qsTrId("id-licenses-asteroid"))
-    }
-    SettingsChip {
-        objectName: "licensesLinux"
-        //% "Linux kernel"
-        title: qsTrId("id-licenses-kernel-title")
-        //% "GNU General Public License, version 2."
-        onClicked: page.show(title, qsTrId("id-licenses-kernel"))
-    }
-    SettingsChip {
-        objectName: "licensesQt"
-        title: "Qt"
-        //% "GNU Lesser General Public License version 3."
-        onClicked: page.show(title, qsTrId("id-licenses-qt"))
-    }
-    SettingsChip {
-        objectName: "licensesOthers"
-        //% "Other parts"
-        title: qsTrId("id-licenses-others-title")
-        //% "Other parts keep their own licences. The full texts and the source are at asteroidos.org."
-        onClicked: page.show(title, qsTrId("id-licenses-others"))
+    ChoiceList {
+        anchors.fill: parent
+        //% "System licenses"
+        title: qsTrId("id-about-licenses")
+        // no package data to list: where the licences are
+        message: page.loaded && page.parts.length === 0 ? qsTrId("id-about-legal-text") : ""
+        model: page.parts
+        textOf: function (i) { return page.parts[i].name }
+        // plain rows that open a page (no radio mark)
+        opensMore: function (i) { return true }
+        currentIndex: -1
+        onChosen: (index) => page.show(page.parts[index].name, page.parts[index].license)
     }
 }

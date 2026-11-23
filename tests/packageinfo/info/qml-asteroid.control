@@ -1,0 +1,10 @@
+Package: qml-asteroid
+Version: 1:2.0+git0-r1
+Description: QML components
+ License: not this one
+ Package: nor this one
+Section: base
+License: LGPL-2.1-only
+Architecture: cortexa53
+OE: qml-asteroid
+Source: qml-asteroid_git.bb

@@ -1,0 +1,5 @@
+Package: libfoo1
+Version: 1.0-r0
+License: MIT
+OE: foo
+Source: foo_1.0.bb
