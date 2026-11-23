@@ -21,9 +21,11 @@ SettingsHarness {
             h.start(this)
             Backend.clearCalls()
         }
-        // Theme is one for the whole run: No theme and no face colours
-        // again after each test
+        // Theme is one for the whole run: No theme, no face colours and no
+        // Bold text again after each test
         function cleanup() {
+            if (Theme.boldText)
+                Backend.confSet("/org/asteroidos/ux/bold-text", false)
             if (Theme.colorSource !== "static")
                 Theme.setColorTheme("static", "")
             if (Theme._faceSeedValue)
@@ -380,6 +382,16 @@ SettingsHarness {
             compare(text.font.pixelSize, 24)
             compare(text.lineHeight, 28)
             rgb(text.color, "#a5a5ac", "text colour")
+            // a plain TextView (TextAppearance.Material.Small): sans-serif
+            // regular, no tracking, not bodySmall's 500 and 0.4 sp
+            compare(text.font.weight, 400)
+            compare(text.font.letterSpacing, 0)
+            // Bold text adds its 300 (fontWeightAdjustment), and takes it back
+            Backend.confSet("/org/asteroidos/ux/bold-text", true)
+            compare(text.font.weight, 700, "Bold text")
+            Backend.confSet("/org/asteroidos/ux/bold-text", false)
+            compare(text.font.weight, 400, "Bold text off")
+            compare(text.font.letterSpacing, 0)
             tryVerify(function () { return Math.abs(page.mapToItem(h, 0, 0).x) < 0.01 && Math.abs(at(page, 384, 0).x - 384) < 0.01 },
                       3000, "the page at rest")
             compare(text.mapToItem(page, text.leftPadding, 0).x, 59)

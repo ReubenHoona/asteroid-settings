@@ -10,7 +10,11 @@ import org.asteroid.controls
 // paragraphs; layout/watch_license_view_header_item.xml,
 // license_view_paragraph_item.xml): the part's name as the header, centred,
 // in onSurfaceVariant, 12 dp above the text; the text in plain paragraphs,
-// left-aligned, outline #A5A5AC, 12 sp on 14 sp lines, the list item padding
+// left-aligned, outline #A5A5AC, 12 sp regular on 14 sp lines, no tracking
+// (the paragraph TextView sets no style: Widget.TextView ->
+// textAppearanceSmall -> TextAppearance.DeviceDefault.Small ->
+// TextAppearance.Material.Small, sans-serif 400, no letterSpacing; framework
+// values/styles.xml:639-640, 3628-3630, 4063-4066, 3954-3960), the list item padding
 // at the sides (x 59 on the 384 px screen, as the emulator draws it). No
 // rows and no edge effect: the circle cuts the text at the top and the
 // bottom.
@@ -81,5 +85,14 @@ SettingsPage {
         wrapMode: Text.Wrap
         text: page.body
         clip: false
+        // weight 400 (Bold text adds its 300 as everywhere) and no tracking,
+        // not bodySmall's 500 and 0.4 sp: set once the role is applied
+        // (-2: Label then leaves a caller's weight alone, whichever
+        // onCompleted runs first)
+        Component.onCompleted: {
+            _appliedWeight = -2
+            font.letterSpacing = 0
+            font.weight = Qt.binding(function () { return Font.Normal + Theme.weightAdjust })
+        }
     }
 }
