@@ -111,7 +111,7 @@ SettingsHarness {
                 compare(chip(n).iconName, "../../asteroid-settings/icons/" + icons[n])
             compare(chip("displayItem").iconName, "ios-sunny-outline")
             // the icon files exist and are drawn in primary: pale pixels in
-            // the 52 px icon square on the screen
+            // the 48 px icon square on the screen (D60-45)
             for (n in icons) {
                 var c2 = chip(n)
                 var xhr = new XMLHttpRequest()
@@ -123,13 +123,13 @@ SettingsHarness {
                 h.bringIntoView(this, c2)
                 wait(100)
                 var ic = h.findAll(c2, function (o) { return h.typeName(o) === "Icon" })[0]
-                compare(ic.width, 52)
+                compare(ic.width, 48)
                 rgb(ic.color, "#dbe2f9", n + " icon colour")
                 var at = ic.mapToItem(h, 0, 0)
                 var img = grabImage(h)
                 var lit = 0
-                for (var yy = 0; yy < 52; yy += 2)
-                    for (var xx = 0; xx < 52; xx += 2) {
+                for (var yy = 0; yy < 48; yy += 2)
+                    for (var xx = 0; xx < 48; xx += 2) {
                         var px = img.pixel(Math.round(at.x + xx), Math.round(at.y + yy))
                         if (px.r > 0.6 && px.b > 0.7)
                             lit++
@@ -182,8 +182,9 @@ SettingsHarness {
             compare(b.radius, 52)
             compare(b.horizontalPadding, 28)
             compare(b.verticalPadding, 12)
-            compare(b.iconSize, 52)
-            compare(b.iconSpacing, 12)
+            // the 24 dp list icon (settings_list_icon_size) in the 26 dp slot (D60-45)
+            compare(b.iconSize, 48)
+            compare(b.iconSpacing, 16)
             compare(b.label.font.pixelSize, 30)
             compare(b.label.font.weight, 500)
             rgb(b.label.color, "#e8e7ee", "title")

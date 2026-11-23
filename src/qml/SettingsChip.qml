@@ -12,9 +12,12 @@ import org.asteroid.controls
  * - a navigation row is a FilledTonalButton (ButtonItemKt.java:110,133):
  *   container surfaceContainer #2F3036, label labelMedium (30 px) in
  *   onSurface #E8E7EE, second line labelSmall (26 px) in onSurfaceVariant
- *   #CECDD4, icon 26 dp (52 px) in primary #DBE2F9, padding 14/6/14/6 dp
- *   (28/12 px), 6 dp (12 px) from the icon to the text, at least 52 dp
- *   (104 px) tall (FilledButtonTokens.java:7,31-38, ButtonDefaults.java:21-33);
+ *   #CECDD4, icon in primary #DBE2F9, padding 14/6/14/6 dp (28/12 px), at
+ *   least 52 dp (104 px) tall (FilledButtonTokens.java:7,31-38,
+ *   ButtonDefaults.java:21-33); the icon is the list icon of
+ *   settings_list_icon_size 24 dp (48 px, the size its vector declares) in
+ *   the 26 dp slot of ButtonDefaults.IconSize (IconProvider.java:249-271),
+ *   so the text stays 26 + 6 dp (64 px) after the slot's start;
  * - control "toggle" is a SwitchButton row and "radio" a RadioButton row
  *   (SwitchButtonTokens.java:51-61,90-97, RadioButtonTokens.java:53-64):
  *   padding 14/8/14/8 dp (16 px above and below), the control in a 32 x 24 dp
@@ -112,8 +115,10 @@ Item {
         iconName: chip.iconName
         horizontalPadding: Theme.space.xl
         verticalPadding: chip.selectable ? Theme.space.m : Theme.space.s
-        iconSize: Theme.size.icon
-        iconSpacing: Theme.space.s
+        // 24 dp drawn at the start of the 26 dp slot: the 2 dp left over
+        // go after it, the text keeps its place (D60-45)
+        iconSize: Theme.size.iconSmall
+        iconSpacing: Theme.space.s + Theme.size.icon - Theme.size.iconSmall
         minimumHeight: chip.minHeight
         radius: chip.clickable ? Theme.shape.large : Theme.dp(16)
         maximumLineCount: chip.summary === "" && chip.control === "none" ? 5 : 3
