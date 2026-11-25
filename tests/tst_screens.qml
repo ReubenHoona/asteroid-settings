@@ -141,14 +141,14 @@ SettingsHarness {
         }
 
         // watchface-catalogue-01: the face grid lists faces only (no folders)
-        // and the default face is the Modular one
+        // and the default face is Concentric
         function test_watchface_selector() {
             h.start(this)
             var c = Qt.createComponent(Qt.resolvedUrl("../src/qml/WatchfacePage.qml"))
             compare(c.status, Component.Ready, c.errorString())
             var wf = c.createObject(h, {})
             verify(wf !== null)
-            compare(wf.watchface, "file:///usr/share/asteroid-launcher/watchfaces/018-modular.qml")
+            compare(wf.watchface, "file:///usr/share/asteroid-launcher/watchfaces/027-concentric.qml")
             var grids = h.findAll(wf, function (o) { return o.hasOwnProperty("cellWidth") })
             compare(grids.length, 1)
             compare(grids[0].model.showDirs, false)

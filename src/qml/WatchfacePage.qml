@@ -33,7 +33,7 @@ Item {
     ConfigurationValue {
         id: watchfaceSource
         key: "/desktop/asteroid/watchface"
-        defaultValue: assetPath + "watchfaces/018-modular.qml"
+        defaultValue: assetPath + "watchfaces/027-concentric.qml"
     }
 
     ConfigurationValue {
