@@ -369,5 +369,58 @@ SettingsHarness {
             nearRgb(brightest(img, c.button.label), "#80868B", 4, "the disabled label")
             nearRgb(brightest(img, c.button.secondaryLabel), "#80868B", 4, "the disabled second line")
         }
+
+        // N61-42: the Settings slider is the controls' InlineSlider, the
+        // Wear OS 6 emulator's stepper (S24 Brightness at 3 of 5: selected
+        // #D4C7FF over x 108-208, black dividers at x 92-93 and 290-291, a
+        // 12 px bar)
+        function test_06_stepper() {
+            open(["displayItem", "brightnessItem"])
+            var s = h.find(h.current(), "brightnessSlider")
+            verify(s !== null && h.shown(s), "the brightness slider")
+            compare(h.typeName(s), "SettingsSlider")
+            verify(s.hasOwnProperty("segmentWidth"), "an InlineSlider")
+            // adaptive brightness off (S24): the five fixed steps
+            if (h.find(h.current(), "adaptiveSwitch").checked) {
+                h.tapName(this, "adaptiveSwitch")
+                wait(500)
+            }
+            compare(s.to - s.from, 5)
+            s.value = s.from + 3
+            h.bringIntoView(this, s)
+            wait(500)
+            near(s.mapToItem(h, 0, 0).x, 20, 0.5, "the pill from x 20")
+            var img = grabImage(h)
+            h.shot(this, "stepper-brightness")
+            var y = s.mapToItem(h, 0, s.height / 2).y
+            // the selected part, then the rest of the bar
+            nearRgb(rgbAt(img, 110, y), "#D4C7FF", 4, "selected at x 110")
+            nearRgb(rgbAt(img, 206, y), "#D4C7FF", 4, "selected at x 206")
+            nearRgb(rgbAt(img, 212, y), "#202124", 4, "the rest at x 212")
+            nearRgb(rgbAt(img, 270, y), "#202124", 4, "the rest at x 270")
+            // the dividers, the pill's height
+            for (var x = 92; x <= 93; x++) {
+                nearRgb(rgbAt(img, x, y), "#000000", 2, "divider at x " + x)
+                nearRgb(rgbAt(img, x, y - 40), "#000000", 2, "divider at x " + x + " high")
+            }
+            for (x = 290; x <= 291; x++)
+                nearRgb(rgbAt(img, x, y), "#000000", 2, "divider at x " + x)
+            nearRgb(rgbAt(img, 91, y - 40), "#2F3036", 3, "the pill left of the divider")
+            nearRgb(rgbAt(img, 94, y - 40), "#2F3036", 3, "the pill right of the divider")
+            // the bar 12 px tall
+            var top = -1, bottom = -1
+            for (var yy = Math.round(y) - 20; yy < Math.round(y) + 20; yy++) {
+                var c = rgbAt(img, 150, yy)
+                if (c[2] > 200) {
+                    if (top < 0)
+                        top = yy
+                    bottom = yy
+                }
+            }
+            near(bottom - top + 1, 12, 2, "bar height")
+            // the white glyphs: the minus 32 x 4 px from x 44
+            nearRgb(rgbAt(img, 60, y), "#FFFFFF", 3, "the minus glyph")
+            nearRgb(rgbAt(img, 323, y), "#FFFFFF", 3, "the plus glyph")
+        }
     }
 }

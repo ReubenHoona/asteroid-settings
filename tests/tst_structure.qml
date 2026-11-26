@@ -355,7 +355,8 @@ SettingsHarness {
             compare(t.rightPadding, 28)
         }
 
-        // controls-components-14, -15: the slider
+        // controls-components-14, -15: the slider, the controls' InlineSlider
+        // as the Wear OS 6 emulator draws it (N61-42, S24)
         function test_10_slider() {
             open(["displayItem", "brightnessItem"])
             var s = h.findAll(h.current(), function (o) { return h.typeName(o) === "SettingsSlider" })[0]
@@ -367,70 +368,72 @@ SettingsHarness {
             rgb(box.color, "#2f3036", "slider container")
             compare(box.radius, 52)
             var minus = h.find(s, "sliderMinus"), plus = h.find(s, "sliderPlus")
-            compare(minus.width, 96)
-            compare(plus.width, 96)
+            compare(minus.width, 72)
+            compare(plus.width, 72)
             compare(minus.height, 104)
-            var g = h.find(s, "sliderPlusGlyph")
-            compare(g.width, 48)
-            compare(g.children[0].width, 28)
+            // 2 px black dividers between the end segments and the middle
+            var d0 = h.find(s, "sliderDividerStart"), d1 = h.find(s, "sliderDividerEnd")
+            compare(d0.x, 72)
+            compare(d0.width, 2)
+            compare(d0.height, 104)
+            compare(d1.x, s.width - 74)
+            rgb(d0.color, "#000000", "divider")
+            // white glyphs with square ends: the minus 32 x 4, the plus 32 x 32
+            var gm = h.find(s, "sliderMinusGlyph"), g = h.find(s, "sliderPlusGlyph")
+            compare(gm.width, 32)
+            compare(gm.height, 4)
+            compare(gm.radius, 0)
+            compare(gm.x, 24)
+            compare(g.width, 32)
+            compare(g.height, 32)
             compare(g.children[0].height, 4)
-            compare(g.children[1].height, 28)
-            rgb(g.color, "#e8e7ee", "glyph")
+            compare(g.children[1].width, 4)
+            compare(g.x, 72 - 24 - 32)
+            verify(s.value > s.lowest && s.value < s.to, "a level inside the range")
+            rgb(gm.color, "#ffffff", "minus glyph")
+            rgb(g.children[0].color, "#ffffff", "plus glyph")
+            // the bar 14 px inside the dividers, 12 px tall, round
             var bar = h.find(s, "sliderBar")
-            compare(bar.width, s.width - 2 * 96)
-            compare(bar.height, 24)
+            compare(bar.x, 88)
+            compare(bar.width, s.width - 2 * 88)
+            compare(bar.height, 12)
             var sel = h.find(s, "sliderSelected"), un = h.find(s, "sliderUnselected")
-            compare(sel.height, 24)
-            compare(sel.radius, 12)
-            rgb(sel.color, "#dbe2f9", "selected part")
-            compare(un.height, 8)
-            compare(un.radius, 4)
-            rgb(un.color, "#000000", "rest")
-            near(un.color.a, 0.3, 0.01, "rest at 30 %")
+            rgb(sel.color, "#d4c7ff", "selected part tertiary")
+            rgb(un.color, "#202124", "the rest")
+            compare(un.radius, 6)
+            compare(un.width, bar.width)
             wait(300)
-            // segmented: 4 dp + (W + 4 dp) * f, clipped to the bar
-            function segLength(f) { return f > 0 ? Math.min(bar.width, 8 + (bar.width + 8) * f) : 0 }
-            verify(s.position > 0 && s.position < 1, "a level inside the range")
-            near(sel.width, segLength(s.position), 0.5, "selected length")
-            near(un.x, sel.width, 0.5, "the rest starts at the selection")
-            near(un.width, bar.width - sel.width, 0.5, "the rest to the end")
-            var dots = h.findAll(bar, function (o) { return o.hasOwnProperty("inSelection") })
-            compare(dots.length, s.steps - 1)
-            var level = Math.round(s.position * s.steps)
-            for (var i = 0; i < dots.length; i++) {
-                compare(dots[i].width, 8)
-                near(dots[i].x + 4, (bar.width + 8) * (i + 1) / s.steps - 4, 0.01, "dot " + i)
-                compare(dots[i].inSelection, i + 1 <= level, "dot " + i + " in the selection")
-                if (i + 1 === level)
-                    near(sel.width - 12, dots[i].x + 4, 0.5, "the selection's round end centred on its dot")
-                if (dots[i].inSelection)
-                    rgb(dots[i].color, "#404759", "dot in the selection")
-                else {
-                    rgb(dots[i].color, "#dbe2f9", "dot outside")
-                    near(dots[i].color.a, 0.5, 0.01, "dot outside at 50 %")
-                }
+            near(sel.width, bar.width * s.position, 0.5, "selected length")
+            // segmented: 1 px black gaps between the steps, no dots
+            var gaps = h.findAll(h.find(s, "sliderGaps").parent, function (o) {
+                return o.hasOwnProperty("index") && o.width === 1 })
+            compare(gaps.length, s.steps - 1)
+            for (var i = 0; i < gaps.length; i++) {
+                near(gaps[i].x + 0.5, bar.width * (gaps[i].index + 1) / s.steps, 0.01, "gap " + i)
+                rgb(gaps[i].color, "#000000", "gap " + i)
             }
             // the selected length moves over 150 ms
             var before = sel.width
             h.tap(this, minus)
             wait(40)
-            verify(sel.width < before && sel.width > segLength(s.position) - 0.5, "moving at 40 ms")
+            verify(sel.width < before && sel.width > bar.width * s.position - 0.5, "moving at 40 ms")
             wait(300)
-            near(sel.width, segLength(s.position), 0.5, "settled")
-            // the top step fills the bar, the bottom one leaves it empty
+            near(sel.width, bar.width * s.position, 0.5, "settled")
+            // the top step fills the bar, the bottom one leaves it empty; a
+            // glyph at its limit at 38 %
             s.value = s.to
             wait(300)
             near(sel.width, bar.width, 0.01, "full")
-            compare(un.width, 0)
+            near(g.children[0].color.a, 0.38, 0.01, "the plus at its limit")
             s.value = s.from
             wait(300)
             compare(sel.width, 0)
             verify(!sel.visible)
-            near(un.width, bar.width, 0.01, "empty")
+            near(gm.color.a, 0.38, 0.01, "the minus at its limit")
         }
 
         // controls-components-14 (review): volume is a plain slider in stock,
-        // no dots, the selected part W * f (the volume mask leaves segmented false)
+        // one bar, the selected part W * f (the volume mask leaves segmented false)
         function test_10b_slider_plain() {
             open(["soundItem"])
             var s = h.find(h.current(), "volumeSlider")
@@ -440,23 +443,23 @@ SettingsHarness {
             compare(s.segments, 1)
             var bar = h.find(s, "sliderBar")
             var sel = h.find(s, "sliderSelected"), un = h.find(s, "sliderUnselected")
-            var dots = h.findAll(bar, function (o) { return o.hasOwnProperty("inSelection") })
-            compare(dots.length, 0, "no step dots")
+            function gaps() {
+                return h.findAll(bar, function (o) { return o.hasOwnProperty("index") && o.width === 1 })
+            }
+            compare(gaps().length, 0, "no gaps")
             s.value = 50
             wait(300)
             near(sel.width, bar.width * 0.5, 0.5, "half")
-            near(un.x, sel.width, 0.5, "the rest starts at the selection")
+            compare(un.width, bar.width)
             s.value = 100
             wait(300)
             near(sel.width, bar.width, 0.01, "full")
-            // the same slider segmented gets its nine dots
+            // the same slider segmented gets its nine gaps
             s.segmented = true
             compare(s.segments, 10)
-            dots = h.findAll(bar, function (o) { return o.hasOwnProperty("inSelection") })
-            compare(dots.length, 9)
+            compare(gaps().length, 9)
             s.segmented = false
-            dots = h.findAll(bar, function (o) { return o.hasOwnProperty("inSelection") })
-            compare(dots.length, 0)
+            compare(gaps().length, 0)
         }
 
         // dialogs-pickers-feedback-06, settings-a-41: the selection dialog
