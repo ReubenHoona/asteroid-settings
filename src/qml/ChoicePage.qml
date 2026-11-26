@@ -9,8 +9,9 @@ import org.asteroid.controls
 /*
  * The stock CP3A Settings selection dialog (SelectionDialogKt.java, the
  * list settings such as Screen timeout): a Wear Material 3 Dialog (the
- * org.asteroid.controls Dialog: opaque black, the springs in and out, the
- * screen behind scaled to 0.85, swipe right to dismiss) holding the title,
+ * org.asteroid.controls Dialog: opaque black, a fade with a short rise in
+ * and out, the screen behind cross-fading at its own size, swipe right to
+ * dismiss) holding the title,
  * the optional message and one radio row per option, with no buttons
  * (ChoiceList, dialog: true). A tap marks the row at once, applies it and
  * closes the dialog 300 ms later (SelectionDialogKt$SelectionDialog$1$1.java:90,

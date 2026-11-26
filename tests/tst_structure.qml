@@ -514,14 +514,15 @@ SettingsHarness {
             h.tap(this, h.listItem(this, list, 2))
             wait(500)
             verify(d.shown && !d.closing, "kept open")
-            // a confirmation asked meanwhile scales the selection dialog behind it
+            // a confirmation asked meanwhile covers the selection dialog behind it
             compare(h.find(h.app, "confirmDialog").behind, d)
             compare(list.currentIndex, 0)
             d.pop()
             waitClosed(d)
         }
 
-        // a list row of a page opens the dialog, the screen behind scaled
+        // a list row of a page opens the dialog; the screen behind keeps its
+        // size (the Wear OS 6 emulator cross-fades it, qml-asteroid N61-12)
         function test_12_list_row_opens_dialog() {
             open(["generalItem"])
             h.tapName(this, "appViewItem")
@@ -529,7 +530,7 @@ SettingsHarness {
             var d = h.chooser()
             verify(d.shown)
             compare(d.behind, h.stack)
-            near(h.stack.scale, 0.85, 0.01, "the screen behind at 0.85")
+            near(h.stack.scale, 1, 0.01, "the screen behind at its own size")
             compare(h.stack.layers.length, 1, "no page pushed")
             // the List view is on: the second choice is the Grid view
             h.tap(this, h.listItem(this, h.find(d, "choiceList"), 1))
@@ -539,7 +540,8 @@ SettingsHarness {
             near(h.stack.scale, 1, 0.01, "back to full size")
         }
 
-        // power-boot-warnings-02: the confirmation is the M3 AlertDialog
+        // power-boot-warnings-02: the confirmation is the AlertDialog, as the
+        // Wear OS 6 emulator draws it (S25, N61-11): two 104 px circles
         function test_13_confirmation() {
             var dlg = h.find(h.app, "confirmDialog")
             var yes = 0, no = 0
@@ -547,14 +549,16 @@ SettingsHarness {
             wait(500)
             verify(dlg.shown)
             compare(dlg.buttons, "confirmDismiss")
-            compare(dlg.titleLabel.font.pixelSize, 36)     // Settings titleLarge
+            compare(dlg.titleRole, "titleMedium")
+            compare(dlg.titleLabel.font.pixelSize, 32)     // titleMedium
             compare(dlg.titleLabel.maximumLineCount, 3)
             compare(dlg.textLabel.font.pixelSize, 28)       // bodyMedium
             compare(h.find(h.app, "dialogTitle"), dlg.titleLabel)
             compare(h.find(h.app, "dialogMessage"), dlg.textLabel)
-            compare(dlg.dismissButton.width, 120)
-            compare(dlg.confirmButton.width, 126)
-            compare(dlg.confirmButton.height, 108)
+            compare(dlg.dismissButton.width, 104)
+            compare(dlg.dismissButton.height, 104)
+            compare(dlg.confirmButton.width, 104)
+            compare(dlg.confirmButton.height, 104)
             verify(dlg.z > h.chooser().z, "over the selection dialog")
             compare(dlg.behind, h.stack)
             h.tap(this, h.find(h.app, "dialogYes"))

@@ -422,5 +422,60 @@ SettingsHarness {
             nearRgb(rgbAt(img, 60, y), "#FFFFFF", 3, "the minus glyph")
             nearRgb(rgbAt(img, 323, y), "#FFFFFF", 3, "the plus glyph")
         }
+
+        // N61-11: System > Restart asks with the AlertDialog as the Wear OS 6
+        // emulator draws it (S25): the title in titleMedium onSurface, cap
+        // top y 103; dismiss #2F3036 at x 76-179, confirm #DBE2F9 at x
+        // 204-307, both at y 257-360. Cancelled with the X, never confirmed.
+        function test_07_confirm_dialog() {
+            open(["systemItem"])
+            h.tapName(this, "restartItem")
+            var dlg = h.find(h.app, "confirmDialog")
+            tryVerify(function () { return dlg.shown }, 3000, "the confirmation is up")
+            h.settleDialogs(this)
+            wait(300)
+            compare(dlg.titleLabel.text, "Restart")
+            compare(dlg.titleRole, "titleMedium")
+            compare(dlg.titleLabel.font.pixelSize, 32)
+            var img = grabImage(h)
+            h.shot(this, "confirm-restart")
+            // the circles along y 308, and the dismiss circle down x 100
+            function run(y, hex, x0, x1) {
+                var l = -1, r = -1
+                for (var x = x0; x < x1; x++) {
+                    var c = rgbAt(img, x, y), w = Qt.color(hex)
+                    if (Math.abs(c[0] - w.r * 255) <= 3 && Math.abs(c[1] - w.g * 255) <= 3 && Math.abs(c[2] - w.b * 255) <= 3) {
+                        if (l < 0)
+                            l = x
+                        r = x
+                    }
+                }
+                return [l, r]
+            }
+            var d = run(308, "#2F3036", 40, 192), c = run(308, "#DBE2F9", 192, 344)
+            near(d[0], 76, 2, "dismiss from x 76")
+            near(d[1], 179, 2, "dismiss to x 179")
+            near(c[0], 204, 2, "confirm from x 204")
+            near(c[1], 307, 2, "confirm to x 307")
+            var top = -1, bottom = -1
+            for (var y = 230; y < 384; y++) {
+                var p = rgbAt(img, 127, y)
+                if (Math.abs(p[0] - 47) <= 3 && Math.abs(p[1] - 48) <= 3 && Math.abs(p[2] - 54) <= 3) {
+                    if (top < 0)
+                        top = y
+                    bottom = y
+                }
+            }
+            near(top, 257, 2, "the circles from y 257")
+            near(bottom, 360, 2, "the circles to y 360")
+            // the title: its cap top and colour
+            var ls = lines(img, 100, 284, 80, 140, 0.35)
+            verify(ls.length >= 1, "the title is drawn")
+            near(ls[0].top, 103, 3, "title cap top")
+            nearRgb([ls.best.r * 255, ls.best.g * 255, ls.best.b * 255], "#E8E7EE", 3, "title onSurface")
+            // cancel with the X
+            h.tap(this, h.find(h.app, "dialogNo"))
+            tryVerify(function () { return !dlg.shown }, 3000, "cancelled")
+        }
     }
 }

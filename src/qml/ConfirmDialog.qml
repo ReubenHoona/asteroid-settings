@@ -7,13 +7,19 @@ import QtQuick
 import org.asteroid.controls
 
 /*
- * The stock CP3A Settings confirmation (ConfirmationDialog over the
- * Wear Material 3 AlertDialog of org.asteroid.controls): the title in
- * titleLarge (Settings ConfirmationDialogKt$$ExternalSyntheticLambda0.java:42),
- * the text in bodyMedium (:59), centred, then the dismiss (X) and confirm
- * (check) icon buttons side by side; the AlertDialog draws the stock
- * geometry (39 / 20 px padding, the 120 px rounded-square dismiss, the
- * 126 x 108 px confirm pill turned -45 degrees, 24 px above the buttons).
+ * The Settings confirmation (ConfirmationDialog over the AlertDialog of
+ * org.asteroid.controls) as the Wear OS 6 emulator draws it (System >
+ * Restart, S25; NEWLOOK-61 N61-11): black, no card, the title in
+ * titleMedium (32 px, cap 23 px; CP3A asked for titleLarge,
+ * ConfirmationDialogKt$$ExternalSyntheticLambda0.java:42) and the text in
+ * bodyMedium (:59), both onSurface #E8E7EE and centred, their cap tops at
+ * y 103 and 164; then two 104 px circles 24 px apart at y 257-360: the
+ * dismiss (X) in surfaceContainer #2F3036 at x 76-179 and the confirm
+ * (check) in primary #DBE2F9 at x 204-307 (the AlertDialog's
+ * "confirmDismiss" geometry, qml-asteroid newlook-61 N61-11; CP3A drew a
+ * 120 px rounded square and a 126 x 108 px pill turned -45 degrees).
+ * The dialog fades in while its content rises; the screen behind is not
+ * scaled (qml-asteroid N61-12).
  * tell() has only the confirm action: one edge button with the check, or,
  * with no title, the stock info popup (DialogUtils.showPopup: the message
  * alone in titleMedium and one round check, the AlertDialog "info" style,
@@ -33,7 +39,8 @@ AlertDialog {
     property var _reject: null
 
     text: message
-    titleRole: "titleLarge"
+    // the emulator's titleMedium (the AlertDialog's own default)
+    titleRole: "titleMedium"
     buttons: !infoOnly ? "confirmDismiss" : title === "" ? "info" : "edge"
     z: 1100
 
