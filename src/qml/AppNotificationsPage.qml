@@ -61,12 +61,12 @@ SettingsPage {
         for (i = 0; i < watch.notifying.length; i++) {
             var w = watch.notifying[i]
             out.push({ "id": w.id, "name": w.name, "phone": false, "core": w.core,
-                       "off": AppFormat.has(disabledApps.value, w.id) })
+                       "ongoing": w.ongoing === true, "off": AppFormat.has(disabledApps.value, w.id) })
         }
         var phone = AppFormat.parseKnown(known.value)
         for (i = 0; i < phone.length; i++)
             out.push({ "id": phone[i].id, "name": phone[i].name, "phone": true, "core": false,
-                       "off": AppFormat.has(blockedPackages.value, phone[i].id) })
+                       "ongoing": false, "off": AppFormat.has(blockedPackages.value, phone[i].id) })
         return out
     }
     readonly property var shownApps: all.filter(function (a) {
@@ -87,7 +87,7 @@ SettingsPage {
             objectName: "appNotificationItem"
             title: modelData.name
             onClicked: layerStack.push(appLayer, { "appId": modelData.id, "appName": modelData.name,
-                                                    "phone": modelData.phone })
+                                                    "phone": modelData.phone, "ongoing": modelData.ongoing })
         }
     }
 }

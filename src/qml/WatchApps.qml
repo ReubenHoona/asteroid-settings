@@ -12,16 +12,25 @@ import QtQuick
 //   launcher's notification manager matches in
 //   /org/asteroidos/notifications/disabled-apps (the desktop id of an app, a
 //   lipstick category for a system one); core: listed under "Core system
-//   apps" (stock's system-category filter).
+//   apps" (stock's system-category filter); ongoing: the app posts ongoing
+//   activities (the hints of the launcher's eosongoing.h: the Timer, the
+//   snoozed alarm, the Stopwatch, a workout), so its page has stock's Live
+//   updates switch (offered to the apps that may post promoted
+//   notifications, NotificationDetailsViewModel). Stopwatch and Exercise
+//   post nothing but those, and are listed for that switch.
 // - services: the background services of the image, listed as "System apps"
 //   in App info (stock's System apps) when their package is installed;
 //   process: what Force stop looks for.
 QtObject {
     readonly property var notifying: [
         //% "Alarm clock"
-        { "id": "asteroid-alarmclock", "name": qsTrId("id-app-alarm-clock"), "core": false },
+        { "id": "asteroid-alarmclock", "name": qsTrId("id-app-alarm-clock"), "core": false, "ongoing": true },
         //% "Timer"
-        { "id": "asteroid-timer", "name": qsTrId("id-app-timer"), "core": false },
+        { "id": "asteroid-timer", "name": qsTrId("id-app-timer"), "core": false, "ongoing": true },
+        //% "Stopwatch"
+        { "id": "asteroid-stopwatch", "name": qsTrId("id-app-stopwatch"), "core": false, "ongoing": true },
+        //% "Exercise"
+        { "id": "asteroid-exercise", "name": qsTrId("id-app-exercise"), "core": false, "ongoing": true },
         { "id": "asteroid-assistant", "name": qsTrId("id-assistant-page"), "core": false },
         { "id": "eos-update", "name": qsTrId("id-system-updates"), "core": true },
         { "id": "battery", "name": qsTrId("id-battery-page"), "core": true },

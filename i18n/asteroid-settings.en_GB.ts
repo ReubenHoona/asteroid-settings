@@ -2381,6 +2381,22 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Remove action?</source>
         <translation>Remove action?</translation>
     </message>
+    <message id="id-app-stopwatch">
+        <source>Stopwatch</source>
+        <translation>Stopwatch</translation>
+    </message>
+    <message id="id-app-exercise">
+        <source>Exercise</source>
+        <translation>Exercise</translation>
+    </message>
+    <message id="id-live-updates">
+        <source>Live updates</source>
+        <translation>Live updates</translation>
+    </message>
+    <message id="id-live-updates-explain">
+        <source>Display ongoing, time-sensitive notifications on the watch face</source>
+        <translation>Display ongoing, time-sensitive notifications on the watch face</translation>
+    </message>
 </context>
 <context>
     <name>AboutPage</name>

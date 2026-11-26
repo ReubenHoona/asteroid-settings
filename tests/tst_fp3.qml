@@ -6,8 +6,9 @@
  * dconf write): Display > Color theme writes exactly the four theme keys of
  * qml-asteroid's Theme (theme/color-source, seed, accent, style; design-
  * tokens-08); Apps & notifications > Assistant > Tile actions removes a chip
- * of the Assistant tile (assistant/tile-actions, tiles-individual-25).
- * Screenshots go to /tmp/fp3-shots.
+ * of the Assistant tile (assistant/tile-actions, tiles-individual-25); an
+ * app's Live updates switch writes ongoing/muted-apps (read by the
+ * launcher's OngoingFeed). Screenshots go to /tmp/fp3-shots.
  */
 
 import QtQuick
@@ -30,6 +31,8 @@ SettingsHarness {
         readonly property string kActions: "/org/asteroidos/assistant/tile-actions"
         readonly property string kAssistant: "/org/asteroidos/assistant/enabled"
         readonly property string kOpen: "/org/asteroidos/settings/ui/open"
+        readonly property string kMuted: "/org/asteroidos/ongoing/muted-apps"
+        readonly property string kDisabled: "/org/asteroidos/notifications/disabled-apps"
 
         function init() {
             h.start(this)
@@ -63,6 +66,29 @@ SettingsHarness {
         function request(route) {
             Backend.confSet(kOpen, route + "@" + Date.now())
             wait(500)
+            h.settle(this)
+        }
+        // what the page shows, top to bottom (as tst_w3ap.qml)
+        function shownRows(page) {
+            var col = h.find(page, "settingsColumn")
+            var out = []
+            for (var i = 0; i < col.children.length; i++) {
+                var c = col.children[i]
+                if (!c.visible || c.objectName === "settingsTitle")
+                    continue
+                if (c.hasOwnProperty("firstInPage"))
+                    out.push("category:" + c.text)
+                else if (c.hasOwnProperty("control") && c.hasOwnProperty("summary"))
+                    out.push("row:" + c.title)
+                else if (c.text !== undefined)
+                    out.push("text:" + c.text)
+            }
+            return out
+        }
+        function openApp(name) {
+            var r = h.findAll(h.current(), function (o) { return o.title === name && o.hasOwnProperty("control") })
+            verify(r.length > 0, "no row " + name)
+            h.tap(this, r[0])
             h.settle(this)
         }
         // the dconf writes since the last clearCalls(): [[key, value], ...]
@@ -193,6 +219,62 @@ SettingsHarness {
             verify(chip("tileActionsItem").active)
             Backend.confSet(kAssistant, false)
             verify(!chip("tileActionsItem").active)
+        }
+
+        // ---- note: Settings per-app Live updates switch (ongoing/muted-apps)
+
+        function test_05_live_updates_switch() {
+            open(["appsItem", "notificationsItem", "appNotificationsItem"])
+            openApp("Stopwatch")
+            compare(h.current().objectName, "appNotificationPage")
+            compare(shownRows(h.current()), ["category:Stopwatch", "row:On", "category:Live updates", "row:On",
+                                             "text:Display ongoing, time-sensitive notifications on the watch face"])
+            var sw = chip("liveUpdatesSwitch")
+            verify(sw.checked)
+            h.shot(this, "live-updates")
+            // Off: the desktop id goes to the launcher's list, and only that
+            Backend.clearCalls()
+            h.tap(this, sw)
+            compare(JSON.stringify(writes()), JSON.stringify([[kMuted, ["asteroid-stopwatch"]]]))
+            verify(!sw.checked)
+            compare(sw.title, "Off")
+            // the app's notifications switch stays on: a separate key
+            verify(chip("appNotificationSwitch").checked)
+            h.tap(this, sw)
+            compare(conf(kMuted), [])
+            compare(sw.title, "On")
+            compare(conf(kDisabled), undefined)
+            // the others in the list stay; a ".desktop" entry (the chip's long
+            // press may write one) counts as the app
+            Backend.confSet(kMuted, ["asteroid-timer", " asteroid-stopwatch.desktop"])
+            verify(!sw.checked)
+            h.tap(this, sw)
+            compare(conf(kMuted), ["asteroid-timer"])
+            h.tap(this, sw)
+            compare(conf(kMuted), ["asteroid-timer", "asteroid-stopwatch"])
+        }
+
+        function test_06_live_updates_only_for_ongoing_apps() {
+            Backend.confSet("/org/asteroidos/notifications/known-apps", ["com.example.chat|Chat"])
+            open(["appsItem", "notificationsItem", "appNotificationsItem"])
+            var ongoing = ["Alarm clock", "Timer", "Stopwatch", "Exercise"]
+            var ids = ["asteroid-alarmclock", "asteroid-timer", "asteroid-stopwatch", "asteroid-exercise"]
+            for (var i = 0; i < ongoing.length; i++) {
+                openApp(ongoing[i])
+                verify(h.shown(chip("liveUpdatesSwitch")), ongoing[i])
+                h.tap(this, chip("liveUpdatesSwitch"))
+                compare(conf(kMuted), [ids[i]], ongoing[i])
+                h.tap(this, chip("liveUpdatesSwitch"))
+                h.back(this)
+            }
+            var plain = ["Assistant", "System updates", "Battery", "Bluetooth", "Chat"]
+            for (var j = 0; j < plain.length; j++) {
+                openApp(plain[j])
+                verify(!h.shown(chip("liveUpdatesSwitch")), plain[j])
+                verify(!h.shown(chip("liveUpdatesCategory")), plain[j])
+                verify(!h.shown(chip("liveUpdatesCaption")), plain[j])
+                h.back(this)
+            }
         }
     }
 }

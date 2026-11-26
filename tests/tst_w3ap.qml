@@ -206,7 +206,8 @@ SettingsHarness {
             compare(chip("showAppsItem").summary, "All apps")
             // watch apps, then the phone apps by name, a package once
             compare(titles("appNotificationItem"),
-                    ["Alarm clock", "Timer", "Assistant", "System updates", "Battery", "Bluetooth", "Chat", "Mail"])
+                    ["Alarm clock", "Timer", "Stopwatch", "Exercise", "Assistant", "System updates", "Battery", "Bluetooth",
+                     "Chat", "Mail"])
             // no row has a second line
             compare(summaries("appNotificationItem").filter(function (s) { return s !== "" }).length, 0)
             // the filter: Core system apps, Notifications off
@@ -220,7 +221,7 @@ SettingsHarness {
             pick("showAppsItem", 1)
             compare(titles("appNotificationItem"), [])
             pick("showAppsItem", 0)
-            compare(titles("appNotificationItem").length, 8)
+            compare(titles("appNotificationItem").length, 10)
             h.shot(this, "notifications-04-apps")
         }
 
@@ -231,7 +232,8 @@ SettingsHarness {
             openApp("Alarm clock")
             compare(h.current().objectName, "appNotificationPage")
             compare(title(), "Notifications")
-            compare(shownRows(h.current()), ["category:Alarm clock", "row:On"])
+            compare(shownRows(h.current()), ["category:Alarm clock", "row:On", "category:Live updates", "row:On",
+                                             "text:Display ongoing, time-sensitive notifications on the watch face"])
             var sw = chip("appNotificationSwitch")
             verify(sw.checked)
             h.tap(this, sw)
