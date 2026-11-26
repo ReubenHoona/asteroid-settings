@@ -89,6 +89,23 @@ SettingsHarness {
                 out.push(h.stack.layers[i].objectName)
             return out
         }
+        // the main list's rows in stock order (main.qml firstRows, then
+        // MainListRows.qml)
+        readonly property var firstRows: ["connectivityItem", "displayItem", "gesturesItem"]
+        readonly property var moreRows: ["buttonsItem", "appsItem", "modesItem", "soundItem", "vibrationItem",
+            "batteryItem", "generalItem", "healthProfileItem", "locationItem", "safetyItem", "accessibilityItem",
+            "securityItem", "systemItem", "developerItem"]
+        function mainList() { return h.stack.firstPageItem }
+        // the rows of the main list's column, by name, in their order there
+        function rowNames() {
+            var col = h.find(mainList(), "settingsColumn")
+            var out = []
+            for (var i = 0; i < col.children.length; i++) {
+                if (col.children[i].objectName !== "")
+                    out.push(col.children[i].objectName)
+            }
+            return out
+        }
 
         function test_01_only_the_main_list_before_the_first_frame() {
             h.start(this, null, true)
@@ -114,15 +131,29 @@ SettingsHarness {
             var names = ["choiceDialog", "confirmDialog", "toast", "factoryResetScreen"]
             for (i = 0; i < names.length; i++)
                 compare(h.find(h.app, names[i]), null, names[i] + " is not made yet")
+            // the list: the rows of its first screen, in its column; the
+            // others (and the Battery row's level) after the first frame
+            compare(rowNames(), firstRows)
+            compare(app.mainListMade, false)
+            compare(mainList().rowsMade, false)
+            compare(h.find(h.app, "batteryItem"), null)
+            wait(300)
+            compare(rowNames(), firstRows, "nothing more without the first frame")
         }
 
         function test_02_made_after_the_first_frame() {
             h.start(this, null, true)
             app.firstFrameDrawn = true
             var c = later("ChoicePage.qml")
+            compare(rowNames(), firstRows, "the other rows in the background")
+            compare(c.active, false, "after the list's rows")
+            tryCompare(app, "mainListMade", true, 20000)
+            compare(rowNames(), firstRows.concat(moreRows), "every row, in stock order, in the list's column")
             compare(c.active, true)
             compare(c.item, null, "made in the background, not there and then")
             tryVerify(allMade, 20000, "all four made after the first frame")
+            compare(h.find(h.app, "batteryItem").summary, "57%")
+            verify(!h.shown(h.find(h.app, "developerItem")), "Developer options hidden until the 7 taps")
             var d = h.find(h.app, "choiceDialog")
             var cf = h.find(h.app, "confirmDialog")
             var r = h.find(h.app, "factoryResetScreen")
@@ -235,6 +266,69 @@ SettingsHarness {
             var l = laters()
             for (var i = 0; i < l.length; i++)
                 compare(l[i].item, null, "no dialog made for the request")
+            // the page is the first screen: at rest, nothing under it drawn
+            compare(h.stack.pushing, false)
+            compare(h.current().objectName, "batterySaverPage")
+            verify(h.shown(h.current()), "the page is drawn")
+            verify(!h.shown(mainList()), "the list is not drawn under it")
+            verify(!h.shown(h.stack.layers[0]), "nor Battery")
+            // the list gets its rows after the first frame, all of them
+            compare(rowNames(), [])
+            app.firstFrameDrawn = true
+            tryCompare(app, "mainListMade", true, 20000)
+            compare(rowNames(), firstRows.concat(moreRows))
+            // Back: Battery, then the list
+            h.back(this)
+            compare(h.current().objectName, "batteryPage")
+            h.back(this)
+            compare(h.current().objectName, "mainPage")
+            verify(h.shown(mainList()))
+        }
+
+        // Back from a page opened at start before the first frame: the list's
+        // first rows are made there and then
+        function test_08_back_to_the_list_before_its_rows() {
+            h.start(this, function () { Backend.confSet(openKey, "battery@" + Date.now()) }, true)
+            compare(stackNames(), ["batteryPage"])
+            compare(h.stack.pushing, false)
+            verify(!h.shown(mainList()))
+            compare(rowNames(), [])
+            h.back(this)
+            compare(h.current().objectName, "mainPage")
+            compare(rowNames(), firstRows)
+            app.firstFrameDrawn = true
+            tryCompare(app, "mainListMade", true, 20000)
+            compare(rowNames(), firstRows.concat(moreRows))
+        }
+
+        // a request at start that opens no page (the main route, an unknown
+        // one, a stale one): the list with its first rows, as without one
+        function test_09_a_request_at_start_for_the_list() {
+            var requests = ["main@" + Date.now(), "magic_cue_settings@" + Date.now(), "battery@" + (Date.now() - 120000)]
+            for (var i = 0; i < requests.length; i++) {
+                h.start(this, function () { Backend.confSet(openKey, requests[i]) }, true)
+                compare(stackNames(), [], requests[i])
+                compare(Backend.confGet(openKey), "", "the request is consumed")
+                compare(rowNames(), firstRows, requests[i])
+                compare(loadedPages(), [])
+            }
+        }
+
+        // a request while Settings runs: its pages at once, at rest, over
+        // nothing but the stack it replaces (Back goes to the list as before)
+        function test_10_a_request_while_running() {
+            h.start(this)
+            h.tapName(this, "displayItem")
+            compare(h.current().objectName, "displayPage")
+            Backend.confSet(openKey, "battery_saver@" + Date.now())
+            tryVerify(function () { return h.current().objectName === "batterySaverPage" }, 5000, "the request opens its page")
+            compare(stackNames(), ["batteryPage", "batterySaverPage"])
+            compare(h.stack.pushing, false, "no push motion over the list")
+            verify(!h.shown(mainList()))
+            h.back(this)
+            h.back(this)
+            compare(h.current().objectName, "mainPage")
+            compare(rowNames(), firstRows.concat(moreRows))
         }
     }
 }

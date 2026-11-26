@@ -21,6 +21,7 @@
 #include <QQuickItem>
 #include <QQuickView>
 #include <QScreen>
+#include <QTimer>
 #include <QtQml>
 #include <sys/utsname.h>
 
@@ -58,10 +59,14 @@ int main(int argc, char *argv[])
     qmlRegisterType<AppInventory>("org.asteroid.settings", 1, 0, "AppInventory");
     qmlRegisterType<BluetoothDevices>("org.asteroid.settings", 1, 0, "BluetoothDevices");
     qmlRegisterType<HiddenWifi>("org.asteroid.settings", 1, 0, "HiddenWifi");
-    view->setSource(QUrl("qrc:/Settings/qml/main.qml"));
-    const qint64 qmlReady = started.elapsed();
+    // the context properties before main.qml is made: set on a context in
+    // use, they make it look again at every name it could not find
     view->rootContext()->setContextProperty("qtVersion", QString(qVersion()));
     view->rootContext()->setContextProperty("kernelVersion", QString(buf.release));
+    view->setSource(QUrl("qrc:/Settings/qml/main.qml"));
+    const qint64 qmlReady = started.elapsed();
+    // main.qml (anchors.fill: parent) gets this size once the window is
+    // shown, and makes its first screen then (main.qml makeFirstScreen())
     view->resize(app->primaryScreen()->size());
     // the first frame is on screen: main.qml makes its dialogs from now on
     // (firstFrameDrawn) and the journal gets the times since main(). The
@@ -71,6 +76,28 @@ int main(int argc, char *argv[])
         if (QObject *root = view->rootObject())
             root->setProperty("firstFrameDrawn", true);
     }, Qt::ConnectionType(Qt::QueuedConnection | Qt::SingleShotConnection));
+    // the main list's rows below its first screen are made after the first
+    // frame (main.qml): one more journal line once they are all in
+    // (mainListMade: its notify signal starts a zero timer, which logs the
+    // first time it finds it true)
+    bool listLogged = false;
+    if (QObject *root = view->rootObject()) {
+        const int made = root->metaObject()->indexOfProperty("mainListMade");
+        QTimer *listMade = new QTimer(view.data());
+        listMade->setSingleShot(true);
+        listMade->setInterval(0);
+        QObject::connect(listMade, &QTimer::timeout, app.data(), [&view, &started, &listLogged]() {
+            QObject *root = view->rootObject();
+            if (!listLogged && root && root->property("mainListMade").toBool()) {
+                listLogged = true;
+                qCInfo(lcStart, "main list complete after %lld ms", started.elapsed());
+            }
+        });
+        if (made >= 0) {
+            const QMetaMethod start = listMade->metaObject()->method(listMade->metaObject()->indexOfSlot("start()"));
+            QObject::connect(root, root->metaObject()->property(made).notifySignal(), listMade, start);
+        }
+    }
     view->show();
     return app->exec();
 }

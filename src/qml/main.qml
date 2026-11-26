@@ -22,8 +22,6 @@ import org.asteroid.controls
 import org.asteroid.utils
 import org.asteroid.settings
 import Nemo.Configuration
-import Nemo.Mce
-import "PageReady.js" as PageReady
 
 /*
  * Settings as the stock CP3A Settings app of the Pixel Watch 2: the paired
@@ -169,8 +167,6 @@ Application {
         defaultValue: false
     }
 
-    MceBatteryLevel { id: batteryLevel }
-
     // the languages (LanguageModel reads a file for each): made when a page
     // first asks for them (System's Language row, the Language list), then
     // shared, so the row follows a language chosen on the list. Kept in a
@@ -206,15 +202,17 @@ Application {
      * are made after the first frame (D60-46), at once if one is wanted
      * sooner: made with the app, they and their types held up the first
      * frame. main.cpp sets firstFrameDrawn once the first frame is on
-     * screen. A Later fills the app at the z its item had; now() gives the
-     * item, finishing a creation under way (a Loader set to synchronous
-     * completes it) or making it there and then.
+     * screen. They wait for the main list's rows below its first screen
+     * (mainListMade; Settings start): the list is what is on screen, and it
+     * gets them about a third sooner. A Later fills the app at the z its
+     * item had; now() gives the item, finishing a creation under way (a
+     * Loader set to synchronous completes it) or making it there and then.
      */
     property bool firstFrameDrawn: false
     component Later: Loader {
         anchors.fill: parent
         asynchronous: true
-        active: app.firstFrameDrawn
+        active: app.firstFrameDrawn && app.mainListMade
         // the item once made (untyped: its type loads with it)
         readonly property var made: item
         function now() {
@@ -295,14 +293,28 @@ Application {
         }
     }
 
+    /*
+     * The main list (Settings start). Made with the app, it gets the rows of
+     * its first screen before the first frame (makeFirstScreen: firstRows,
+     * Connectivity, Display, Gestures; a row is at least 104 px, so the
+     * fourth starts below the 384 px screen even before the edge effect
+     * shrinks the third) and the others in the background once the first
+     * frame is on screen (MainListRows.qml). Each
+     * holder's rows are moved into the list's column in their order, so the
+     * list is the same as before once they are in. Made with the list, the
+     * 17 rows (a Button with two labels, a switch and an edge effect each)
+     * were most of what Settings did before its first frame, and the Battery
+     * row's level loaded Nemo.Mce and connected to the system bus. When a
+     * request opens a page at start (openRequested), that page is the first
+     * screen and the list under it gets all its rows after the first frame.
+     */
+    component Rows: QtObject {
+        default property list<Item> rows
+    }
     Component {
-        id: firstPageComponent
+        id: firstRows
 
-        SettingsPage {
-            objectName: "mainPage"
-            //% "Settings"
-            title: qsTrId("id-settings-title")
-
+        Rows {
             SettingsChip {
                 objectName: "connectivityItem"
                 //% "Connectivity"
@@ -323,113 +335,110 @@ Application {
                 iconName: app.iconDir + "eos-settings-gestures"
                 onClicked: layerStack.push(gesturesLayer)
             }
-            SettingsChip {
-                objectName: "buttonsItem"
-                //% "Buttons"
-                title: qsTrId("id-buttons-page")
-                iconName: app.iconDir + "eos-settings-buttons"
-                onClicked: layerStack.push(buttonsLayer)
+        }
+    }
+
+    Component {
+        id: firstPageComponent
+
+        SettingsPage {
+            id: mainPage
+            objectName: "mainPage"
+            //% "Settings"
+            title: qsTrId("id-settings-title")
+
+            // every row is in the list
+            readonly property bool rowsMade: _more !== null
+            // the holders, once made (they own their rows)
+            property QtObject _first: null
+            property QtObject _more: null
+            // MainListRows.qml while it loads, and the creation under way
+            property Component _moreType: null
+            property var _incubator: null
+
+            // a holder's rows into the list, after the ones there
+            function _place(holder) {
+                var rows = holder.rows
+                for (var i = 0; i < rows.length; i++)
+                    rows[i].parent = mainPage.column
+                return holder
             }
-            SettingsChip {
-                objectName: "appsItem"
-                //% "Apps & notifications"
-                title: qsTrId("id-apps-page")
-                iconName: "ios-apps-outline"
-                onClicked: layerStack.push(appsLayer)
+            function _incubate(type, done) {
+                var incubator = type.incubateObject(mainPage, {}, Qt.Asynchronous)
+                var finished = function () {
+                    if (incubator.status === Component.Loading)
+                        return
+                    _incubator = null
+                    if (incubator.status === Component.Ready) {
+                        done(incubator.object)
+                        makeRowsLater()
+                    } else {
+                        console.warn("Settings: the main list's rows were not made")
+                    }
+                }
+                _incubator = incubator
+                if (incubator.status === Component.Loading)
+                    incubator.onStatusChanged = finished
+                else
+                    finished()
             }
-            SettingsChip {
-                objectName: "modesItem"
-                //% "Modes"
-                title: qsTrId("id-modes-page")
-                iconName: app.iconDir + "eos-settings-modes"
-                onClicked: layerStack.push(modesLayer)
+            // the first screen's rows, now (a creation under way is finished)
+            function makeFirstRows() {
+                if (_first !== null)
+                    return
+                if (_incubator !== null)
+                    _incubator.forceCompletion()
+                else
+                    _first = _place(firstRows.createObject(mainPage))
             }
-            SettingsChip {
-                objectName: "soundItem"
-                visible: DeviceSpecs.hasSpeaker
-                title: qsTrId("id-sound-page")
-                iconName: "ms-volume_up"
-                onClicked: layerStack.push(soundLayer)
+            // after the first frame, in the background: the first screen's
+            // rows if a request at start left them out, then the others
+            function makeRowsLater() {
+                if (_incubator !== null || _more !== null)
+                    return
+                if (_first === null) {
+                    _incubate(firstRows, function (holder) { _first = _place(holder) })
+                    return
+                }
+                if (_moreType === null) {
+                    _moreType = Qt.createComponent("MainListRows.qml", Component.Asynchronous)
+                    if (_moreType.status === Component.Loading) {
+                        _moreType.statusChanged.connect(makeRowsLater)
+                        return
+                    }
+                }
+                if (_moreType.status === Component.Loading)
+                    return
+                if (_moreType.status !== Component.Ready) {
+                    console.warn("Settings: MainListRows.qml: " + _moreType.errorString())
+                    return
+                }
+                _incubate(_moreType, function (holder) { _more = _place(holder) })
             }
-            SettingsChip {
-                objectName: "vibrationItem"
-                //% "Vibration"
-                title: qsTrId("id-vibration-page")
-                iconName: "ms-watch_vibration-fill"
-                onClicked: layerStack.push(vibrationLayer)
-            }
-            SettingsChip {
-                objectName: "batteryItem"
-                //% "Battery"
-                title: qsTrId("id-battery-page")
-                //% "%1%"
-                summary: batteryLevel.valid ? qsTrId("id-battery-percent").arg(batteryLevel.percent) : ""
-                iconName: app.iconDir + "eos-settings-battery"
-                onClicked: layerStack.push(batteryLayer)
-            }
-            SettingsChip {
-                objectName: "generalItem"
-                //% "General"
-                title: qsTrId("id-general-page")
-                iconName: "ios-watch"
-                onClicked: layerStack.push(generalLayer)
-            }
-            SettingsChip {
-                objectName: "healthProfileItem"
-                visible: PageReady.healthProfile
-                //% "Health profile"
-                title: qsTrId("id-health-profile-page")
-                iconName: "ios-heart-outline"
-                onClicked: layerStack.push(healthProfileLayer)
-            }
-            SettingsChip {
-                objectName: "locationItem"
-                visible: PageReady.location
-                //% "Location"
-                title: qsTrId("id-location-page")
-                iconName: app.iconDir + "eos-settings-location"
-                onClicked: layerStack.push(locationLayer)
-            }
-            SettingsChip {
-                objectName: "safetyItem"
-                visible: PageReady.safety
-                //% "Safety & Emergency"
-                title: qsTrId("id-safety-page")
-                iconName: "ios-medkit-outline"
-                onClicked: layerStack.push(safetyLayer)
-            }
-            SettingsChip {
-                objectName: "accessibilityItem"
-                visible: PageReady.accessibility
-                //% "Accessibility"
-                title: qsTrId("id-accessibility-page")
-                iconName: app.iconDir + "eos-settings-accessibility"
-                onClicked: layerStack.push(accessibilityLayer)
-            }
-            SettingsChip {
-                objectName: "securityItem"
-                visible: PageReady.security
-                //% "Security"
-                title: qsTrId("id-security-page")
-                iconName: app.iconDir + "eos-settings-security"
-                onClicked: layerStack.push(securityLayer)
-            }
-            SettingsChip {
-                objectName: "systemItem"
-                //% "System"
-                title: qsTrId("id-system-page")
-                iconName: "ms-info"
-                onClicked: layerStack.push(systemLayer)
-            }
-            SettingsChip {
-                objectName: "developerItem"
-                visible: developerOptions.value
-                //% "Developer options"
-                title: qsTrId("id-developer-page")
-                iconName: "ios-code"
-                onClicked: layerStack.push(developerLayer)
+            // the list uncovered before its first rows were made (Back from
+            // a page opened at start, at once): they are made there and then
+            Connections {
+                target: layerStack
+                enabled: mainPage._first === null && app._started
+                function onLayersChanged() {
+                    if (layerStack.layers.length === 0)
+                        mainPage.makeFirstRows()
+                }
+                function onBackProgressChanged() {
+                    if (layerStack.layers.length === 1 && layerStack.backProgress > 0)
+                        mainPage.makeFirstRows()
+                }
             }
         }
+    }
+    // every row of the main list is made (main.cpp logs when)
+    readonly property bool mainListMade: layerStack.firstPageItem ? layerStack.firstPageItem.rowsMade === true : false
+    onFirstFrameDrawnChanged: {
+        if (!firstFrameDrawn)
+            return
+        makeFirstScreen()
+        if (layerStack.firstPageItem)
+            layerStack.firstPageItem.makeRowsLater()
     }
 
     function backToMainMenu() {
@@ -529,7 +538,10 @@ Application {
             return []
         return deepLinks[page]
     }
-    // appId: for app_info, the app whose page opens over the list
+    // appId: for app_info, the app whose page opens over the list. The
+    // pages are there at once, at rest: a request is not a navigation, its
+    // page is the screen (stock's start destination), so the push motion
+    // over the list is skipped. true: a page was opened.
     function openPage(page, appId) {
         chooser.pop()
         confirm.close()
@@ -541,11 +553,18 @@ Application {
             else
                 layerStack.push(route[i])
         }
+        if (route.length > 0 && typeof layerStack._finishPush === "function")
+            layerStack._finishPush()
+        return route.length > 0
     }
+    // true: a page was opened. Not before makeFirstScreen(): a request waiting
+    // at start is opened there.
     function openRequested() {
+        if (!_started)
+            return false
         var request = String(openRequest.value || "")
         if (request === "")
-            return
+            return false
         var appId = String(openApp.value || "").replace(/\.desktop$/, "")
         openRequest.value = ""
         if (String(openApp.value || "") !== "")
@@ -553,8 +572,30 @@ Application {
         var at = request.lastIndexOf("@")
         var age = Date.now() - Number(request.substring(at + 1))
         if (at < 0 || !(age > -5000 && age < 60000))
-            return
-        app.openPage(request.substring(0, at), appId)
+            return false
+        return app.openPage(request.substring(0, at), appId)
     }
-    Component.onCompleted: Qt.callLater(openRequested)
+    // The first screen, made once the app has its size and before the first
+    // frame: the page of a request waiting at start, with the app (stock's
+    // start destination; the list gets its rows after the first frame), or
+    // else the main list's first rows. The size: main.cpp's view gives it
+    // when the window is shown, the tests' Loader as it makes the app; made
+    // at 0 x 0, every item of the screen would be laid out twice. Not before
+    // the app is complete (a size given while it is being made comes before
+    // the stack has its list).
+    property bool _complete: false
+    property bool _started: false
+    function makeFirstScreen() {
+        if (_started || !_complete || width <= 0 || height <= 0)
+            return
+        _started = true
+        if (!openRequested())
+            layerStack.firstPageItem.makeFirstRows()
+    }
+    onWidthChanged: makeFirstScreen()
+    onHeightChanged: makeFirstScreen()
+    Component.onCompleted: {
+        _complete = true
+        makeFirstScreen()
+    }
 }

@@ -41,6 +41,7 @@ set(
 add_library(asteroid-settings ${SRC} ${HEADERS})
 asteroid_app_qml_module(asteroid-settings
 	qml/main.qml
+	qml/MainListRows.qml
 	qml/SettingsPage.qml
 	qml/SettingsChip.qml
 	qml/SettingsCategory.qml

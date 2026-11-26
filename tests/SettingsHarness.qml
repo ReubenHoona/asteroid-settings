@@ -101,7 +101,8 @@ Item {
     // Settings made afresh. prepare(): run on the reset backend before the
     // app is made (a page request waiting at start). Then the first frame,
     // as main.cpp reports it on the watch: the dialogs, the toast and the
-    // reset screen are made after it (D60-46); cold leaves that out (what
+    // reset screen are made after it (D60-46), and the main list's rows
+    // below its first screen (Settings start); cold leaves that out (what
     // the app has before its first frame, tst_start.qml).
     function start(t, prepare, cold) {
         Backend.reset()
@@ -123,6 +124,8 @@ Item {
                 return find(loader.item, "choiceDialog") !== null && find(loader.item, "confirmDialog") !== null
                     && find(loader.item, "toast") !== null && find(loader.item, "factoryResetScreen") !== null
             }, 20000, "the dialogs, the toast and the reset screen are made after the first frame")
+            t.tryVerify(function () { return stack.firstPageItem.rowsMade === true }, 20000,
+                        "the main list's rows are made after the first frame")
         }
         t.wait(300)
     }
