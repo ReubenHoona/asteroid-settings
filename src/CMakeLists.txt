@@ -128,6 +128,9 @@ asteroid_app_qml_module(asteroid-settings
 	qml/AppDataPage.qml
 	qml/AppStoragePage.qml
 	qml/AudioAdjustPage.qml
+	qml/MagnificationPage.qml
+	qml/ColorCorrectionPage.qml
+	qml/VibrationWatchPage.qml
 	qml/HealthProfilePage.qml
 	qml/ProfilePickerPage.qml
 	qml/AssistantAboutPage.qml

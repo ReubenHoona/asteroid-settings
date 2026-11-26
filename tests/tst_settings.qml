@@ -86,7 +86,9 @@ SettingsHarness {
             for (var i = 0; i < chips.length; i++) {
                 var c = chips[i]
                 if (!h.shown(c) || !c.clickable || !c.active || c.objectName === "developerSwitch"
-                        || c.objectName === "buildItem" /* stock: no notice for the first taps */)
+                        || c.objectName === "buildItem" /* stock: no notice for the first taps */
+                        /* the checked choice of a radio group: another tap changes nothing, as stock's */
+                        || (c.control === "radio" && c.checked))
                     continue
                 var layers = h.stack.layers.length
                 var calls = Backend.calls.length
@@ -145,7 +147,7 @@ SettingsHarness {
                             "displayPage", "colorThemePage", "brightnessPage", "displaySizePage", "wristOrientationPage", "touchLockPage", "gesturesPage", "buttonsPage", "appsPage", "modesPage",
                             "dndPage", "dndCustomizePage", "bedtimePage", "bedtimeCustomizePage", "theaterPage", "theaterCustomizePage", "assistantPage", "tileActionsPage", "soundPage", "vibrationPage", "batteryPage", "generalPage", "systemPage",
                             "notificationsPage", "appNotificationsPage", "appInfoPage", "appStoragePage", "locationPage",
-                            "securityPage", "accessibilityPage", "audioAdjustPage", "healthProfilePage", "safetyPage",
+                            "securityPage", "accessibilityPage", "audioAdjustPage", "magnificationPage", "colorCorrectionPage", "vibrationWatchPage", "healthProfilePage", "safetyPage",
                             "dateTimePage", "aboutPage", "versionsPage", "developerPage", "batterySaverPage", "inputMethodsPage", "manageKeyboardsPage", "licensesPage", "licenseTextPage"]
             for (var i = 0; i < expected.length; i++)
                 verify(visited.indexOf(expected[i]) >= 0, expected[i] + " reached")

@@ -11,6 +11,8 @@
  * settings editor.
  * FP-S2: the screen lock set-up flows of Security against the launcher's Lock
  * object (CR-06), modelled by Backend.lockCall.
+ * FP-S4: the Accessibility rows of the launcher's a11y keys (CR-34): each
+ * writes its key with the type and range of the contract.
  */
 
 import QtQuick
@@ -36,6 +38,18 @@ SettingsHarness {
         readonly property string kLocation: "/org/asteroidos/settings/location-enabled"
         readonly property string kReduce: "/org/asteroidos/a11y/reduce-motion"
         readonly property string kAudioSupported: "/org/asteroidos/a11y/audio-adjust-supported"
+        readonly property string kMag: "/org/asteroidos/a11y/magnification"
+        readonly property string kMagScale: "/org/asteroidos/a11y/magnification-scale"
+        readonly property string kMagEdge: "/org/asteroidos/a11y/magnification-edge-haptic"
+        readonly property string kCc: "/org/asteroidos/a11y/color-correction"
+        readonly property string kCcMode: "/org/asteroidos/a11y/color-correction-mode"
+        readonly property string kVw: "/org/asteroidos/a11y/vibration-watch"
+        readonly property string kVwType: "/org/asteroidos/a11y/vibration-watch-type"
+        readonly property string kVwSpeed: "/org/asteroidos/a11y/vibration-watch-speed"
+        readonly property string kPowerEnds: "/org/asteroidos/a11y/power-button-ends-call"
+        readonly property string kSr: "/org/asteroidos/a11y/screen-reader"
+        readonly property string kSrShortcut: "/org/asteroidos/a11y/screen-reader-button-shortcut"
+        readonly property string kSrSupported: "/org/asteroidos/a11y/screen-reader-supported"
         readonly property string kUiOpen: "/org/asteroidos/settings/ui/open"
         readonly property string kUiOpenApp: "/org/asteroidos/settings/ui/open-app"
         readonly property string kMono: "/org/asteroidos/a11y/mono-audio"
@@ -922,9 +936,10 @@ SettingsHarness {
             compare(h.current().objectName, "accessibilityPage")
             compare(title(), "Accessibility")
             compare(shownRows(h.current()),
-                    ["category:Display", "row:Text size", "row:Reduce animations",
-                     "text:Reduce movement on the screen",
-                     "category:General", "row:Audio adjustment", "row:Gestures"])
+                    ["category:Display", "row:Magnification", "row:Text size", "row:Color correction",
+                     "row:Reduce animations", "text:Reduce movement on the screen",
+                     "category:General", "row:Audio adjustment", "row:Gestures", "row:Vibration watch",
+                     "row:Power button ends call"])
             compare(chip("audioAdjustmentItem").summary, "Mono audio, Audio balance")
             // Reduce animations: off by default, the key the springs read
             var sw = chip("reduceAnimationsSwitch")
@@ -941,14 +956,226 @@ SettingsHarness {
         function test_18b_audio_adjustment_gate() {
             open(["accessibilityItem"])
             compare(shownRows(h.current()),
-                    ["category:Display", "row:Text size", "row:Reduce animations",
-                     "text:Reduce movement on the screen",
-                     "category:General", "row:Gestures"])
+                    ["category:Display", "row:Magnification", "row:Text size", "row:Color correction",
+                     "row:Reduce animations", "text:Reduce movement on the screen",
+                     "category:General", "row:Gestures", "row:Vibration watch", "row:Power button ends call"])
             verify(!chip("audioAdjustmentItem").visible)
             Backend.confSet(kAudioSupported, true)
             verify(chip("audioAdjustmentItem").visible)
             Backend.confSet(kAudioSupported, "false")
             verify(!chip("audioAdjustmentItem").visible)
+        }
+
+        // CR-34: the screen reader's rows stay hidden while it is not
+        // available (the gate a11y/screen-reader-supported)
+        function test_18c_screen_reader_gate() {
+            open(["accessibilityItem"])
+            verify(!chip("screenReaderCategory").visible)
+            verify(!chip("screenReaderSwitch").visible)
+            verify(!chip("screenReaderShortcutSwitch").visible)
+            verify(!chip("screenReaderShortcutCaption").visible)
+            Backend.confSet(kSrSupported, true)
+            compare(shownRows(h.current()).slice(0, 5),
+                    ["category:Screen reader", "row:Use screen reader", "row:Button shortcut",
+                     "text:Triple press the side button to turn the screen reader on and off", "category:Display"])
+            var sw = chip("screenReaderSwitch")
+            verify(!sw.checked)
+            h.tap(this, sw)
+            compare(conf(kSr), true)
+            compare(typeof conf(kSr), "boolean")
+            h.tap(this, chip("screenReaderShortcutSwitch"))
+            compare(conf(kSrShortcut), true)
+            compare(typeof conf(kSrShortcut), "boolean")
+            h.tap(this, chip("screenReaderShortcutSwitch"))
+            compare(conf(kSrShortcut), false)
+            tryVerify(function () { return !h.stack.pushing }, 5000, "the push has settled")
+            h.shot(this, "accessibility-18c-screen-reader")
+            Backend.confSet(kSrSupported, false)
+            verify(!chip("screenReaderSwitch").visible)
+            compare(shownRows(h.current())[0], "category:Display")
+        }
+
+        // Magnification (CR-34: magnification b, -scale d 1.5..3.0, default
+        // 2.0, -edge-haptic b)
+        function test_18d_magnification() {
+            open(["accessibilityItem"])
+            compare(chip("magnificationItem").summary, "Off")
+            open(["magnificationItem"])
+            compare(h.current().objectName, "magnificationPage")
+            compare(title(), "Magnification")
+            compare(shownRows(h.current()),
+                    ["row:Magnification", "text:Triple tap to zoom. Drag 1 finger to move around the screen",
+                     "row:Vibrate on edge", "category:Magnification size", "slider:magnificationSlider", "text:2.0x"])
+            tryVerify(function () { return !h.stack.pushing }, 5000, "the push has settled")
+            h.shot(this, "accessibility-18d-magnification")
+            var sw = chip("magnificationSwitch")
+            verify(!sw.checked)
+            verify(!chip("edgeHapticSwitch").checked)
+            verify(!has(kMagEdge))
+            h.tap(this, sw)
+            compare(conf(kMag), true)
+            compare(typeof conf(kMag), "boolean")
+            verify(sw.checked)
+            // stock: the first change turns Vibrate on edge on while it was never set
+            compare(conf(kMagEdge), true)
+            compare(typeof conf(kMagEdge), "boolean")
+            verify(chip("edgeHapticSwitch").checked)
+            h.tap(this, chip("edgeHapticSwitch"))
+            compare(conf(kMagEdge), false)
+            h.tap(this, sw)
+            compare(conf(kMag), false)
+            compare(conf(kMagEdge), false, "once set it stays the user's")
+            // the size: seven steps with separators, 2.0x by default
+            var s = chip("magnificationSlider")
+            compare(s.from, 0)
+            compare(s.to, 7)
+            compare(s.lowest, 1)
+            compare(s.value, 3)
+            verify(s.segmented)
+            compare(s.valueDescription, "2.0x")
+            compare(s.increaseDescription, "Increase magnification size")
+            compare(s.decreaseDescription, "Decrease magnification size")
+            var scales = [1.5, 1.7, 2.0, 2.2, 2.5, 2.7, 3.0]
+            var texts = ["1.5x", "1.7x", "2.0x", "2.2x", "2.5x", "2.7x", "3.0x"]
+            for (var i = 1; i <= 7; i++) {
+                s.moved(i)
+                compare(conf(kMagScale), scales[i - 1], "step " + i)
+                compare(typeof conf(kMagScale), "number")
+                verify(conf(kMagScale) >= 1.5 && conf(kMagScale) <= 3.0)
+                compare(s.value, i)
+                compare(chip("magnificationSizeValue").text, texts[i - 1])
+            }
+            verify(h.scrollToEnd(this), "the page scrolls")
+            wait(300)
+            h.shot(this, "accessibility-18d-magnification-size")
+            // a stored size between steps shows the nearest, nonsense the default
+            Backend.confSet(kMagScale, 2.05)
+            compare(s.value, 3)
+            Backend.confSet(kMagScale, "big")
+            compare(s.value, 3)
+            h.back(this)
+            compare(chip("magnificationItem").summary, "Off")
+            Backend.confSet(kMag, true)
+            compare(chip("magnificationItem").summary, "On")
+        }
+
+        // Color correction (CR-34: color-correction b, -mode s of four)
+        function test_18e_color_correction() {
+            open(["accessibilityItem", "colorCorrectionItem"])
+            compare(h.current().objectName, "colorCorrectionPage")
+            compare(title(), "Color correction")
+            compare(shownRows(h.current()),
+                    ["row:Use color correction", "row:Red-green", "row:Red-green", "row:Blue-yellow", "row:Grayscale"])
+            compare(chip("colorCorrection_deuteranomaly").summary, "Green weak, deuteranomaly")
+            compare(chip("colorCorrection_protanomaly").summary, "Red weak, protanomaly")
+            compare(chip("colorCorrection_tritanomaly").summary, "Tritanomaly")
+            compare(chip("colorCorrection_grayscale").summary, "")
+            // nothing stored: deuteranomaly (stock's and the launcher's default)
+            verify(chip("colorCorrection_deuteranomaly").checked)
+            tryVerify(function () { return !h.stack.pushing }, 5000, "the push has settled")
+            h.shot(this, "accessibility-18e-color-correction")
+            var sw = chip("colorCorrectionSwitch")
+            verify(!sw.checked)
+            h.tap(this, sw)
+            compare(conf(kCc), true)
+            compare(typeof conf(kCc), "boolean")
+            var modes = ["protanomaly", "tritanomaly", "grayscale", "deuteranomaly"]
+            for (var i = 0; i < modes.length; i++) {
+                h.tap(this, chip("colorCorrection_" + modes[i]))
+                compare(conf(kCcMode), modes[i])
+                compare(typeof conf(kCcMode), "string")
+                for (var j = 0; j < modes.length; j++)
+                    compare(chip("colorCorrection_" + modes[j]).checked, i === j, modes[j])
+            }
+            // the radios stay enabled with the switch off (no dependency in stock)
+            h.tap(this, sw)
+            compare(conf(kCc), false)
+            verify(chip("colorCorrection_grayscale").active)
+            h.tap(this, chip("colorCorrection_grayscale"))
+            compare(conf(kCcMode), "grayscale")
+            // a mode the launcher does not know reads as deuteranomaly
+            Backend.confSet(kCcMode, "sepia")
+            verify(chip("colorCorrection_deuteranomaly").checked)
+        }
+
+        // Vibration watch (CR-34: vibration-watch b, -type s digits or terse,
+        // -speed i 0..4 default 2)
+        function test_18f_vibration_watch() {
+            open(["accessibilityItem", "vibrationWatchItem"])
+            compare(h.current().objectName, "vibrationWatchPage")
+            compare(title(), "Vibration watch")
+            compare(shownRows(h.current()),
+                    ["row:Vibration watch",
+                     "text:Get the current time as vibrations. When the screen is on, tap the watch face with 2 fingers to check the time: single tap for the hour, double tap for the minute.",
+                     "category:Vibration type", "row:Digits",
+                     "text:Vibration watch gives you the current time in decimal format. A long vibration means 10 and a short vibration means 1.",
+                     "row:Terse", "text:Vibration watch gives the minutes briefly. Each short vibration means a quarter-hour.",
+                     "row:Vibration speed"])
+            compare(chip("vibrationSpeedItem").summary, "Medium")
+            verify(chip("vibrationTypeDigits").checked)
+            // off: the type and the speed grey and still
+            verify(!chip("vibrationTypeDigits").active)
+            verify(!chip("vibrationTypeTerse").active)
+            verify(!chip("vibrationSpeedItem").active)
+            h.tap(this, chip("vibrationTypeTerse"))
+            verify(!has(kVwType))
+            tryVerify(function () { return !h.stack.pushing }, 5000, "the push has settled")
+            h.shot(this, "accessibility-18f-vibration-watch-off")
+            h.tap(this, chip("vibrationWatchSwitch"))
+            compare(conf(kVw), true)
+            compare(typeof conf(kVw), "boolean")
+            verify(chip("vibrationTypeTerse").active)
+            h.tap(this, chip("vibrationTypeTerse"))
+            compare(conf(kVwType), "terse")
+            compare(typeof conf(kVwType), "string")
+            verify(chip("vibrationTypeTerse").checked)
+            verify(!chip("vibrationTypeDigits").checked)
+            h.tap(this, chip("vibrationTypeDigits"))
+            compare(conf(kVwType), "digits")
+            // the speed: the stock list, its value 0..4
+            h.tap(this, chip("vibrationSpeedItem"))
+            h.settle(this)
+            compare(choices(), ["Very slow", "Slow", "Medium", "Fast", "Very fast"])
+            h.back(this)
+            var names = ["Very slow", "Slow", "Medium", "Fast", "Very fast"]
+            for (var i = 0; i < 5; i++) {
+                pick("vibrationSpeedItem", i)
+                compare(conf(kVwSpeed), i)
+                verify(typeof conf(kVwSpeed) === "number" && Math.round(conf(kVwSpeed)) === conf(kVwSpeed))
+                verify(conf(kVwSpeed) >= 0 && conf(kVwSpeed) <= 4)
+                compare(chip("vibrationSpeedItem").summary, names[i])
+            }
+            tryVerify(function () { return !h.stack.pushing }, 5000, "the push has settled")
+            h.shot(this, "accessibility-18f-vibration-watch-on")
+            // a speed out of range reads as Medium
+            Backend.confSet(kVwSpeed, 9)
+            compare(chip("vibrationSpeedItem").summary, "Medium")
+        }
+
+        // stock: Vibration watch only while vibration is on (vibrate_on)
+        function test_18g_vibration_watch_follows_vibration() {
+            open(["accessibilityItem"])
+            verify(chip("vibrationWatchItem").visible)
+            Backend.confSet("/desktop/asteroid/vibration", false)
+            verify(!chip("vibrationWatchItem").visible)
+            Backend.confSet("/desktop/asteroid/vibration", true)
+            verify(chip("vibrationWatchItem").visible)
+        }
+
+        // Power button ends call (CR-34: power-button-ends-call b false)
+        function test_18h_power_button_ends_call() {
+            open(["accessibilityItem"])
+            var sw = chip("powerButtonEndsCallSwitch")
+            verify(h.shown(sw))
+            verify(!sw.checked)
+            h.tap(this, sw)
+            compare(conf(kPowerEnds), true)
+            compare(typeof conf(kPowerEnds), "boolean")
+            verify(sw.checked)
+            tryVerify(function () { return !h.stack.pushing }, 5000, "the push has settled")
+            h.shot(this, "accessibility-18h-end")
+            h.tap(this, sw)
+            compare(conf(kPowerEnds), false)
         }
 
         function test_19_accessibility_links() {
@@ -1253,7 +1480,9 @@ SettingsHarness {
                            "app_info": "appInfoPage", "app_storage": "appStoragePage", "assistant": "assistantPage",
                            "health_profile": "healthProfilePage", "location": "locationPage",
                            "safety": "safetyPage", "accessibility": "accessibilityPage",
-                           "audio_adjustment": "audioAdjustPage", "security": "securityPage" }
+                           "audio_adjustment": "audioAdjustPage", "security": "securityPage",
+                           "magnification": "magnificationPage", "color_correction": "colorCorrectionPage",
+                           "vibration_watch": "vibrationWatchPage" }
             for (var r in routes) {
                 h.app.openPage(r)
                 wait(500)

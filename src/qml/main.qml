@@ -157,6 +157,9 @@ Application {
     PageType { id: appInfoLayer;               page: "AppInfoPage" }
     PageType { id: appStorageLayer;            page: "AppStoragePage" }
     PageType { id: audioAdjustLayer;           page: "AudioAdjustPage" }
+    PageType { id: magnificationLayer;         page: "MagnificationPage" }
+    PageType { id: colorCorrectionLayer;       page: "ColorCorrectionPage" }
+    PageType { id: vibrationWatchLayer;        page: "VibrationWatchPage" }
 
     // Developer options appear at the end of the list once Build number
     // (About > Versions) was tapped seven times, as on Wear OS
@@ -487,6 +490,9 @@ Application {
         "safety": [safetyLayer],
         "accessibility": [accessibilityLayer],
         "audio_adjustment": [accessibilityLayer, audioAdjustLayer],
+        "magnification": [accessibilityLayer, magnificationLayer],
+        "color_correction": [accessibilityLayer, colorCorrectionLayer],
+        "vibration_watch": [accessibilityLayer, vibrationWatchLayer],
         "security": [securityLayer],
         "modes": [modesLayer],
         "mode_do_not_disturb": [modesLayer, dndLayer],

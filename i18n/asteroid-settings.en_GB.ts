@@ -2413,6 +2413,138 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Back</source>
         <translation>Back</translation>
     </message>
+    <message id="id-screen-reader">
+        <source>Screen reader</source>
+        <translation>Screen reader</translation>
+    </message>
+    <message id="id-screen-reader-use">
+        <source>Use screen reader</source>
+        <translation>Use screen reader</translation>
+    </message>
+    <message id="id-screen-reader-shortcut">
+        <source>Button shortcut</source>
+        <translation>Button shortcut</translation>
+    </message>
+    <message id="id-screen-reader-shortcut-explain">
+        <source>Triple press the side button to turn the screen reader on and off</source>
+        <translation>Triple press the side button to turn the screen reader on and off</translation>
+    </message>
+    <message id="id-power-button-ends-call">
+        <source>Power button ends call</source>
+        <translation>Power button ends call</translation>
+    </message>
+    <message id="id-magnification">
+        <source>Magnification</source>
+        <translation>Magnification</translation>
+    </message>
+    <message id="id-magnification-size-value">
+        <source>%1x</source>
+        <translation>%1x</translation>
+    </message>
+    <message id="id-magnification-explain">
+        <source>Triple tap to zoom. Drag 1 finger to move around the screen</source>
+        <translation>Triple tap to zoom. Drag 1 finger to move around the screen</translation>
+    </message>
+    <message id="id-magnification-edge-haptic">
+        <source>Vibrate on edge</source>
+        <translation>Vibrate on edge</translation>
+    </message>
+    <message id="id-magnification-size">
+        <source>Magnification size</source>
+        <translation>Magnification size</translation>
+    </message>
+    <message id="id-magnification-size-increase">
+        <source>Increase magnification size</source>
+        <translation>Increase magnification size</translation>
+    </message>
+    <message id="id-magnification-size-decrease">
+        <source>Decrease magnification size</source>
+        <translation>Decrease magnification size</translation>
+    </message>
+    <message id="id-color-correction">
+        <source>Color correction</source>
+        <translation>Color correction</translation>
+    </message>
+    <message id="id-color-correction-red-green">
+        <source>Red-green</source>
+        <translation>Red-green</translation>
+    </message>
+    <message id="id-color-correction-deuteranomaly">
+        <source>Green weak, deuteranomaly</source>
+        <translation>Green weak, deuteranomaly</translation>
+    </message>
+    <message id="id-color-correction-protanomaly">
+        <source>Red weak, protanomaly</source>
+        <translation>Red weak, protanomaly</translation>
+    </message>
+    <message id="id-color-correction-blue-yellow">
+        <source>Blue-yellow</source>
+        <translation>Blue-yellow</translation>
+    </message>
+    <message id="id-color-correction-tritanomaly">
+        <source>Tritanomaly</source>
+        <translation>Tritanomaly</translation>
+    </message>
+    <message id="id-color-correction-grayscale">
+        <source>Grayscale</source>
+        <translation>Grayscale</translation>
+    </message>
+    <message id="id-color-correction-use">
+        <source>Use color correction</source>
+        <translation>Use color correction</translation>
+    </message>
+    <message id="id-vibration-watch">
+        <source>Vibration watch</source>
+        <translation>Vibration watch</translation>
+    </message>
+    <message id="id-vibration-speed-very-slow">
+        <source>Very slow</source>
+        <translation>Very slow</translation>
+    </message>
+    <message id="id-vibration-speed-slow">
+        <source>Slow</source>
+        <translation>Slow</translation>
+    </message>
+    <message id="id-vibration-speed-medium">
+        <source>Medium</source>
+        <translation>Medium</translation>
+    </message>
+    <message id="id-vibration-speed-fast">
+        <source>Fast</source>
+        <translation>Fast</translation>
+    </message>
+    <message id="id-vibration-speed-very-fast">
+        <source>Very fast</source>
+        <translation>Very fast</translation>
+    </message>
+    <message id="id-vibration-watch-explain">
+        <source>Get the current time as vibrations. When the screen is on, tap the watch face with 2 fingers to check the time: single tap for the hour, double tap for the minute.</source>
+        <translation>Get the current time as vibrations. When the screen is on, tap the watch face with 2 fingers to check the time: single tap for the hour, double tap for the minute.</translation>
+    </message>
+    <message id="id-vibration-type">
+        <source>Vibration type</source>
+        <translation>Vibration type</translation>
+    </message>
+    <message id="id-vibration-type-digits">
+        <source>Digits</source>
+        <translation>Digits</translation>
+    </message>
+    <message id="id-vibration-type-digits-explain">
+        <source>Vibration watch gives you the current time in decimal format. A long vibration means 10 and a short vibration means 1.</source>
+        <translation>Vibration watch gives you the current time in decimal format. A long vibration means 10 and a short vibration means 1.</translation>
+    </message>
+    <message id="id-vibration-type-terse">
+        <source>Terse</source>
+        <translation>Terse</translation>
+    </message>
+    <message id="id-vibration-type-terse-explain">
+        <source>Vibration watch gives the minutes briefly. Each short vibration means a quarter-hour.</source>
+        <translation>Vibration watch gives the minutes briefly. Each short vibration means a quarter-hour.</translation>
+    </message>
+    <message id="id-vibration-speed">
+        <source>Vibration speed</source>
+        <translation>Vibration speed</translation>
+    </message>
 </context>
 <context>
     <name>AboutPage</name>

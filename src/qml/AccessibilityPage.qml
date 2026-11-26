@@ -8,15 +8,24 @@ import org.asteroid.controls
 import org.asteroid.utils
 import Nemo.Configuration
 
-// Settings > Accessibility (settings-b-10, accessibility-lock-security-20).
-// Stock CP3A's legacy AccessibilityFragment has the categories Display and
-// General. Rows are built where this watch has the feature behind them:
-// Display: Text size (the font size of Display size & text) and Reduce
-// animations with "Reduce movement on the screen"; General: Audio adjustment
-// ("Mono audio, Audio balance") and Gestures. Screen reader, Magnification,
-// Color correction, Text-to-speech output, Power button ends call and
-// Vibration watch come with the launcher's accessibility work (not built
-// yet); a category with no row would be hidden.
+// Settings > Accessibility (settings-b-10, accessibility-lock-security-20,
+// FP-S4). Stock CP3A's AccessibilityFragment (xml/prefs_accessibility.xml)
+// in its order: Screen reader (TalkBack, removed while TalkBack is not
+// installed), Display: Magnification (the row of the magnification screen,
+// On or Off under it), Text size (the font size of Display size & text),
+// Color correction, Reduce animations with "Reduce movement on the screen";
+// General: Audio adjustment ("Mono audio, Audio balance"), Gestures,
+// Vibration watch (shown while vibration is on, vibrate_on) and Power
+// button ends call (a switch, with an audio output). Text-to-speech output
+// and RTT have no engine or dialer here: no rows. The keys are the
+// launcher's (CR-34, src/qml/a11y and KeyRouter): a11y/magnification,
+// -scale, -edge-haptic (MagnificationPage), a11y/color-correction, -mode
+// (ColorCorrectionPage), a11y/vibration-watch, -type, -speed
+// (VibrationWatchPage), a11y/power-button-ends-call b false. The screen
+// reader's rows (a11y/screen-reader, -button-shortcut, b false) stay hidden
+// while the launcher's ScreenReader is not available: behind the gate
+// a11y/screen-reader-supported b false (the coordinator's rule, as CR-33),
+// which the package that makes it available sets true.
 SettingsPage {
     id: page
     objectName: "accessibilityPage"
@@ -37,6 +46,72 @@ SettingsPage {
         key: "/org/asteroidos/a11y/audio-adjust-supported"
         defaultValue: false
     }
+    // gate (CR-34): true once the launcher's screen reader is available
+    ConfigurationValue {
+        id: screenReaderSupported
+        key: "/org/asteroidos/a11y/screen-reader-supported"
+        defaultValue: false
+    }
+    ConfigurationValue {
+        id: screenReader
+        key: "/org/asteroidos/a11y/screen-reader"
+        defaultValue: false
+    }
+    ConfigurationValue {
+        id: screenReaderShortcut
+        key: "/org/asteroidos/a11y/screen-reader-button-shortcut"
+        defaultValue: false
+    }
+    ConfigurationValue {
+        id: magnification
+        key: "/org/asteroidos/a11y/magnification"
+        defaultValue: false
+    }
+    // Vibration & haptics (VibrationPage): Vibration watch only while it is on
+    ConfigurationValue {
+        id: vibration
+        key: "/desktop/asteroid/vibration"
+        defaultValue: true
+    }
+    ConfigurationValue {
+        id: powerEndsCall
+        key: "/org/asteroidos/a11y/power-button-ends-call"
+        defaultValue: false
+    }
+
+    function isOn(v) { return v === true || v === "true" }
+    readonly property bool screenReaderShown: isOn(screenReaderSupported.value)
+
+    SettingsCategory {
+        objectName: "screenReaderCategory"
+        visible: page.screenReaderShown
+        //% "Screen reader"
+        text: qsTrId("id-screen-reader")
+    }
+    SettingsChip {
+        objectName: "screenReaderSwitch"
+        visible: page.screenReaderShown
+        //% "Use screen reader"
+        title: qsTrId("id-screen-reader-use")
+        control: "toggle"
+        checked: page.isOn(screenReader.value)
+        onClicked: screenReader.value = !checked
+    }
+    SettingsChip {
+        objectName: "screenReaderShortcutSwitch"
+        visible: page.screenReaderShown
+        //% "Button shortcut"
+        title: qsTrId("id-screen-reader-shortcut")
+        control: "toggle"
+        checked: page.isOn(screenReaderShortcut.value)
+        onClicked: screenReaderShortcut.value = !checked
+    }
+    SettingsText {
+        objectName: "screenReaderShortcutCaption"
+        visible: page.screenReaderShown
+        //% "Triple press the side button to turn the screen reader on and off"
+        text: qsTrId("id-screen-reader-shortcut-explain")
+    }
 
     SettingsCategory {
         objectName: "displayCategory"
@@ -44,10 +119,21 @@ SettingsPage {
         text: qsTrId("id-display-page")
     }
     SettingsChip {
+        objectName: "magnificationItem"
+        title: qsTrId("id-magnification")
+        summary: page.isOn(magnification.value) ? qsTrId("id-on") : qsTrId("id-off")
+        onClicked: layerStack.push(magnificationLayer)
+    }
+    SettingsChip {
         objectName: "textSizeItem"
         //% "Text size"
         title: qsTrId("id-text-size")
         onClicked: layerStack.push(displaySizeLayer)
+    }
+    SettingsChip {
+        objectName: "colorCorrectionItem"
+        title: qsTrId("id-color-correction")
+        onClicked: layerStack.push(colorCorrectionLayer)
     }
     SettingsChip {
         objectName: "reduceAnimationsSwitch"
@@ -80,5 +166,20 @@ SettingsPage {
         objectName: "gesturesItem"
         title: qsTrId("id-gestures-page")
         onClicked: layerStack.push(gesturesLayer)
+    }
+    SettingsChip {
+        objectName: "vibrationWatchItem"
+        visible: page.isOn(vibration.value)
+        title: qsTrId("id-vibration-watch")
+        onClicked: layerStack.push(vibrationWatchLayer)
+    }
+    SettingsChip {
+        objectName: "powerButtonEndsCallSwitch"
+        visible: DeviceSpecs.hasSpeaker
+        //% "Power button ends call"
+        title: qsTrId("id-power-button-ends-call")
+        control: "toggle"
+        checked: page.isOn(powerEndsCall.value)
+        onClicked: powerEndsCall.value = !checked
     }
 }
