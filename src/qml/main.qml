@@ -166,6 +166,18 @@ Application {
 
     MceBatteryLevel { id: batteryLevel }
 
+    // the languages (LanguageModel reads a file for each): made when a page
+    // first asks for them (System's Language row, the Language list), then
+    // shared, so the row follows a language chosen on the list. Kept in a
+    // plain object, so that asking from a binding makes no dependency.
+    Component { id: languagesComponent; LanguageModel { } }
+    readonly property var _languages: ({ model: null })
+    function languageModel() {
+        if (!_languages.model)
+            _languages.model = languagesComponent.createObject(app)
+        return _languages.model
+    }
+
     // the modes (Bedtime, Theater, Battery saver, Extra dim, Do Not
     // Disturb): which setting a mode holds, and its summary
     ModeState { id: modeState }

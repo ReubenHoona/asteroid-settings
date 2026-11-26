@@ -491,7 +491,7 @@ SettingsHarness {
 
         function test_08_system() {
             open(["systemItem"])
-            compare(h.find(h.current(), "languageItem").summary, "")
+            compare(h.find(h.current(), "languageItem").summary, "English")
             h.tapName(this, "powerOffItem")
             compare(dialog().title, "Power off")
             compare(dialog().message, "Are you sure?")

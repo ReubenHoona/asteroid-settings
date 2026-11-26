@@ -9,10 +9,12 @@ import org.asteroid.utils
 import org.asteroid.settings
 import Nemo.DBus
 import Nemo.Mce
+import "LanguageNames.js" as LanguageNames
 
 // Settings > System (stock prefs_system.xml, in its order): System updates,
 // Power off and Restart (each asks "Are you sure?" as stock), Date & time,
-// Input methods, Language (no summary: the list names the current one), About,
+// Input methods, Language (the current language in its second line, as the
+// Wear OS 6 emulator: "English"; CP3A had none), About,
 // Disconnect & reset (setup-wizard-07; FactoryResetPreference:29-36,
 // FactoryResetDialogFragment:67-290): the question, then the full-screen
 // "Resetting..." and the wipe by the root helper (eos-factory-reset).
@@ -24,6 +26,10 @@ SettingsPage {
     BluetoothStatus { id: btStatus }
     MceBatteryLevel { id: batteryLevel }
     MceChargerType { id: chargerType }
+
+    // the app's list of languages, shared with the Language list, so the
+    // Language row follows a language chosen there (main.qml languageModel)
+    readonly property var languages: app.languageModel()
 
     DBusInterface {
         id: login1
@@ -95,6 +101,10 @@ SettingsPage {
     SettingsChip {
         objectName: "languageItem"
         title: qsTrId("id-language-page")
+        // the current language as the list names it ("English"), in the
+        // second line (primary, SettingsChip; NEWLOOK-61 N61-46)
+        summary: page.languages.currentIndex >= 0
+                 ? LanguageNames.nativeLanguage(page.languages, page.languages.currentIndex) : ""
         onClicked: layerStack.push(languageLayer)
     }
     SettingsChip {

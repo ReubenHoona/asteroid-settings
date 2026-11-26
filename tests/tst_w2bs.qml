@@ -282,8 +282,9 @@ SettingsHarness {
             compare(shownRows(h.current()),
                     ["row:System updates", "row:Power off", "row:Restart", "row:Date & time",
                      "row:Input methods", "row:Language", "row:About", "row:Disconnect & reset"])
-            // the Language row has no summary (the list names the current one)
-            compare(chip("languageItem").summary, "")
+            // the Language row names the current language (the Wear OS 6
+            // emulator, N61-46; CP3A had no summary)
+            compare(chip("languageItem").summary, "English")
             h.shot(this, "system-01-page")
         }
 

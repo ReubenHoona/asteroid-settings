@@ -94,6 +94,7 @@ asteroid_app_qml_module(asteroid-settings
 	qml/TimePage.qml
 	qml/DatePage.qml
 	qml/LanguagePage.qml
+	qml/LanguageNames.js
 	qml/AboutPage.qml
 	qml/LicensesPage.qml
 	qml/LicenseTextPage.qml

@@ -242,5 +242,38 @@ SettingsHarness {
                 near(t.left, want[i][5], 1, want[i][0] + " label x")
             }
         }
+
+        // N61-46: System's Language row names the current language in its
+        // second line, as the list names it ("English"), in primary
+        // #DBE2F9, and follows a language chosen on the list
+        function test_04_language_row() {
+            open(["systemItem"])
+            var page = h.current()
+            var c = settled("languageItem")
+            compare(c.summary, "English")
+            var img = grabImage(h)
+            h.shot(this, "system-language")
+            nearRgb(brightest(img, c.button.secondaryLabel), "#DBE2F9", 4, "the second line in primary")
+            // one list of languages for the app
+            verify(page.languages === h.app.languageModel(), "System uses the app's languages")
+            h.tapName(this, "languageItem")
+            h.settle(this)
+            var lp = h.current()
+            compare(lp.objectName, "languagePage")
+            verify(lp.langSettings === page.languages, "the list and the row share it")
+            var list = h.find(lp, "choiceList")
+            compare(list.textOf(list.currentIndex), "English")
+            // Français: the row follows
+            h.tap(this, h.listItem(this, list, 3))
+            wait(300)
+            compare(lp.langSettings.currentIndex, 3)
+            h.back(this)
+            h.settle(this)
+            compare(h.current().objectName, "systemPage")
+            compare(c.summary, "Français")
+            // a language the list does not know: no second line
+            Backend.languageIndex = -1
+            compare(c.summary, "")
+        }
     }
 }
