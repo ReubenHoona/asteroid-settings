@@ -91,21 +91,23 @@ SettingsHarness {
             open(["batteryItem"])
             compare(h.current().objectName, "batteryPage")
             compare(title(), "Battery")
-            // the level in numeralSmall (30 sp = 60 px) with the % in titleLarge
-            // (18 sp = 36 px), both onSurfaceVariant, and "Charge remaining" in
-            // labelSmall (13 sp = 26 px) (BatteryStatusItemKt:80-81,202,270)
+            // the Wear OS 6 emulator's (S20, N61-44): the level in 24 sp
+            // (48 px) with the % in 20 sp (40 px), both white, and "Charge
+            // remaining" in labelSmall (13 sp = 26 px) onSurface
+            // (BatteryStatusItemKt:80-81,202,270)
             var digits = chip("batteryPercent")
             var sign = chip("batteryPercentSign")
             var remaining = chip("batteryRemaining")
             compare(digits.text, "57")
             compare(sign.text, "%")
             compare(remaining.text, "Charge remaining")
-            compare(digits.font.pixelSize, 60)
-            compare(sign.font.pixelSize, 36)
+            compare(digits.font.pixelSize, 48)
+            compare(sign.font.pixelSize, 40)
             compare(remaining.font.pixelSize, 26)
-            compare(digits.color.toString(), Theme.color.onSurfaceVariant.toString())
-            compare(sign.color.toString(), Theme.color.onSurfaceVariant.toString())
-            compare(remaining.color.toString(), Theme.color.onSurfaceVariant.toString())
+            compare(digits.color.toString(), "#ffffff")
+            compare(sign.color.toString(), "#ffffff")
+            compare(remaining.color.toString(), Theme.color.onSurface.toString())
+            compare(remaining.color.toString(), "#e8e7ee")
             // no charger words, whatever the charger does
             Backend.batteryState = 1
             Backend.chargerType = 1

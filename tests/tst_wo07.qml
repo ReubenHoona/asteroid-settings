@@ -286,7 +286,9 @@ SettingsHarness {
             compare(h.current().objectName, "aboutPage")
         }
 
-        // ---- D60-39: Battery header start-aligned with a progress bar
+        // ---- D60-39: Battery header start-aligned with a progress bar; the
+        // bar, the colours and the heights are the Wear OS 6 emulator's
+        // (N61-44, measured on the screen in tst_n61s2)
 
         function test_39_battery_header() {
             open(["batteryItem"])
@@ -295,25 +297,25 @@ SettingsHarness {
             verify(bar !== null, "the progress bar")
             h.bringIntoView(this, head)
             wait(200)
-            // in the header's own coordinates: 14 dp (28 px) in, 6 dp (12 px)
-            // above, the bar right under the digits, the label 6 dp under it
+            // in the header's own coordinates: 14 dp (28 px) in; the bar
+            // 30.5 dp (61 px) under the top, 8 dp (16 px) tall, fully round
             var d = digits.mapToItem(head, 0, 0), b = bar.mapToItem(head, 0, 0), l = label.mapToItem(head, 0, 0)
             compare(d.x, 28)
-            compare(d.y, 12)
             compare(b.x, 28)
             compare(bar.width, head.width - 56)
-            compare(b.y, d.y + digits.parent.parent.height)
-            compare(bar.height, 8)
+            compare(b.y, 61)
+            compare(bar.height, 16)
+            compare(bar.radius, 8)
             compare(l.x, 28)
-            compare(l.y, b.y + bar.height + 12)
-            compare(head.height, l.y + label.height + 12 + 12)
+            verify(d.y + digits.height <= b.y + 2, "the digits above the bar")
+            verify(l.y >= b.y + bar.height, "the label under the bar")
             compare(label.effectiveHorizontalAlignment, Text.AlignLeft)
-            // the CP3A colours: digits and label onSurfaceVariant, the bar
-            // tertiary on surfaceContainer, 57 %
-            rgb(digits.color, Theme.color.onSurfaceVariant.toString(), "digits")
-            rgb(label.color, Theme.color.onSurfaceVariant.toString(), "label")
-            compare(bar.color.toString(), Theme.color.tertiary.toString())
-            compare(bar.trackColor.toString(), Theme.color.surfaceContainer.toString())
+            // the Wear OS 6 emulator's colours: digits white, the label
+            // onSurface, the bar white on #3C4043, 57 %
+            rgb(digits.color, "#ffffff", "digits")
+            rgb(label.color, Theme.color.onSurface.toString(), "label")
+            compare(bar.fillColor.toString(), "#ffffff")
+            compare(bar.color.toString(), "#3c4043")
             near(bar.progress, 0.57, 0.001, "progress")
             Backend.batteryPercent = 20
             tryVerify(function () { return Math.abs(bar.progress - 0.2) < 0.001 }, 2000, "follows the level")
@@ -326,7 +328,7 @@ SettingsHarness {
             var dInk = ink(img, 20, dy, 300, dy + dh, function (r, g, b) { return r > 120 })
             near(dInk.x0, 48, 3, "digits ink x")
             var by = Math.round(at(bar).y)
-            var bInk = ink(img, 20, by, 364, by + 8, function (r, g, b) { return r > 60 || g > 60 || b > 60 })
+            var bInk = ink(img, 20, by, 364, by + 16, function (r, g, b) { return r > 50 || g > 50 || b > 50 })
             near(bInk.x0, 48, 1, "bar from x 48")
             near(bInk.x1, 335, 1, "bar (track) to x 335")
             var ly = Math.round(at(label).y), lh = Math.round(label.height)

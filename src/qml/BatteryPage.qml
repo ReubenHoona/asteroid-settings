@@ -56,21 +56,36 @@ SettingsPage {
     // config_automaticBatterySaverModeEntryPercentage 15)
     readonly property int onLevel: Number(autoOnLevel.value)
 
-    // BatteryStatusItem (BatteryStatusItemKt.java:138-275): a Column in the
-    // button content padding (uiControlContentPadding = ButtonDefaults.
-    // ContentPadding, 14 dp at the sides, 6 dp above and below:
-    // PaddingDefaultValuesKt.java:50), aligned to the start (:141-142):
-    // numeralSmall digits (30 sp = 60 px) with the % sign in titleLarge
-    // (18 sp = 36 px), both onSurfaceVariant, TextAlign.Start (:202); right
-    // under them the M3 LinearProgressIndicator of the charge, tertiary on
-    // surfaceContainer (:241); then "Charge remaining" in labelSmall (13 sp =
-    // 26 px) onSurfaceVariant, 6 dp above and below it (:243-270) (D60-39)
+    // BatteryStatusItem as the Wear OS 6 emulator draws it (S20; NEWLOOK-61
+    // N61-44), aligned to the start 14 dp in (x 48; CP3A
+    // BatteryStatusItemKt.java:141-142,202, D60-39), the first row under the
+    // title (its top at y 123):
+    // - the digits in white #FFFFFF, 24 sp (48 px, numeralExtraSmall), their
+    //   cap top 5 dp under the top (y 133), the % sign in 20 sp (40 px,
+    //   labelLarge) on their baseline; the emulator's Google Sans Flex
+    //   digits are 36 px tall, Noto Sans' 34 px;
+    // - a flat bar 8 dp (16 px) tall at y 184-199, x 48-335, fully round:
+    //   the charge in #FFFFFF from the start on a #3C4043 track, no gap, no
+    //   stop dot (91 %: white to x 310);
+    // - "Charge remaining" in labelSmall (13 sp = 26 px) onSurface #E8E7EE,
+    //   its cap top at y 220, the next row at y 268.
+    // CP3A drew numeralSmall (30 sp) digits with a titleLarge (18 sp) sign,
+    // the M3 LinearProgressIndicator (8 px, a 4 dp gap and a stop dot,
+    // tertiary on surfaceContainer) and the label, all onSurfaceVariant
+    // (:202-270).
     Item {
         id: header
         objectName: "batteryHeader"
         width: parent.width
-        height: headerColumn.height + 2 * Theme.space.s
+        // 11 dp under the label's baseline (the next row 8 px further)
+        height: Math.round(remaining.y + remaining.baselineOffset + Theme.dp(11))
         visible: batteryLevel.valid
+        // under the header's top: the digits' cap top, the bar, the label's cap top
+        readonly property real digitsCapTop: Theme.dp(5)
+        readonly property real barTop: Theme.dp(30.5)
+        readonly property real labelCapTop: Theme.dp(48.5)
+        // the start inset, as the rows' content padding (14 dp)
+        readonly property real inset: Theme.dp(14)
         // packed with the page's rows (SettingsChip)
         EdgeEffect { id: headerEdge; item: header; packed: true }
         opacity: headerEdge.alpha
@@ -83,58 +98,69 @@ SettingsPage {
             },
             Translate { y: headerEdge.translateY }
         ]
-        Column {
-            id: headerColumn
-            x: Theme.space.xl
-            y: Theme.space.s
-            width: parent.width - 2 * Theme.space.xl
-            Item {
-                width: parent.width
-                height: digits.height
-                Row {
-                    Label {
-                        id: digits
-                        objectName: "batteryPercent"
-                        role: "numeralSmall"
-                        color: Theme.color.onSurfaceVariant
-                        text: batteryLevel.valid ? String(batteryLevel.percent) : ""
-                        clip: false
-                    }
-                    Label {
-                        id: sign
-                        objectName: "batteryPercentSign"
-                        role: "titleLarge"
-                        color: Theme.color.onSurfaceVariant
-                        text: "%"
-                        y: digits.baselineOffset - baselineOffset
-                        clip: false
-                    }
-                }
+        Row {
+            x: header.inset
+            width: header.width - 2 * header.inset
+            // the cap top of a flat-topped digit where it belongs (read
+            // again when the font changes: the role sets its weight later)
+            y: digitsMetrics.font.pixelSize > 0
+               ? Math.round(header.digitsCapTop - digits.baselineOffset - digitsMetrics.tightBoundingRect("7").y) : 0
+            Label {
+                id: digits
+                objectName: "batteryPercent"
+                role: "numeralExtraSmall"
+                color: Theme.color.onBackground
+                text: batteryLevel.valid ? String(batteryLevel.percent) : ""
+                clip: false
+                FontMetrics { id: digitsMetrics; font: digits.font }
             }
-            LinearProgressIndicator {
-                objectName: "batteryBar"
-                width: parent.width
-                progress: batteryLevel.valid ? batteryLevel.percent / 100 : 0
-                color: Theme.color.tertiary
-                trackColor: Theme.color.surfaceContainer
+            Label {
+                id: sign
+                objectName: "batteryPercentSign"
+                role: "labelLarge"
+                color: Theme.color.onBackground
+                text: "%"
+                y: digits.baselineOffset - baselineOffset
+                clip: false
             }
-            Item {
-                width: parent.width
-                height: remaining.height + 2 * Theme.space.s
-                Label {
-                    id: remaining
-                    objectName: "batteryRemaining"
-                    y: Theme.space.s
-                    width: parent.width
-                    role: "labelSmall"
-                    color: Theme.color.onSurfaceVariant
-                    // TextAlign.Start: the natural alignment (left, right in
-                    // a right-to-left language)
-                    //% "Charge remaining"
-                    text: qsTrId("id-battery-charge-remaining")
-                    clip: false
-                }
+        }
+        // the charge: a round white bar from the start over the round track
+        Rectangle {
+            id: bar
+            objectName: "batteryBar"
+            readonly property real progress: batteryLevel.valid ? Math.max(0, Math.min(1, batteryLevel.percent / 100)) : 0
+            readonly property color fillColor: "#FFFFFF"
+            x: header.inset
+            y: header.barTop
+            width: header.width - 2 * header.inset
+            height: Theme.dp(8)
+            radius: height / 2
+            color: "#3C4043"
+            Rectangle {
+                objectName: "batteryBarFill"
+                anchors.left: parent.left
+                height: parent.height
+                // round ends: a level above 0 is at least a dot
+                width: bar.progress > 0 ? Math.max(parent.height, Math.round(parent.width * bar.progress)) : 0
+                radius: height / 2
+                color: bar.fillColor
             }
+        }
+        Label {
+            id: remaining
+            objectName: "batteryRemaining"
+            x: header.inset
+            width: header.width - 2 * header.inset
+            y: remainingMetrics.font.pixelSize > 0
+               ? Math.round(header.labelCapTop - baselineOffset - remainingMetrics.tightBoundingRect("H").y) : 0
+            role: "labelSmall"
+            color: Theme.color.onSurface
+            // TextAlign.Start: the natural alignment (left, right in
+            // a right-to-left language)
+            //% "Charge remaining"
+            text: qsTrId("id-battery-charge-remaining")
+            clip: false
+            FontMetrics { id: remainingMetrics; font: remaining.font }
         }
     }
 

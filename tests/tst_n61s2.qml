@@ -122,5 +122,94 @@ SettingsHarness {
             var box = inkBox(img, 60, 45, 324, 83, 0.45)
             compare(box.right, -1, "no text between the time and the pill")
         }
+
+        // N61-44: the battery header as the emulator draws it (S20): white
+        // digits with their cap top at y 133, a flat 16 px bar at y 184-199
+        // (white to the level on #3C4043 from x 48 to 335, no gap, no stop
+        // dot), 'Charge remaining' #E8E7EE with its cap top at y 220, the
+        // next row at y 268
+        function test_02_battery_header() {
+            open(["batteryItem"])
+            var head = h.find(h.current(), "batteryHeader")
+            var digits = h.find(head, "batteryPercent"), sign = h.find(head, "batteryPercentSign")
+            var label = h.find(head, "batteryRemaining"), bar = h.find(head, "batteryBar")
+            h.find(h.current(), "settingsFlickable").contentY = 0
+            wait(500)
+            near(drawnTop(head), 123, 1, "the header is the first row")
+            var img = grabImage(h)
+            h.shot(this, "battery-57")
+            // the bar: 16 rows of the track at x 300, of the fill at x 100
+            var rows = [], fill = []
+            for (var y = 170; y < 215; y++) {
+                var t = rgbAt(img, 300, y), f = rgbAt(img, 100, y)
+                if (Math.abs(t[0] - 60) <= 3 && Math.abs(t[1] - 64) <= 3 && Math.abs(t[2] - 67) <= 3)
+                    rows.push(y)
+                if (f[0] > 250 && f[1] > 250 && f[2] > 250)
+                    fill.push(y)
+            }
+            near(rows[0], 184, 1, "track top")
+            near(rows[rows.length - 1], 199, 1, "track bottom")
+            compare(rows.length, 16, "the track rows")
+            compare(fill.length, 16, "the fill rows")
+            near(fill[0], 184, 1, "fill top")
+            var mid = 191
+            // the fill: white from x 48 to 48 + 288 x 57 %
+            var x0 = -1, x1 = -1, end = -1
+            for (var x = 20; x < 364; x++) {
+                var p = rgbAt(img, x, mid)
+                if (p[0] > 240 && p[1] > 240 && p[2] > 240) {
+                    if (x0 < 0) x0 = x
+                    x1 = x
+                }
+                if (p[0] > 30 || p[1] > 30 || p[2] > 30)
+                    end = x
+            }
+            near(x0, 48, 1, "fill from x 48")
+            near(x1, 48 + Math.round(288 * 0.57) - 1, 1, "fill to the level")
+            near(end, 335, 1, "track to x 335")
+            // no gap after the fill, no stop dot at the end
+            for (x = x1 + 2; x <= 330; x += 4)
+                nearRgb(rgbAt(img, x, mid), "#3C4043", 3, "track at x " + x)
+            nearRgb(rgbAt(img, 100, mid), "#FFFFFF", 3, "fill")
+            // the digits and the % sign white, the digits' cap top at y 133
+            nearRgb(brightest(img, digits), "#FFFFFF", 3, "digits")
+            nearRgb(brightest(img, sign), "#FFFFFF", 3, "% sign")
+            var d = inkBox(img, 40, 120, 160, 180, 0.5)
+            near(d.top, 133, 1, "digits cap top")
+            near(d.left, 48, 3, "digits from x 48")
+            // the label: cap top 220, onSurface, from x 49
+            var l = inkBox(img, 40, 205, 340, 236, 0.5)
+            var c = inkBox(img, l.left, 205, l.left + 10, 250, 0.5)
+            near(c.top, 220, 1, "label cap top")
+            near(l.left, 49, 2, "label from x 49")
+            nearRgb(brightest(img, label), "#E8E7EE", 4, "label onSurface")
+            near(drawnTop(h.find(h.current(), "batterySaverItem")), 268, 1, "the next row")
+
+            // 91 %, as S20: white to x 310
+            Backend.batteryPercent = 91
+            tryVerify(function () { return Math.abs(bar.progress - 0.91) < 0.001 }, 2000, "91 %")
+            wait(100)
+            img = grabImage(h)
+            h.shot(this, "battery-91")
+            x1 = -1
+            for (x = 20; x < 364; x++) {
+                p = rgbAt(img, x, mid)
+                if (p[0] > 240 && p[1] > 240 && p[2] > 240)
+                    x1 = x
+            }
+            near(x1, 310, 1, "91 %: white to x 310")
+            // 2 %: a round dot, the bar's height
+            Backend.batteryPercent = 2
+            tryVerify(function () { return Math.abs(bar.progress - 0.02) < 0.001 }, 2000, "2 %")
+            wait(100)
+            img = grabImage(h)
+            x1 = -1
+            for (x = 20; x < 364; x++) {
+                p = rgbAt(img, x, mid)
+                if (p[0] > 200 && p[1] > 200 && p[2] > 200)
+                    x1 = x
+            }
+            near(x1, 63, 1, "2 %: a 16 px dot")
+        }
     }
 }
