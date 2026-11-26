@@ -8,13 +8,15 @@
  * tokens-08); Apps & notifications > Assistant > Tile actions removes a chip
  * of the Assistant tile (assistant/tile-actions, tiles-individual-25); an
  * app's Live updates switch writes ongoing/muted-apps (read by the
- * launcher's OngoingFeed). Screenshots go to /tmp/fp3-shots.
+ * launcher's OngoingFeed); General > What's new shows eos-update's pages
+ * (CR-42, setup-wizard-15). Screenshots go to /tmp/fp3-shots.
  */
 
 import QtQuick
 import QtTest
 import SettingsTest
 import org.asteroid.controls
+import "../src/qml/whatsnew.js" as WhatsNew
 
 SettingsHarness {
     id: h
@@ -33,6 +35,9 @@ SettingsHarness {
         readonly property string kOpen: "/org/asteroidos/settings/ui/open"
         readonly property string kMuted: "/org/asteroidos/ongoing/muted-apps"
         readonly property string kDisabled: "/org/asteroidos/notifications/disabled-apps"
+        readonly property string kVersion: "/org/asteroidos/eos-update/whatsnew-version"
+        readonly property string kNotes: "/org/asteroidos/eos-update/whatsnew-notes"
+        readonly property string kPending: "/org/asteroidos/eos-update/whatsnew-pending"
 
         function init() {
             h.start(this)
@@ -80,6 +85,8 @@ SettingsHarness {
                     out.push("category:" + c.text)
                 else if (c.hasOwnProperty("control") && c.hasOwnProperty("summary"))
                     out.push("row:" + c.title)
+                else if (c.hasOwnProperty("variant"))
+                    out.push("button:" + c.text)
                 else if (c.text !== undefined)
                     out.push("text:" + c.text)
             }
@@ -90,6 +97,12 @@ SettingsHarness {
             verify(r.length > 0, "no row " + name)
             h.tap(this, r[0])
             h.settle(this)
+        }
+        // a screenshot once the page has stopped moving (a push can take
+        // longer than the harness's settle under qemu)
+        function shot(name) {
+            tryVerify(function () { return !h.stack.pushing }, 5000, "the push has settled")
+            h.shot(this, name)
         }
         // the dconf writes since the last clearCalls(): [[key, value], ...]
         function writes() {
@@ -122,7 +135,7 @@ SettingsHarness {
             compare(JSON.stringify(writes()),
                     JSON.stringify([[kStyle, ""], [kAccent, ""], [kSeed, preset.seed], [kSource, "preset"]]))
             verify(chip("colorTheme_" + preset.id).checked)
-            h.shot(this, "color-theme-preset")
+            shot("color-theme-preset")
             seedKeys("static")
             h.tap(this, chip("colorTheme_watchface"))
             compare(JSON.stringify(writes()),
@@ -166,7 +179,7 @@ SettingsHarness {
             compare(titles("tileActionItem"),
                     ["What's the weather?", "Set a timer for 5 minutes", "When is my next alarm?"])
             compare(chip("tileActionsCaption").text, "Tap an action to remove it from the Assistant tile")
-            h.shot(this, "tile-actions")
+            shot("tile-actions")
             // a tap asks first; No keeps the list
             Backend.clearCalls()
             h.tap(this, rows("tileActionItem")[1])
@@ -194,7 +207,7 @@ SettingsHarness {
             compare(conf(kActions), ["@none"])
             compare(titles("tileActionItem"), [])
             compare(chip("tileActionsCaption").text, "No actions. Add one on the Assistant tile")
-            h.shot(this, "tile-actions-none")
+            shot("tile-actions-none")
         }
 
         function test_04_tile_actions_stored_list() {
@@ -231,7 +244,7 @@ SettingsHarness {
                                              "text:Display ongoing, time-sensitive notifications on the watch face"])
             var sw = chip("liveUpdatesSwitch")
             verify(sw.checked)
-            h.shot(this, "live-updates")
+            shot("live-updates")
             // Off: the desktop id goes to the launcher's list, and only that
             Backend.clearCalls()
             h.tap(this, sw)
@@ -275,6 +288,75 @@ SettingsHarness {
                 verify(!h.shown(chip("liveUpdatesCaption")), plain[j])
                 h.back(this)
             }
+        }
+
+        // ---- setup-wizard-15, Settings half (CR-42): General > What's new
+
+        function test_07_whats_new_pages_parse() {
+            compare(JSON.stringify(WhatsNew.pages("Faster charging: The watch charges in 70 minutes | Quieter nights:Bedtime keeps the screen dark|  |Plain words")),
+                    JSON.stringify([{ headline: "Faster charging", text: "The watch charges in 70 minutes" },
+                                    { headline: "Quieter nights", text: "Bedtime keeps the screen dark" },
+                                    { headline: "", text: "Plain words" }]))
+            compare(WhatsNew.pages("").length, 0)
+            compare(WhatsNew.pages(undefined).length, 0)
+            compare(WhatsNew.pages(" | ").length, 0)
+            // the first ":" splits: a time in the text stays
+            compare(WhatsNew.pages("Alarms: ring at 7:00")[0].text, "ring at 7:00")
+            verify(WhatsNew.available("62", "A: b"))
+            verify(!WhatsNew.available("", "A: b"))
+            verify(!WhatsNew.available("62", ""))
+            verify(!WhatsNew.available("62", " | "))
+        }
+
+        function test_08_whats_new_row() {
+            open(["generalItem"])
+            compare(h.current().objectName, "generalPage")
+            // nothing published: no row
+            verify(!h.shown(chip("whatsNewItem")))
+            Backend.confSet(kVersion, "62")
+            verify(!h.shown(chip("whatsNewItem")), "no notes")
+            Backend.confSet(kNotes, "Faster charging: The watch charges in 70 minutes")
+            verify(h.shown(chip("whatsNewItem")))
+            compare(chip("whatsNewItem").title, "What's new")
+            compare(chip("whatsNewItem").summary, "")
+            shot("whats-new-row")
+            Backend.confSet(kVersion, "")
+            verify(!h.shown(chip("whatsNewItem")), "no version")
+        }
+
+        function test_09_whats_new_pages() {
+            Backend.confSet(kVersion, "62")
+            Backend.confSet(kNotes, "Faster charging: The watch charges in 70 minutes|Quieter nights: Bedtime keeps the screen dark until you raise your wrist|Fixes")
+            Backend.confSet(kPending, false)
+            open(["generalItem", "whatsNewItem"])
+            var page = h.current()
+            compare(page.objectName, "whatsNewPage")
+            // page 1: its headline is the title, Next, no Back
+            compare(title(), "Faster charging")
+            compare(shownRows(page), ["text:The watch charges in 70 minutes", "button:Next"])
+            shot("whats-new-1")
+            Backend.clearCalls()
+            h.tap(this, chip("whatsNewNext"))
+            compare(title(), "Quieter nights")
+            compare(shownRows(page), ["text:Bedtime keeps the screen dark until you raise your wrist", "button:Next", "button:Back"])
+            shot("whats-new-2")
+            h.tap(this, chip("whatsNewBack"))
+            compare(title(), "Faster charging")
+            h.tap(this, chip("whatsNewNext"))
+            h.tap(this, chip("whatsNewNext"))
+            // the last page: no headline (the title says What's new), Done
+            compare(title(), "What's new")
+            compare(shownRows(page), ["text:Fixes", "button:Done", "button:Back"])
+            shot("whats-new-3")
+            // reading them writes nothing (the splash's whatsnew-pending stays)
+            compare(writes().length, 0)
+            h.tap(this, chip("whatsNewNext"))
+            h.settle(this)
+            compare(h.current().objectName, "generalPage")
+            compare(conf(kPending), false)
+            // the route
+            request("whats_new")
+            compare(stackNames(), ["generalPage", "whatsNewPage"])
         }
     }
 }

@@ -6,12 +6,17 @@
 import QtQuick
 import org.asteroid.controls
 import Nemo.Configuration
+import "whatsnew.js" as WhatsNew
 
 // Settings > General as stock CP3A (SysUI general settings, jbk.java:62-177):
 // Show unread notification indicator (the launcher's dot on the watch face),
 // Autolaunch media controls (the launcher opens the media controls when
 // phone playback starts), Start tutorial (goes to the watch face and starts
-// the navigation tutorial) and App view (List view / Grid view). The temperature
+// the navigation tutorial), What's new (setup-wizard-15, CR-42: stock's Pixel
+// Tips has What's new beside the navigation tutorial, sysui jbm.java:56-62;
+// shown while eos-update's whatsnew-version and whatsnew-notes both hold
+// something, it opens the last update's pages, WhatsNewPage) and App view
+// (List view / Grid view). The temperature
 // unit moved to the Weather app (stock has it there only). Stock has no quick settings editor
 // (fixed order from the resource array), so there is none here (DECISIONS Q30).
 SettingsPage {
@@ -42,6 +47,17 @@ SettingsPage {
     ConfigurationValue {
         id: tutorialRequest
         key: "/org/asteroidos/launcher/start-tutorial"
+        defaultValue: ""
+    }
+    // what eos-update publishes after an update confirmed itself (CR-42)
+    ConfigurationValue {
+        id: whatsNewVersion
+        key: "/org/asteroidos/eos-update/whatsnew-version"
+        defaultValue: ""
+    }
+    ConfigurationValue {
+        id: whatsNewNotes
+        key: "/org/asteroidos/eos-update/whatsnew-notes"
         defaultValue: ""
     }
 
@@ -80,6 +96,13 @@ SettingsPage {
             // Settings ends and the face shows the tutorial
             closeTimer.start()
         }
+    }
+    SettingsChip {
+        objectName: "whatsNewItem"
+        visible: WhatsNew.available(whatsNewVersion.value, whatsNewNotes.value)
+        //% "What's new"
+        title: qsTrId("id-whats-new")
+        onClicked: layerStack.push(whatsNewLayer)
     }
     SettingsChip {
         objectName: "appViewItem"

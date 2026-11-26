@@ -94,7 +94,7 @@ SettingsHarness {
             h.start(this, null, true)
             compare(app.firstFrameDrawn, false)
             compare(h.current().objectName, "mainPage")
-            compare(pageTypes().length, 52, "a PageType for each page main.qml opens")
+            compare(pageTypes().length, 53, "a PageType for each page main.qml opens")
             compare(loadedPages(), [], "no page type loaded before a push")
             compare(laters().length, 4)
             var l = laters()
@@ -221,7 +221,7 @@ SettingsHarness {
                     compare(page.mode, types[i].initial.mode)
                 h.stack.pop(h.stack.currentLayer)
             }
-            compare(loadedPages().length, 52)
+            compare(loadedPages().length, 53)
             compare(h.stack.layers.length, 0)
         }
 

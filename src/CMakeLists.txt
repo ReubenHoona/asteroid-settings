@@ -88,6 +88,8 @@ asteroid_app_qml_module(asteroid-settings
 	qml/BatterySaverPage.qml
 	qml/ChargingPage.qml
 	qml/GeneralPage.qml
+	qml/WhatsNewPage.qml
+	qml/whatsnew.js
 	qml/SystemPage.qml
 	qml/UpdatesPage.qml
 	qml/DateTimePage.qml

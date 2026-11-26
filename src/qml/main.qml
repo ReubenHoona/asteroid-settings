@@ -128,6 +128,7 @@ Application {
     PageType { id: batterySaverLayer;          page: "BatterySaverPage" }
     PageType { id: chargingLayer;              page: "ChargingPage" }
     PageType { id: generalLayer;               page: "GeneralPage" }
+    PageType { id: whatsNewLayer;              page: "WhatsNewPage" }
     PageType { id: systemLayer;                page: "SystemPage" }
     PageType { id: dateTimeLayer;              page: "DateTimePage" }
     PageType { id: timeLayer;                  page: "TimePage" }
@@ -503,6 +504,7 @@ Application {
         "battery": [batteryLayer],
         "battery_saver": [batteryLayer, batterySaverLayer],
         "general": [generalLayer],
+        "whats_new": [generalLayer, whatsNewLayer],
         "system": [systemLayer],
         "date_time": [systemLayer, dateTimeLayer],
         "language": [systemLayer, languageLayer],

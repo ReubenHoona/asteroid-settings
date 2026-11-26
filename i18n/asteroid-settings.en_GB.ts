@@ -2397,6 +2397,22 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Display ongoing, time-sensitive notifications on the watch face</source>
         <translation>Display ongoing, time-sensitive notifications on the watch face</translation>
     </message>
+    <message id="id-whats-new">
+        <source>What's new</source>
+        <translation>What's new</translation>
+    </message>
+    <message id="id-whats-new-done">
+        <source>Done</source>
+        <translation>Done</translation>
+    </message>
+    <message id="id-whats-new-next">
+        <source>Next</source>
+        <translation>Next</translation>
+    </message>
+    <message id="id-whats-new-back">
+        <source>Back</source>
+        <translation>Back</translation>
+    </message>
 </context>
 <context>
     <name>AboutPage</name>
