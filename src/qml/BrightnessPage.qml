@@ -8,20 +8,20 @@ import org.asteroid.controls
 import org.asteroid.settings
 
 // Display > Brightness (stock prefs_adaptive_brightness.xml and the
-// Brightness slider, SliderController.java:350-420): one segmented slider
-// with a header, Adaptive brightness under it.
-// - Adaptive brightness off, header "Fixed brightness": 5 steps of 6, 12,
+// Brightness slider, SliderController.java:350-420): one segmented slider,
+// Adaptive brightness under it. As the Wear OS 6 emulator draws it (S24,
+// NEWLOOK-61 N61-43): no title and no header over the slider, the time,
+// then the stepper from y 84 and the Adaptive brightness row from y 196.
+// CP3A drew a header over the slider: SliderController$Brightness$$
+// ExternalSyntheticLambda0.java:26-31 picks pref_fixed_brightness
+// (pref_adaptive_brightness when adaptive) for the headerLabel of
+// SliderUiState.copy$default, which SliderItemKt.java:110 draws. Its words
+// stay as the slider's name for the screen reader.
+// - Adaptive brightness off, "Fixed brightness": 5 steps of 6, 12,
 //   24, 48 and 100 % (the Pixel Watch overlay's brightness_percentages
 //   100|48|24|12|6, shown smallest first), the state "%s percent screen
 //   brightness".
-//   The header is CP3A's: SliderController$Brightness$$ExternalSynthetic
-//   Lambda0.java:26-31 picks pref_fixed_brightness (pref_adaptive_brightness
-//   when adaptive) for the 4th argument of SliderUiState.copy$default, the
-//   headerLabel (mask 527 leaves bit 16 clear), which SliderItemKt.java:110
-//   draws. pref_brightness ("Brightness") goes only to
-//   progressContentDescription, which the M3 slider never reads (D60-44:
-//   the emulator's "Brightness" is not CP3A's).
-// - Adaptive brightness on, header "Adaptive brightness": 3 steps Dim,
+// - Adaptive brightness on, "Adaptive brightness": 3 steps Dim,
 //   Normal and Bright (screen_brightness_for_als 1, 2, 3).
 // The slider runs 0 to the step count with the value on the step (1 to n),
 // as stock's SliderUiState (min 0, max n, value i + 1), so the first step
@@ -35,7 +35,7 @@ import org.asteroid.settings
 SettingsPage {
     id: page
     objectName: "brightnessPage"
-    title: qsTrId("id-brightness")
+    // no title: the first row at y 84 (SettingsPage)
 
     DisplaySettings { id: displaySettings }
 
@@ -69,20 +69,18 @@ SettingsPage {
         return Math.max(1, Math.round(percent * maximum / 100))
     }
 
-    SettingsCategory {
-        objectName: "brightnessHeader"
-        text: page.adaptive
-              //% "Adaptive brightness"
-              ? qsTrId("id-adaptive-brightness")
-              //% "Fixed brightness"
-              : qsTrId("id-fixed-brightness")
-    }
     SettingsSlider {
         objectName: "brightnessSlider"
         // stock Brightness is a segmented slider
         // (SliderController$Brightness$$ExternalSyntheticLambda0.java:44,
         // copy$default mask 527)
         segmented: true
+        // CP3A's header words, for the screen reader only
+        Accessible.name: page.adaptive
+                         //% "Adaptive brightness"
+                         ? qsTrId("id-adaptive-brightness")
+                         //% "Fixed brightness"
+                         : qsTrId("id-fixed-brightness")
         from: 0
         to: page.percents.length
         lowest: 1

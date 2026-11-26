@@ -339,10 +339,15 @@ SettingsHarness {
         function test_07_brightness_adaptive_and_fixed() {
             open(["displayItem", "brightnessItem"])
             compare(h.current().objectName, "brightnessPage")
-            compare(title(), "Brightness")
+            // no title and no header over the slider (the Wear OS 6
+            // emulator, S24; N61-43): CP3A's header words name the slider
+            // for the screen reader
+            compare(title(), "")
+            verify(!h.shown(h.find(h.current(), "settingsTitle")), "no title")
             // the mock watch: adaptive on, mce at 60 %: Normal is the nearest of 20 / 50 / 85
-            compare(shownRows(h.current()), ["category:Adaptive brightness", "slider:brightnessSlider", "row:Adaptive brightness"])
+            compare(shownRows(h.current()), ["slider:brightnessSlider", "row:Adaptive brightness"])
             var s = chip("brightnessSlider")
+            compare(s.Accessible.name, "Adaptive brightness")
             verify(s.segmented, "stock's Brightness is a segmented slider")
             compare(s.from, 0)
             compare(s.to, 3)
@@ -375,7 +380,8 @@ SettingsHarness {
             // adaptive off: fixed brightness, 5 steps of 6, 12, 24, 48 and 100 %
             h.tapName(this, "adaptiveSwitch")
             compare(last("mce", "als_enabled").args, [false])
-            compare(shownRows(h.current()), ["category:Fixed brightness", "slider:brightnessSlider", "row:Adaptive brightness"])
+            compare(shownRows(h.current()), ["slider:brightnessSlider", "row:Adaptive brightness"])
+            compare(s.Accessible.name, "Fixed brightness")
             compare(s.to, 5)
             compare(s.lowest, 1)
             // 20 % reads back as the nearest, 24 %
