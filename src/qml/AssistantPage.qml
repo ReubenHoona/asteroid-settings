@@ -14,7 +14,8 @@ import Nemo.Configuration
 // recognition of this watch (Voice recognition, kept), About and Turn off
 // Assistant, which asks first ("Turn off Assistant?" with the stock
 // message). Our assistant is not Gemini or Google Assistant: the labels name
-// "Assistant".
+// "Assistant". Tile actions (tiles-individual-25, not in stock) lists the
+// Assistant tile's action chips to remove one (TileActionsPage).
 // Keys:
 //   /org/asteroidos/assistant/enabled        b  true. Off: a side button hold
 //                                              does nothing and the app entry
@@ -125,6 +126,12 @@ SettingsPage {
         summary: page.labels[page.current]
         onClicked: app.choose(qsTrId("id-voice-recognition"), page.labels, page.current,
                               function (i) { recognition.value = page.values[i] }, page.explanations)
+    }
+    SettingsChip {
+        objectName: "tileActionsItem"
+        active: page.on
+        title: qsTrId("id-tile-actions")
+        onClicked: layerStack.push(tileActionsLayer)
     }
     SettingsChip {
         objectName: "aboutItem"

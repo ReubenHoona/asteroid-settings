@@ -1114,7 +1114,7 @@ SettingsHarness {
             compare(shownRows(h.current()),
                     ["row:Press & hold", "text:Hold down side button to talk", "category:General",
                      "row:Speech output", "text:Assistant will speak responses, including when Do Not Disturb is on",
-                     "row:Voice recognition", "row:About", "row:Turn off Assistant"])
+                     "row:Voice recognition", "row:Tile actions", "row:About", "row:Turn off Assistant"])
             compare(chip("recognitionItem").summary, "On the watch")
             verify(chip("pressAndHoldSwitch").checked)
             // CR-15: an unset speak reads as on
@@ -1151,6 +1151,7 @@ SettingsHarness {
             verify(!chip("pressAndHoldSwitch").active)
             verify(!chip("speechOutputSwitch").active)
             verify(!chip("recognitionItem").active)
+            verify(!chip("tileActionsItem").active)
             verify(!chip("pressAndHoldSwitch").checked)
             compare(chip("turnOffItem").title, "Turn on Assistant")
             h.shot(this, "assistant-27-off")

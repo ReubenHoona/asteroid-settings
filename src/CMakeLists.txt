@@ -129,6 +129,8 @@ asteroid_app_qml_module(asteroid-settings
 	qml/HealthProfilePage.qml
 	qml/ProfilePickerPage.qml
 	qml/AssistantAboutPage.qml
+	qml/TileActionsPage.qml
+	qml/tileactions.js
 	qml/SafetyPage.qml
 	qml/SosNumberPage.qml
 	qml/WristOrientationPage.qml

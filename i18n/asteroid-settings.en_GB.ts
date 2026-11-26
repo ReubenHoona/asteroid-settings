@@ -2353,6 +2353,34 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Disconnected</source>
         <translation>Disconnected</translation>
     </message>
+    <message id="id-tile-actions">
+        <source>Tile actions</source>
+        <translation>Tile actions</translation>
+    </message>
+    <message id="id-tile-asst-weather">
+        <source>What's the weather?</source>
+        <translation>What's the weather?</translation>
+    </message>
+    <message id="id-tile-asst-timer">
+        <source>Set a timer for 5 minutes</source>
+        <translation>Set a timer for 5 minutes</translation>
+    </message>
+    <message id="id-tile-asst-alarm">
+        <source>When is my next alarm?</source>
+        <translation>When is my next alarm?</translation>
+    </message>
+    <message id="id-tile-actions-explain">
+        <source>Tap an action to remove it from the Assistant tile</source>
+        <translation>Tap an action to remove it from the Assistant tile</translation>
+    </message>
+    <message id="id-tile-actions-none">
+        <source>No actions. Add one on the Assistant tile</source>
+        <translation>No actions. Add one on the Assistant tile</translation>
+    </message>
+    <message id="id-tile-action-remove">
+        <source>Remove action?</source>
+        <translation>Remove action?</translation>
+    </message>
 </context>
 <context>
     <name>AboutPage</name>

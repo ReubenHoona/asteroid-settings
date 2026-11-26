@@ -121,6 +121,7 @@ Application {
     PageType { id: bedtimeCustomizeLayer;      page: "ModeCustomizePage"; initial: ({ "mode": "bedtime" }) }
     PageType { id: theaterCustomizeLayer;      page: "ModeCustomizePage"; initial: ({ "mode": "theater" }) }
     PageType { id: assistantLayer;             page: "AssistantPage" }
+    PageType { id: tileActionsLayer;           page: "TileActionsPage" }
     PageType { id: soundLayer;                 page: "SoundPage" }
     PageType { id: vibrationLayer;             page: "VibrationPage" }
     PageType { id: batteryLayer;               page: "BatteryPage" }
@@ -479,6 +480,7 @@ Application {
         "app_info": [appsLayer, appInfoLayer],
         "app_storage": [appsLayer, appStorageLayer],
         "assistant": [appsLayer, assistantLayer],
+        "tile_actions": [appsLayer, assistantLayer, tileActionsLayer],
         "health_profile": [healthProfileLayer],
         "location": [locationLayer],
         "safety": [safetyLayer],
