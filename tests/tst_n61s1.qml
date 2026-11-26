@@ -142,11 +142,12 @@ SettingsHarness {
                 near(ink.top, 69, 2, name + " title cap top")
                 near(ink.capBottom - ink.capTop, 21, 1, name + " cap height")
                 var c = ink.color
-                // the brightest title pixel: the title is whole at rest but
-                // for the edge effect's 0.99 (its box reaches y 123)
-                near(c.r * 255, 232, 5, name + " title red")
-                near(c.g * 255, 231, 5, name + " title green")
-                near(c.b * 255, 238, 5, name + " title blue")
+                // the brightest title pixel: the title is whole at rest
+                // (restAtTop: its box reaches into the edge effect's area,
+                // which left it at 0.988, #E4E3EA)
+                near(c.r * 255, 232, 3, name + " title red")
+                near(c.g * 255, 231, 3, name + " title green")
+                near(c.b * 255, 238, 3, name + " title blue")
                 verify(c.b > c.r && c.r > c.g - 0.01, name + " the onSurface hue")
                 // the first row under it (a SettingsPage or a ChoiceList page)
                 var first = name === "languagePage" ? h.listItem(this, h.find(page, "choiceList"), 0).children[0]
@@ -426,7 +427,16 @@ SettingsHarness {
         // N61-11: System > Restart asks with the AlertDialog as the Wear OS 6
         // emulator draws it (S25): the title in titleMedium onSurface, cap
         // top y 103; dismiss #2F3036 at x 76-179, confirm #DBE2F9 at x
-        // 204-307, both at y 257-360. Cancelled with the X, never confirmed.
+        // 204-307, both at y 257-360; no scroll indicator (the tap on the
+        // row flashes the System list's, the dialog covers it).
+        // Cancelled with the X, never confirmed.
+        function indicator() {
+            var kids = h.Window.contentItem.children
+            for (var i = 0; i < kids.length; i++)
+                if (kids[i].hasOwnProperty("flickable") && kids[i].hasOwnProperty("shown") && kids[i].hasOwnProperty("thumbColor"))
+                    return kids[i]
+            return null
+        }
         function test_07_confirm_dialog() {
             open(["systemItem"])
             h.tapName(this, "restartItem")
@@ -434,6 +444,21 @@ SettingsHarness {
             tryVerify(function () { return dlg.shown }, 3000, "the confirmation is up")
             h.settleDialogs(this)
             wait(300)
+            // no scroll indicator over the dialog: none shown, faded out, and
+            // nothing lit at the right edge inside the circle (x 340 on)
+            var pi = indicator()
+            if (pi !== null) {
+                verify(!pi.shown, "the list's indicator goes with the dialog up")
+                tryVerify(function () { return pi.opacity === 0 }, 2500, "the indicator has faded out")
+            }
+            var shot = grabImage(h), lit = 0
+            for (var ey = 60; ey < 324; ey++)
+                for (var ex = 340; ex < 384; ex++) {
+                    var dx = ex + 0.5 - 192, dy = ey + 0.5 - 192
+                    if (dx * dx + dy * dy < 188 * 188 && lum(shot.pixel(ex, ey)) > 0.1)
+                        lit++
+                }
+            compare(lit, 0, "no scroll indicator at the right edge")
             compare(dlg.titleLabel.text, "Restart")
             compare(dlg.titleRole, "titleMedium")
             compare(dlg.titleLabel.font.pixelSize, 32)

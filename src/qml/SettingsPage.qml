@@ -67,9 +67,11 @@ Item {
         // 500) in onSurface #E8E7EE, centred, its cap top at y 69, the first
         // row at y 123; 'Connectivity' 183 px wide. Its box, 12.5 % down,
         // reaches the first row (no list spacing under it), so at rest it
-        // sits where the edge effect leaves it almost whole (0.99), as the
-        // emulator's title; scrolled, it shrinks and fades packed with the
-        // rows (the ListHeader's own packed EdgeEffect).
+        // sits just inside the edge effect's area: restAtTop keeps it whole
+        // there (full size, alpha 1: #E8E7EE exactly, as the emulator's
+        // title) while the list is at its top; scrolled, it shrinks and
+        // fades packed with the rows (the ListHeader's own packed
+        // EdgeEffect, coming in over the first 16 px).
         ListHeader {
             id: titleHeader
             objectName: page.legacyHeader ? "" : "settingsTitle"
@@ -84,6 +86,7 @@ Item {
             topPadding: Theme.dp(7)
             bottomPadding: Theme.space.l
             minimumHeight: 0
+            restAtTop: true
             color: Theme.color.onSurface
             label.role: "labelMedium"
             // the Settings ListHeader text has a 1.1 em line

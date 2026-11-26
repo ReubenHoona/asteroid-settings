@@ -106,7 +106,9 @@ ListView {
                 elide: Text.ElideRight
                 clip: false
             }
-            EdgeEffect { id: titleEdge; item: titleBox }
+            // a page's title rests whole while the list is at its top, as
+            // SettingsPage's (restAtTop: #E8E7EE exactly, the emulator's)
+            EdgeEffect { id: titleEdge; item: titleBox; restAtTop: !list.dialog }
             opacity: titleEdge.alpha
         }
         Label {
