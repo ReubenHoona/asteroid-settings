@@ -482,9 +482,10 @@ SettingsHarness {
             open(["generalItem"])
             h.tapName(this, "unreadDotSwitch")
             compare(conf("/org/asteroidos/notifications/unread-dot"), false)
-            compare(h.find(h.current(), "appViewItem").summary, "List view")
-            Backend.confSet("/desktop/asteroid/applauncher", "file:///usr/share/asteroid-launcher/applauncher/007-wear-grid.qml")
+            // unset: the grid (N61-15)
             compare(h.find(h.current(), "appViewItem").summary, "Grid view")
+            Backend.confSet("/desktop/asteroid/applauncher", "file:///usr/share/asteroid-launcher/applauncher/006-wear-list.qml")
+            compare(h.find(h.current(), "appViewItem").summary, "List view")
             // the temperature unit is the Weather app's (settings-b-16)
             verify(h.find(h.current(), "temperatureItem") === null)
         }

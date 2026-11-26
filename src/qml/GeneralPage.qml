@@ -29,10 +29,13 @@ SettingsPage {
         key: "/org/asteroidos/ux/autolaunch-media"
         defaultValue: false
     }
+    // the app list opens as the grid unless the user chose the list (the
+    // Wear OS 6 emulator, AllAppsLauncherActivity; the layer's default,
+    // NEWLOOK-61 N61-15; CP3A: the list)
     ConfigurationValue {
         id: appLauncher
         key: "/desktop/asteroid/applauncher"
-        defaultValue: "file:///usr/share/asteroid-launcher/applauncher/006-wear-list.qml"
+        defaultValue: "file:///usr/share/asteroid-launcher/applauncher/007-wear-grid.qml"
     }
     // the launcher starts the navigation tutorial when this changes
     // ("tutorial@<ms>", as open-face-picker)

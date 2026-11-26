@@ -538,11 +538,11 @@ SettingsHarness {
             compare(d.behind, h.stack)
             near(h.stack.scale, 1, 0.01, "the screen behind at its own size")
             compare(h.stack.layers.length, 1, "no page pushed")
-            // the List view is on: the second choice is the Grid view
-            h.tap(this, h.listItem(this, h.find(d, "choiceList"), 1))
+            // the Grid view is on (N61-15): the first choice is the List view
+            h.tap(this, h.listItem(this, h.find(d, "choiceList"), 0))
             waitClosed(d)
             compare(Backend.confGet("/desktop/asteroid/applauncher"),
-                    "file:///usr/share/asteroid-launcher/applauncher/007-wear-grid.qml")
+                    "file:///usr/share/asteroid-launcher/applauncher/006-wear-list.qml")
             near(h.stack.scale, 1, 0.01, "back to full size")
         }
 

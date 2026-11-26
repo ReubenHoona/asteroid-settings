@@ -275,5 +275,15 @@ SettingsHarness {
             Backend.languageIndex = -1
             compare(c.summary, "")
         }
+
+        // N61-15: with the key unset, General > App view reads Grid view
+        function test_05_app_view_default() {
+            verify(!Backend.confHas("/desktop/asteroid/applauncher"), "the key is unset")
+            open(["generalItem"])
+            var c = settled("appViewItem")
+            compare(c.summary, "Grid view")
+            verify(h.current().grid)
+            h.shot(this, "general-app-view")
+        }
     }
 }
