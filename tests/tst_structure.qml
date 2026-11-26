@@ -304,41 +304,42 @@ SettingsHarness {
             d.destroy(); i.destroy()
         }
 
-        // controls-components-11, -12: category header and caption
+        // controls-components-11, -12: category header and caption, as the
+        // Wear OS 6 emulator draws them (N61-41)
         function test_09_category_and_caption() {
             open(["modesItem", "modesDndItem", "dndCustomize"])
             var cats = h.findAll(h.current(), function (o) { return h.typeName(o) === "SettingsCategory" })
             verify(cats.length >= 2, "the Do Not Disturb customize page has categories")
             var first = cats[0], second = cats[1]
-            compare(first.font.pixelSize, 28)
-            // CP3A's titleSmall is weight 550 in Google Sans Flex (Settings v2
-            // TypeScaleTokens.java:212); the image's static Noto Sans has no 550
-            // face (Qt took SemiBold), so the Theme asks for Medium (500) and
-            // keeps 550 as axes.wght for a variable font (D60-37)
-            compare(first.font.weight, 500)
-            compare(first.fontInfo.styleName, "Medium", "category drawn in the Medium face")
+            // the controls' ListSubHeader: labelSmall (13 sp) Medium in onSurface
+            var l = first.label
+            compare(l.font.pixelSize, 26)
+            compare(l.font.weight, 500)
+            compare(l.fontInfo.styleName, "Medium", "category drawn in the Medium face")
+            // CP3A's titleSmall stays Medium (500) for 550 (D60-37)
             compare(Theme.type.titleSmall.weight, 500)
             compare(Theme.type.titleSmall.axes.wght, 550)
-            rgb(first.color, "#e8e7ee", "category colour")
-            compare(first.leftPadding, 16)
-            compare(first.rightPadding, 16)
-            compare(first.bottomPadding, 16)
-            compare(first.verticalAlignment, Text.AlignBottom)
-            verify(first.height >= 96, "at least 48 dp")
+            rgb(l.color, "#e8e7ee", "category colour")
+            // the ink of a stem letter 16 dp inside the list (x 52), no least
+            // height, the list's 4 dp counted in its spaces
+            compare(first.textInset, 32)
+            compare(first.rowGap, 8)
+            compare(first.mapToItem(h.current(), 0, 0).x, 20)
             verify(first.firstInPage, "the first row under the title")
             compare(first.topPadding, 0)
             verify(!second.firstInPage)
-            compare(second.topPadding, 24)
+            // the cap top 38 px under the row above, the next row 22 px under the baseline
+            compare(second.topPadding, 37 - 8)
+            compare(second.bottomPadding, 21 - 8)
             var texts = h.findAll(h.current(), function (o) { return h.typeName(o) === "SettingsText" })
             verify(texts.length > 0)
             var t = texts[0]
-            compare(t.font.pixelSize, 24)
+            compare(t.font.pixelSize, 26)
             compare(t.font.weight, 500)
-            rgb(t.color, "#cecdd4", "caption colour")
+            rgb(t.color, "#9aa0a6", "caption colour")
+            compare(t.lineHeight, 28)
             compare(t.leftPadding, 28)
             compare(t.rightPadding, 28)
-            compare(t.topPadding, 12)
-            compare(t.bottomPadding, 12)
         }
 
         // controls-components-14, -15: the slider

@@ -161,5 +161,112 @@ SettingsHarness {
             verify(!h.find(p, "settingsTitle").visible)
             p.destroy()
         }
+
+        // the text lines drawn in a band: [{ top, bottom, left, right }] of
+        // the rows with ink brighter than thr, and the brightest pixel
+        function lines(img, x0, x1, y0, y1, thr) {
+            var out = [], run = null, best = null
+            for (var y = Math.max(0, Math.round(y0)); y < Math.min(384, Math.round(y1)); y++) {
+                var l = 999, r = -1
+                for (var x = x0; x < x1; x++) {
+                    var p = img.pixel(x, y)
+                    if (lum(p) > thr) {
+                        l = Math.min(l, x); r = Math.max(r, x)
+                        if (!best || lum(p) > lum(best))
+                            best = p
+                    }
+                }
+                if (r >= 0) {
+                    if (!run)
+                        run = { top: y, bottom: y, left: l, right: r }
+                    run.bottom = y; run.left = Math.min(run.left, l); run.right = Math.max(run.right, r)
+                } else if (run) {
+                    out.push(run)
+                    run = null
+                }
+            }
+            if (run)
+                out.push(run)
+            out.best = best
+            return out
+        }
+
+        // N61-41: captions grey #9AA0A6, 13 sp on 28 px lines from x 49, the
+        // first cap 12 px under the row above, the next row 14 px under the
+        // last baseline (S20-b: row bottom 227, lines at 239 / 267 / 295,
+        // last baseline 313, next row 327)
+        function test_03_captions() {
+            open(["batteryItem", "batterySaverItem"])
+            compare(h.current().objectName, "batterySaverPage")
+            var cap = h.find(h.current(), "batterySaverCaption")
+            var above = h.find(h.current(), "batterySaverSwitch")
+            var below = h.find(h.current(), "autoSaverOnSwitch")
+            compare(cap.font.pixelSize, 26)
+            compare(cap.fontInfo.styleName, "Medium")
+            compare(cap.lineHeightMode, Text.FixedHeight)
+            compare(cap.lineHeight, 28)
+            compare(cap.color, Theme.color.caption)
+            compare(cap.color.toString(), "#9aa0a6")
+            wait(300)
+            var img = grabImage(h)
+            h.shot(this, "caption-battery-saver")
+            // the first line: its cap top, its left edge, its colour
+            var ls = lines(img, 30, 354, drawnTop(cap), drawnTop(cap) + 4 + 18, 0.3)
+            verify(ls.length >= 1, "the first line is drawn")
+            near(ls[0].top - drawnBottom(above), 12, 2, "first cap top under the row above")
+            verify(ls[0].left >= 48 && ls[0].left <= 53, "the first line from x " + ls[0].left)
+            // #9AA0A6 (at the edge effect's alpha: this caption is longer than
+            // the emulator's and reaches into the bottom edge)
+            var a = cap.opacity
+            verify(a > 0.9, "almost whole at rest: " + a)
+            near(ls.best.r * 255, 154 * a, 4, "caption red")
+            near(ls.best.g * 255, 160 * a, 4, "caption green")
+            near(ls.best.b * 255, 166 * a, 4, "caption blue")
+            // the lines 28 px apart: each baseline the ascent under its line top
+            var fm = Qt.createQmlObject('import QtQuick; FontMetrics {}', cap)
+            fm.font = cap.font
+            var lastBaseline = drawnTop(cap) + cap.topPadding + fm.ascent + (cap.lineCount - 1) * 28
+            near(drawnTop(below) - lastBaseline, 14, 2, "next row under the last baseline")
+            near(drawnBottom(cap) + 8, drawnTop(below), 1, "the list's 8 px")
+            fm.destroy()
+        }
+
+        // the visible row before and after an item in its column
+        function neighbours(item) {
+            var rows = rowsOf(h.current())
+            var i = rows.indexOf(item)
+            return { above: i > 0 ? rows[i - 1] : null, below: i + 1 < rows.length ? rows[i + 1] : null }
+        }
+
+        // N61-41: sub-headers at x 52, 13 sp Medium, the cap 38 px under the
+        // row above, the next row 22 px under the baseline (S21-d: row
+        // bottom 223, 'N' 261-277; 'R' 82-98, the stepper from 120)
+        function test_04_sub_headers() {
+            open(["soundItem"])
+            var cats = h.findAll(h.current(), function (o) { return h.typeName(o) === "SettingsCategory" && h.shown(o) })
+            verify(cats.length > 0, "a sub-header on the Sound page")
+            var cat = cats[0]
+            var nb = neighbours(cat)
+            verify(cat.hasOwnProperty("firstInPage"), "a SettingsCategory")
+            verify(!cat.firstInPage)
+            compare(cat.label.font.pixelSize, 26)
+            compare(cat.label.fontInfo.styleName, "Medium")
+            compare(cat.label.color, Theme.color.onSurface)
+            compare(cat.textInset, 32)
+            compare(cat.rowGap, 8)
+            h.bringIntoView(this, nb.below)
+            wait(300)
+            var img = grabImage(h)
+            h.shot(this, "subheader-sound")
+            var ls = lines(img, 30, 354, drawnTop(cat), drawnBottom(cat), 0.45)
+            compare(ls.length, 1)
+            near(ls[0].left, 52, 1, "ink from x 52")
+            // the first letter (a capital with a flat foot: M, R, N) from
+            // its cap top to the baseline
+            var r = lines(img, ls[0].left, ls[0].left + 4, drawnTop(cat), drawnBottom(cat), 0.45)
+            near(r[0].bottom - r[0].top + 1, 18, 1, "cap height")
+            near(r[0].top - drawnBottom(nb.above), 38, 2, "cap top under the row above")
+            near(drawnTop(nb.below) - (r[0].bottom + 1), 22, 2, "next row under the baseline")
+        }
     }
 }

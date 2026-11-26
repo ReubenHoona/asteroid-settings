@@ -139,7 +139,7 @@ SettingsPage {
         objectName: "answerCallsText"
         //% "Audio plays through watch speaker"
         text: qsTrId("id-bluetooth-answer-calls-text")
-        color: page.on ? Theme.color.onSurfaceVariant
+        color: page.on ? Theme.color.caption
                        : Qt.rgba(Theme.color.onSurface.r, Theme.color.onSurface.g, Theme.color.onSurface.b, Theme.alpha.disabledContent)
     }
 }

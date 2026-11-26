@@ -7,16 +7,18 @@ import QtQuick
 import org.asteroid.controls
 
 /*
- * A category header of a stock CP3A Settings list (CategoryHeaderItem, an M3
- * ListSubHeader): titleSmall (14 sp, 28 px, weight 550, 16 sp line) in
- * onSurface #E8E7EE, start-aligned, at the bottom of a box at least 48 dp
- * (96 px) tall; 4.16 % of the width (8 dp, 16 px) at each side, 12 dp
- * (24 px) above (none when it is the first row of the page, under the
- * title), 8 dp (16 px) below (ListSubHeaderTokens.java:6-8,
- * ListHeaderKt.java:130,156, CategoryHeaderItemKt.java:46,55,
- * CustomDimensions.java:26).
+ * A category header of a Settings list (CategoryHeaderItem), the
+ * org.asteroid.controls ListSubHeader as the Wear OS 6 emulator draws it
+ * ('Ring volume', 'Notification volume', S21 / S21-d; NEWLOOK-61 N61-41):
+ * labelSmall (13 sp, 26 px, Medium) in onSurface #E8E7EE, start-aligned,
+ * the ink of a stem letter at x 52 (16 dp inside the list's 5.2 %), no
+ * least height; its cap top 38 px under the row above and the next row
+ * 22 px under its baseline (the list's 4 dp spacing included). The first
+ * row of its page (only the title before it) has no space above (CP3A:
+ * titleSmall 14 sp at x 36 in a box at least 48 dp tall, 12 dp above and
+ * 8 dp below; ListSubHeaderTokens.java:6-8, CategoryHeaderItemKt.java:46,55).
  */
-Label {
+ListSubHeader {
     id: header
 
     /* the first row of its page (only the page title before it): no space above */
@@ -34,29 +36,5 @@ Label {
         return false
     }
 
-    width: parent ? parent.width : 0
-    height: Math.max(Theme.size.listHeader, implicitHeight)
-    role: "titleSmall"
-    color: Theme.color.onSurface
-    leftPadding: Math.round(Theme.margin.subtitleSide)
-    rightPadding: leftPadding
-    topPadding: firstInPage ? 0 : Theme.space.l
-    bottomPadding: Theme.space.m
-    verticalAlignment: Text.AlignBottom
-    wrapMode: Text.Wrap
-    maximumLineCount: 2
-    clip: false
-    Accessible.role: Accessible.Heading
-    // packed with the page's rows (SettingsChip)
-    EdgeEffect { id: edge; item: header; packed: true }
-    opacity: edge.alpha
-    transform: [
-        Scale {
-            origin.x: header.width / 2
-            origin.y: edge.originY
-            xScale: edge.scale
-            yScale: edge.scale
-        },
-        Translate { y: edge.translateY }
-    ]
+    first: firstInPage
 }
