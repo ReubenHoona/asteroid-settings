@@ -22,6 +22,9 @@ import org.asteroid.controls
  * ListHeaderKt.java:58,84, CustomDimensions.java:25,
  * PaddingDefaultValuesKt.java:156-158,
  * ItemLazyColumnKt$$ExternalSyntheticLambda7.java:37).
+ * Near the top and bottom of the screen the title and the rows shrink and
+ * fade together, each about its edge nearest the middle, packed 8 px apart
+ * (EdgeEffect packed, as the Wear OS 6 emulator, S16-S22).
  * A page that is a legacy preference screen in stock (About, Versions) sets
  * legacyHeader: its title is drawn as that screen draws it (legacyTitle).
  * The crown scrolls it (the controls' RotaryInput takes the Flickable under
@@ -73,14 +76,8 @@ Item {
                 bottomPadding: Theme.space.l
                 // the Settings ListHeader text has a 1.1 em line
                 label.lineHeight: label.font.pixelSize * 1.1
-                EdgeEffect { id: titleEdge; item: titleHeader }
-                opacity: titleEdge.alpha
-                transform: Scale {
-                    origin.x: titleHeader.width / 2
-                    origin.y: titleHeader.height / 2
-                    xScale: titleEdge.scale
-                    yScale: titleEdge.scale
-                }
+                // it shrinks and fades packed with the rows (the
+                // ListHeader's own packed EdgeEffect)
             }
             // The title of the legacy preference screens (stock About and
             // Versions, DeviceInfoFragment and DeviceVersionFragment, are

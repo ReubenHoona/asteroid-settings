@@ -24,12 +24,16 @@ Label {
     bottomPadding: Theme.space.s
     wrapMode: Text.Wrap
     clip: false
-    EdgeEffect { id: edge; item: text }
+    // packed with the page's rows (SettingsChip)
+    EdgeEffect { id: edge; item: text; packed: true }
     opacity: edge.alpha
-    transform: Scale {
-        origin.x: text.width / 2
-        origin.y: text.height / 2
-        xScale: edge.scale
-        yScale: edge.scale
-    }
+    transform: [
+        Scale {
+            origin.x: text.width / 2
+            origin.y: edge.originY
+            xScale: edge.scale
+            yScale: edge.scale
+        },
+        Translate { y: edge.translateY }
+    ]
 }

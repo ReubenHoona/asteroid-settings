@@ -71,14 +71,18 @@ SettingsPage {
         width: parent.width
         height: headerColumn.height + 2 * Theme.space.s
         visible: batteryLevel.valid
-        EdgeEffect { id: headerEdge; item: header }
+        // packed with the page's rows (SettingsChip)
+        EdgeEffect { id: headerEdge; item: header; packed: true }
         opacity: headerEdge.alpha
-        transform: Scale {
-            origin.x: header.width / 2
-            origin.y: header.height / 2
-            xScale: headerEdge.scale
-            yScale: headerEdge.scale
-        }
+        transform: [
+            Scale {
+                origin.x: header.width / 2
+                origin.y: headerEdge.originY
+                xScale: headerEdge.scale
+                yScale: headerEdge.scale
+            },
+            Translate { y: headerEdge.translateY }
+        ]
         Column {
             id: headerColumn
             x: Theme.space.xl

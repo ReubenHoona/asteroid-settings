@@ -47,12 +47,16 @@ Label {
     maximumLineCount: 2
     clip: false
     Accessible.role: Accessible.Heading
-    EdgeEffect { id: edge; item: header }
+    // packed with the page's rows (SettingsChip)
+    EdgeEffect { id: edge; item: header; packed: true }
     opacity: edge.alpha
-    transform: Scale {
-        origin.x: header.width / 2
-        origin.y: header.height / 2
-        xScale: edge.scale
-        yScale: edge.scale
-    }
+    transform: [
+        Scale {
+            origin.x: header.width / 2
+            origin.y: edge.originY
+            xScale: edge.scale
+            yScale: edge.scale
+        },
+        Translate { y: edge.translateY }
+    ]
 }

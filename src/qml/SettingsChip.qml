@@ -57,7 +57,12 @@ import org.asteroid.controls
  *   (ButtonItemKt$$ExternalSyntheticLambda0.java:87,100,
  *   RadioButtonItemKt$$ExternalSyntheticLambda3.java:85).
  * Near the top and bottom of the round screen it shrinks and fades as it
- * scrolls (EdgeEffect, the ScalingLazyColumn 0.7 and 0.5).
+ * scrolls (EdgeEffect, the ScalingLazyColumn 0.7 and 0.5), packed with the
+ * page's other rows as the Wear OS 6 emulator draws them (S16-S22): it
+ * shrinks about its edge nearest the middle of the screen and the rows
+ * further out close up, so the 8 px gaps stay and the text keeps clear of
+ * the bezel (a row bottom at y 74 at 0.85 / 0.75, a row top at y 347 at
+ * 0.75 / 0.58; EdgeEffect packed).
  *
  *   SettingsChip {
  *       iconName: "ios-sunny-outline"
@@ -123,7 +128,7 @@ Item {
     width: parent ? parent.width : Theme.dp(172)
     height: Math.max(minHeight, button.implicitHeight)
 
-    EdgeEffect { id: edge; item: chip }
+    EdgeEffect { id: edge; item: chip; packed: true }
 
     Binding {
         target: button.label; property: "leftPadding"; when: chip.textInset > 0
@@ -168,12 +173,16 @@ Item {
         target: button.secondaryLabel; property: "bottomPadding"; when: chip.dataRow
         value: 4 * chip._sp - chip._lastDescent(button.secondaryLabel)
     }
-    transform: Scale {
-        origin.x: chip.width / 2
-        origin.y: chip.height / 2
-        xScale: edge.scale
-        yScale: edge.scale
-    }
+    // packed: about the edge nearest the middle, moved to its packed place
+    transform: [
+        Scale {
+            origin.x: chip.width / 2
+            origin.y: edge.originY
+            xScale: edge.scale
+            yScale: edge.scale
+        },
+        Translate { y: edge.translateY }
+    ]
 
     Button {
         id: button

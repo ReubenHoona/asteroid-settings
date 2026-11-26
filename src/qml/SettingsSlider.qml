@@ -87,13 +87,17 @@ Item {
     Accessible.role: Accessible.Slider
     Accessible.description: slider.valueDescription
 
-    EdgeEffect { id: edge; item: slider }
-    transform: Scale {
-        origin.x: slider.width / 2
-        origin.y: slider.height / 2
-        xScale: edge.scale
-        yScale: edge.scale
-    }
+    // packed with the page's rows (SettingsChip)
+    EdgeEffect { id: edge; item: slider; packed: true }
+    transform: [
+        Scale {
+            origin.x: slider.width / 2
+            origin.y: edge.originY
+            xScale: edge.scale
+            yScale: edge.scale
+        },
+        Translate { y: edge.translateY }
+    ]
 
     Rectangle {
         id: container
