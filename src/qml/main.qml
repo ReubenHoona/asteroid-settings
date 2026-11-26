@@ -54,6 +54,12 @@ Application {
     // /usr/share/asteroid-settings/icons), named for Icon, which looks in
     // /usr/share/icons/asteroid
     readonly property string iconDir: "../../asteroid-settings/icons/"
+    // Display, Sound, Vibration and System take the Wear OS 6 emulator's
+    // glyphs (S16, S17, S17-b; NEWLOOK-61 N61-45), Material Symbols of the
+    // icon set: the half-filled brightness star, the speaker with two
+    // arcs, the round watch with solid bands and an arc at each side (the
+    // emulator's has two), the 'i' in a ring (CP3A: a sun, a bell, an
+    // upright watch, a gear)
     // no swipe hints at the edges: Wear OS has none
     rightIndicVisible: false
     leftIndicVisible: false
@@ -290,7 +296,7 @@ Application {
             SettingsChip {
                 objectName: "displayItem"
                 title: qsTrId("id-display-page")
-                iconName: "ios-sunny-outline"
+                iconName: "ms-brightness_medium"
                 onClicked: layerStack.push(displayLayer)
             }
             SettingsChip {
@@ -325,14 +331,14 @@ Application {
                 objectName: "soundItem"
                 visible: DeviceSpecs.hasSpeaker
                 title: qsTrId("id-sound-page")
-                iconName: "ios-notifications-outline"
+                iconName: "ms-volume_up"
                 onClicked: layerStack.push(soundLayer)
             }
             SettingsChip {
                 objectName: "vibrationItem"
                 //% "Vibration"
                 title: qsTrId("id-vibration-page")
-                iconName: "ios-watch-vibrating"
+                iconName: "ms-watch_vibration-fill"
                 onClicked: layerStack.push(vibrationLayer)
             }
             SettingsChip {
@@ -395,7 +401,7 @@ Application {
                 objectName: "systemItem"
                 //% "System"
                 title: qsTrId("id-system-page")
-                iconName: app.iconDir + "eos-settings-system"
+                iconName: "ms-info"
                 onClicked: layerStack.push(systemLayer)
             }
             SettingsChip {

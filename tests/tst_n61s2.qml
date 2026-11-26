@@ -211,5 +211,36 @@ SettingsHarness {
             }
             near(x1, 63, 1, "2 %: a 16 px dot")
         }
+
+        // N61-45: Display, Sound, Vibration and System take the emulator's
+        // glyphs (S16, S17, S17-b), primary #DBE2F9 in the 48 px slot from
+        // x 48 (centre x 71.5), the label where it was (its first letter's
+        // ink at x 112-114). Ink boxes of the emulator: Display 44 x 44,
+        // Sound 36 x 34, Vibration 48 x 40 (two arcs at each side;
+        // Material's watch_vibration has one, 44 px), System 40 x 40
+        function test_03_list_glyphs() {
+            var want = [["displayItem", "ms-brightness_medium", 44, 44, 3, 114],
+                        ["soundItem", "ms-volume_up", 36, 34, 3, 113],
+                        ["vibrationItem", "ms-watch_vibration-fill", 48, 40, 4, 112],
+                        ["systemItem", "ms-info", 40, 40, 3, 113]]
+            for (var i = 0; i < want.length; i++) {
+                var c = settled(want[i][0])
+                compare(c.iconName, want[i][1])
+                var ic = h.findAll(c, function (o) { return h.typeName(o) === "Icon" })[0]
+                compare(ic.width, 48)
+                var a = ic.mapToItem(h, 0, 0)
+                near(a.x, 48, 0.5, want[i][0] + " slot from x 48")
+                var img = grabImage(h)
+                h.shot(this, "glyph-" + want[i][0])
+                var box = inkBox(img, a.x - 8, a.y - 8, a.x + 56, a.y + 56, 0.43)
+                near(box.width, want[i][2], want[i][4], want[i][0] + " glyph width")
+                near(box.height, want[i][3], 3, want[i][0] + " glyph height")
+                near((box.left + box.right) / 2, 71.5, 1, want[i][0] + " glyph centre")
+                nearRgb(brightest(img, ic), "#DBE2F9", 4, want[i][0] + " glyph colour")
+                var lab = c.button.label.mapToItem(h, 0, 0)
+                var t = inkBox(img, 100, lab.y, 300, lab.y + c.button.label.height, 0.6)
+                near(t.left, want[i][5], 1, want[i][0] + " label x")
+            }
+        }
     }
 }

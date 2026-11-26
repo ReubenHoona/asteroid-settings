@@ -101,15 +101,21 @@ SettingsHarness {
                 verify(h.shown(chip(filled[i])), filled[i] + " shown, its page has rows")
             compare(chip("healthProfileItem").title, "Health profile")
             compare(chip("safetyItem").title, "Safety & Emergency")
-            // the icons drawn to the stock shapes (System is a gear, not an info circle)
+            // the icons drawn to the stock shapes
             var icons = { "connectivityItem": "eos-settings-connectivity", "gesturesItem": "eos-settings-gestures",
                           "buttonsItem": "eos-settings-buttons", "modesItem": "eos-settings-modes",
-                          "batteryItem": "eos-settings-battery", "systemItem": "eos-settings-system",
+                          "batteryItem": "eos-settings-battery",
                           "locationItem": "eos-settings-location", "accessibilityItem": "eos-settings-accessibility",
                           "securityItem": "eos-settings-security" }
             for (var n in icons)
                 compare(chip(n).iconName, "../../asteroid-settings/icons/" + icons[n])
-            compare(chip("displayItem").iconName, "ios-sunny-outline")
+            // the Wear OS 6 emulator's glyphs, Material Symbols of the icon
+            // set (S16, S17, S17-b; N61-45; drawn in tst_n61s2): System is
+            // the 'i' in a ring (CP3A: a gear)
+            var symbols = { "displayItem": "ms-brightness_medium", "soundItem": "ms-volume_up",
+                            "vibrationItem": "ms-watch_vibration-fill", "systemItem": "ms-info" }
+            for (n in symbols)
+                compare(chip(n).iconName, symbols[n])
             // the icon files exist and are drawn in primary: pale pixels in
             // the 48 px icon square on the screen (D60-45)
             for (n in icons) {
