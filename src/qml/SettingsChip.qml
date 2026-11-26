@@ -7,30 +7,44 @@ import QtQuick
 import org.asteroid.controls
 
 /*
- * A stock CP3A Settings row, on the Wear Material 3 Button of
- * org.asteroid.controls (px on the 384 px Pixel Watch 2, 2 px per dp):
+ * A stock Settings row, on the Wear Material 3 Button of
+ * org.asteroid.controls (px on the 384 px Pixel Watch 2, 2 px per dp); the
+ * colours, the switch and the disabled look are the Wear OS 6 emulator's
+ * (the user's choice of its look over CP3A's, NEWLOOK-61 N61-38):
  * - a navigation row is a FilledTonalButton (ButtonItemKt.java:110,133):
  *   container surfaceContainer #2F3036, label labelMedium (30 px) in
- *   onSurface #E8E7EE, second line labelSmall (26 px) in onSurfaceVariant
- *   #CECDD4, icon in primary #DBE2F9, padding 14/6/14/6 dp (28/12 px), at
+ *   onSurface #E8E7EE, second line labelSmall (26 px) in primary #DBE2F9
+ *   ('After 1 minute', S18-b; CP3A onSurfaceVariant #CECDD4), icon in
+ *   primary #DBE2F9, padding 14/6/14/6 dp (28/12 px), at
  *   least 52 dp (104 px) tall (FilledButtonTokens.java:7,31-38,
  *   ButtonDefaults.java:21-33); the icon is the list icon of
  *   settings_list_icon_size 24 dp (48 px, the size its vector declares) in
  *   the 26 dp slot of ButtonDefaults.IconSize (IconProvider.java:249-271),
  *   so the text stays 26 + 6 dp (64 px) after the slot's start;
- * - control "toggle" is a SwitchButton row and "radio" a RadioButton row
- *   (SwitchButtonTokens.java:51-61,90-97, RadioButtonTokens.java:53-64):
- *   padding 14/8/14/8 dp (16 px above and below), the control in a 32 x 24 dp
- *   (64 x 48 px) slot 6 dp (12 px) after the text and 14 dp (28 px) from the
- *   end; checked: container primaryContainer #404759, text onPrimaryContainer
- *   #D9E0F7, second line at 90 %; the row colours move with the slow effects
- *   spring (stiffness 260, about 412 ms), the switch and the radio dot with
- *   the fast effects spring (1400, about 177 ms); a tap plays TOGGLE_ON /
- *   TOGGLE_OFF or CONTEXT_CLICK, which Touch feedback governs
- *   (SwitchButtonKt$$ExternalSyntheticLambda0.java:18,
+ * - control "toggle" is the controls' SwitchButton row as the emulator
+ *   draws it (S18-b, S20, S21, S23, S24): padding 14/8/14/8 dp (16 px above
+ *   and below), the small switch (24 x 10 dp track, 14 dp thumb, its track
+ *   translucent over the row) in a 24 dp (48 px) slot 6 dp (12 px) after the
+ *   text and 14 dp (28 px) from the end (x 288-335 on a full-width row);
+ *   checked: the container stays surfaceContainer with the checked gradient
+ *   over it (primary from 0 to 32.5 %: #35363D at x 30, #646772 at x 355),
+ *   the label stays onSurface and the second line primary; the gradient
+ *   comes in on the slow effects spring (stiffness 260, about 412 ms), the
+ *   switch on the fast effects spring (1400, about 177 ms); disabled and
+ *   checked, the gradient at 38 % (as SwitchButton);
+ * - control "radio" is a RadioButton row (RadioButtonTokens.java:53-64; no
+ *   emulator capture, CP3A's look): the radio in a 32 x 24 dp (64 x 48 px)
+ *   slot; checked: container primaryContainer #404759, text
+ *   onPrimaryContainer #D9E0F7, second line at 90 %, the colours on the
+ *   slow effects spring and the dot on the fast one;
+ * - a tap plays TOGGLE_ON / TOGGLE_OFF or CONTEXT_CLICK, which Touch
+ *   feedback governs (SwitchButtonKt$$ExternalSyntheticLambda0.java:18,
  *   RadioButtonKt$$ExternalSyntheticLambda0.java:17);
- * - disabled (active: false): container onSurface at 12 %, content onSurface
- *   at 38 %, the same size (FilledButtonTokens.java:26-28);
+ * - disabled (active: false): the container stays surfaceContainer, the
+ *   label, second line and icon #80868B (Theme.color.disabledContentFlat;
+ *   S23-b 'Set time / 6:58 PM' on #2F3036), the same size; a radio or
+ *   select row keeps CP3A's onSurface 12 % container and 38 % content
+ *   (FilledButtonTokens.java:26-28);
  * - an information row (clickable: false) is a Button with a transparent
  *   container, 16 dp (32 px) corners, content onSurface, icon onSurface at
  *   38 % (InfoChipItemKt.java:55-69);
@@ -105,18 +119,27 @@ Item {
 
     function _a(c, a) { return Qt.rgba(c.r, c.g, c.b, a) }
 
+    /* a radio or select row: CP3A's checked container and disabled look */
+    readonly property bool _checkRow: control === "radio" || control === "select"
+    readonly property color _cp3aDisabled: _a(Theme.color.onSurface, Theme.alpha.disabledContent)
     /* the stock colours of the row in its state */
     readonly property color containerColor: !clickable || dataRow ? "transparent"
+        : !_checkRow ? Theme.color.surfaceContainer
         : !active ? _a(Theme.color.onSurface, Theme.alpha.disabledContainer)
         : _on ? Theme.color.primaryContainer : Theme.color.surfaceContainer
-    readonly property color titleColor: !active ? _a(Theme.color.onSurface, Theme.alpha.disabledContent)
-        : _on ? Theme.color.onPrimaryContainer : Theme.color.onSurface
-    readonly property color summaryColor: dataRow ? titleColor
-        : !active ? _a(Theme.color.onSurface, Theme.alpha.disabledContent)
-        : _on ? _a(Theme.color.onPrimaryContainer, Theme.alpha.secondaryOnChecked)
-        : Theme.color.onSurfaceVariant
-    readonly property color iconColor: (!clickable || !active)
-        ? _a(Theme.color.onSurface, Theme.alpha.disabledContent) : Theme.color.primary
+    readonly property color titleColor: !active ? (_checkRow ? _cp3aDisabled : Theme.color.disabledContentFlat)
+        : _on && _checkRow ? Theme.color.onPrimaryContainer : Theme.color.onSurface
+    readonly property color summaryColor: dataRow || !active ? titleColor
+        : _on && _checkRow ? _a(Theme.color.onPrimaryContainer, Theme.alpha.secondaryOnChecked)
+        : !clickable ? Theme.color.onSurfaceVariant
+        : Theme.color.primary
+    readonly property color iconColor: !clickable ? _cp3aDisabled
+        : !active ? (_checkRow ? _cp3aDisabled : Theme.color.disabledContentFlat)
+        : Theme.color.primary
+    /* the checked gradient of a toggle row over its container, 0 to 1 (38 %
+       when disabled); the row's Button follows it on the slow effects spring */
+    readonly property real checkedGradient: control === "toggle" && checked
+        ? (active ? 1 : Theme.alpha.disabledContent) : 0
     /* the radio ring and dot: primary selected, outline not, onSurface 12 % disabled */
     readonly property color radioColor: !active ? _a(Theme.color.onSurface, Theme.alpha.disabledContainer)
         : checked ? Theme.color.primary : Theme.color.outline
@@ -207,7 +230,8 @@ Item {
         secondaryMaximumLineCount: chip.dataRow ? 4 : 2
         labelRole: chip.dataRow ? "bodyMedium" : "labelMedium"
         secondaryLabelRole: chip.dataRow ? "bodyMedium" : "labelSmall"
-        trailingWidth: chip.control === "toggle" || chip.control === "radio" ? Theme.dp(32) : 0
+        trailingWidth: chip.control === "toggle" ? Theme.size.switchTrackWidth
+                     : chip.control === "radio" ? Theme.dp(32) : 0
         trailingSpacing: Theme.space.s
 
         containerColor: chip.containerColor
@@ -225,6 +249,17 @@ Item {
         Behavior on secondaryContentColor {
             enabled: chip.selectable
             ColorAnimation { duration: chip.colorDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.springEasing }
+        }
+        // the checked gradient on the slow effects spring, as SwitchButton
+        // (written by the spring, which sets the first value as it is: no
+        // binding on checkedGradient)
+        WearSpring {
+            target: button
+            property: "checkedGradient"
+            to: chip.checkedGradient
+            stiffness: Motion.standard.slowEffects.stiffness
+            dampingRatio: 1.0
+            visibilityThreshold: 0.001
         }
 
         Accessible.role: chip.control === "toggle" ? Accessible.CheckBox
@@ -245,8 +280,9 @@ Item {
         }
 
         // the switch of a SwitchButton (org.asteroid.controls Switch: a
-        // 64 x 44 px track with a 4 px border, the thumb 24 -> 36 px, its
-        // centre 22 -> 42 px, the tick, 177 ms)
+        // 48 x 20 px track, a 28 px thumb whose centre goes 14 -> 34 px, no
+        // border, no tick, 177 ms), its track translucent over the row and
+        // its gradient
         Switch {
             id: chipSwitch
             objectName: "chipSwitch"
@@ -255,6 +291,7 @@ Item {
             checked: chip.checked
             enabled: chip.active
             toggleOnClick: false
+            containerColor: "transparent"
         }
 
         // the radio of a RadioButton: ring 20 dp (40 px) outside with a 2 dp

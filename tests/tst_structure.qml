@@ -204,7 +204,8 @@ SettingsHarness {
             compare(c.opacity, 1)
             var bat = chip("batteryItem").button
             compare(bat.secondaryLabel.font.pixelSize, 26)
-            rgb(bat.secondaryLabel.color, "#cecdd4", "summary")
+            // the second line in primary, as the Wear OS 6 emulator (N61-38)
+            rgb(bat.secondaryLabel.color, "#dbe2f9", "summary")
             compare(bat.label.maximumLineCount, 3)
             compare(bat.secondaryLabel.maximumLineCount, 2)
             // the text starts 28 + 52 + 12 px in
@@ -212,7 +213,8 @@ SettingsHarness {
             compare(p.x, 28 + 52 + 12)
         }
 
-        // controls-components-01, -02, -04: a switch row
+        // controls-components-01, -02, -04: a switch row, as the Wear OS 6
+        // emulator draws it (N61-38: the small switch, the checked gradient)
         function test_05_switch_row() {
             open(["gesturesItem"])
             var c = chip("tiltSwitch")
@@ -220,46 +222,54 @@ SettingsHarness {
             compare(c.control, "toggle")
             var b = c.button
             compare(b.verticalPadding, 16)
-            compare(b.trailingWidth, 64)
+            compare(b.trailingWidth, 48)
             compare(b.trailingSpacing, 12)
             compare(c.colorDuration, Motion.springDuration(260))
             near(c.colorDuration, 412, 15, "slow effects spring")
             near(c.controlDuration, 177, 10, "fast effects spring")
             var sw = h.find(c, "chipSwitch")
-            compare(sw.width, 64)
-            compare(sw.height, 48)
-            compare(sw.trackWidth, 64)
-            compare(sw.trackHeight, 44)
-            compare(sw.borderWidth, 4)
+            compare(sw.width, 48)
+            compare(sw.height, 28)
+            compare(sw.trackWidth, 48)
+            compare(sw.trackHeight, 20)
+            compare(sw.borderWidth, 0)
+            compare(sw.containerColor.a, 0, "the track translucent over the row")
             // 28 px from the row end: the slot ends at width - 28
             var end = sw.mapToItem(b, sw.width, 0).x
             compare(end, b.width - 28)
             verify(c.checked, "tilt-to-wake on in the mocks")
             wait(500)
-            rgb(b.containerColor, "#404759", "on: primaryContainer")
-            rgb(b.label.color, "#d9e0f7", "on: onPrimaryContainer")
-            compare(sw.thumbSize, 36)
-            compare(sw.thumbCenter, 42)
+            // on: the container stays, the gradient over it, the label onSurface
+            rgb(b.containerColor, "#2f3036", "on: surfaceContainer")
+            compare(b.checkedGradient, 1)
+            rgb(b.label.color, "#e8e7ee", "on: onSurface")
+            compare(sw.thumbSize, 28)
+            compare(sw.thumbCenter, 34)
             h.tap(this, c)
             wait(600)
             if (!c.checked) {
                 rgb(b.containerColor, "#2f3036", "off: surfaceContainer")
+                compare(b.checkedGradient, 0)
                 rgb(b.label.color, "#e8e7ee", "off: onSurface")
-                compare(sw.thumbSize, 24)
-                compare(sw.thumbCenter, 22)
+                compare(sw.thumbSize, 28)
+                compare(sw.thumbCenter, 14)
             }
             if (h.find(h.app, "confirmDialog").shown)
                 h.tap(this, h.find(h.app, "dialogNo"))
         }
 
-        // the summary of a checked row at 90 %
+        // the summary of a checked row: primary on a switch row (N61-38),
+        // onPrimaryContainer at 90 % on a radio row (CP3A)
         function test_06_checked_summary_alpha() {
             var col = h.find(h.current(), "settingsColumn")
             var c = Qt.createQmlObject('import QtQuick; import "../src/qml"; SettingsChip { title: "T"; summary: "S"; control: "toggle"; checked: true }', col)
+            var r = Qt.createQmlObject('import QtQuick; import "../src/qml"; SettingsChip { title: "T"; summary: "S"; control: "radio"; checked: true }', col)
             wait(500)
-            rgb(c.button.secondaryLabel.color, "#d9e0f7", "summary hue")
-            near(c.button.secondaryLabel.color.a, 0.9, 0.01, "summary 90 %")
-            c.destroy()
+            rgb(c.button.secondaryLabel.color, "#dbe2f9", "switch row summary primary")
+            near(c.button.secondaryLabel.color.a, 1, 0.01, "switch row summary opaque")
+            rgb(r.button.secondaryLabel.color, "#d9e0f7", "radio row summary hue")
+            near(r.button.secondaryLabel.color.a, 0.9, 0.01, "radio row summary 90 %")
+            c.destroy(); r.destroy()
         }
 
         // controls-components-03: a radio row (in the selection dialog)
@@ -290,11 +300,14 @@ SettingsHarness {
             var i = Qt.createQmlObject('import QtQuick; import "../src/qml"; SettingsChip { title: "I"; iconName: "ios-watch"; clickable: false }', col)
             compare(d.opacity, 1)
             compare(d.height, 104)
-            rgb(d.button.containerColor, "#e8e7ee", "disabled container hue")
-            near(d.button.containerColor.a, 0.12, 0.01, "disabled container 12 %")
-            near(d.button.label.color.a, 0.38, 0.01, "disabled title 38 %")
-            near(d.button.secondaryLabel.color.a, 0.38, 0.01, "disabled summary 38 %")
-            near(d.button.iconColor.a, 0.38, 0.01, "disabled icon 38 %")
+            // the Wear OS 6 emulator's disabled row (S23-b, N61-38): the
+            // container stays, the content #80868B
+            rgb(d.button.containerColor, "#2f3036", "disabled container")
+            near(d.button.containerColor.a, 1, 0.01, "disabled container opaque")
+            rgb(d.button.label.color, "#80868b", "disabled title")
+            rgb(d.button.secondaryLabel.color, "#80868b", "disabled summary")
+            rgb(d.button.iconColor, "#80868b", "disabled icon")
+            near(d.button.label.color.a, 1, 0.01, "disabled title opaque")
             compare(i.button.containerColor.a, 0)
             compare(i.button.radius, 32)
             rgb(i.button.label.color, "#e8e7ee", "info title")

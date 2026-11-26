@@ -26,6 +26,11 @@ SettingsHarness {
         function near(a, b, tol, what) {
             verify(Math.abs(a - b) <= (tol === undefined ? 0.5 : tol), what + ": " + a + " is not " + b)
         }
+        function rgb(c, hex, what) {
+            var want = Qt.color(hex)
+            verify(Math.abs(c.r - want.r) < 0.003 && Math.abs(c.g - want.g) < 0.003 && Math.abs(c.b - want.b) < 0.003,
+                   what + ": " + c + " is not " + hex)
+        }
         function open(names) {
             for (var i = 0; i < names.length; i++) {
                 h.tapName(this, names[i])
@@ -267,6 +272,102 @@ SettingsHarness {
             near(r[0].bottom - r[0].top + 1, 18, 1, "cap height")
             near(r[0].top - drawnBottom(nb.above), 38, 2, "cap top under the row above")
             near(drawnTop(nb.below) - (r[0].bottom + 1), 22, 2, "next row under the baseline")
+        }
+
+        // a pixel of the screen as [r, g, b] in 0..255
+        function rgbAt(img, x, y) {
+            var p = img.pixel(Math.round(x), Math.round(y))
+            return [p.r * 255, p.g * 255, p.b * 255]
+        }
+        function nearRgb(c, hex, tol, what) {
+            var w = Qt.color(hex)
+            var want = [w.r * 255, w.g * 255, w.b * 255]
+            for (var k = 0; k < 3; k++)
+                verify(Math.abs(c[k] - want[k]) <= tol,
+                       what + ": " + c.map(Math.round) + " is not " + hex + " +- " + tol)
+        }
+        // the brightest pixel of an item's area on the screen
+        function brightest(img, item) {
+            var a = item.mapToItem(h, 0, 0), b = item.mapToItem(h, item.width, item.height)
+            var best = null
+            for (var y = Math.max(0, Math.round(a.y)); y < Math.min(384, Math.round(b.y)); y++)
+                for (var x = Math.max(0, Math.round(a.x)); x < Math.min(384, Math.round(b.x)); x++) {
+                    var p = img.pixel(x, y)
+                    if (!best || lum(p) > lum(best))
+                        best = p
+                }
+            return [best.r * 255, best.g * 255, best.b * 255]
+        }
+        // a row brought to the middle of the screen, its springs settled
+        function settled(name) {
+            var c = h.find(h.current(), name)
+            verify(c !== null && h.shown(c), name)
+            h.bringIntoView(this, c)
+            wait(700)
+            return c
+        }
+
+        // N61-38: the Settings toggle row as the Wear OS 6 emulator draws it
+        // (S18-b, S20-b, S20, S23-b)
+        function test_05_toggle_rows() {
+            // Display > Always-on screen, on: the checked gradient, the
+            // tertiary thumb at x 309-334 (S18-b)
+            open(["displayItem"])
+            var c = settled("aodSwitch")
+            if (!c.checked) {
+                h.tap(this, c)
+                wait(700)
+            }
+            verify(c.checked, "Always-on screen on")
+            var sw = h.find(c, "chipSwitch")
+            var y = c.mapToItem(h, 0, c.height / 2).y
+            near(c.mapToItem(h, 0, 0).x, 20, 0.5, "a full-width row")
+            near(sw.mapToItem(h, sw.width, 0).x, 336, 0.5, "the switch ends 28 px in from the row end")
+            var img = grabImage(h)
+            h.shot(this, "toggle-aod-on")
+            nearRgb(rgbAt(img, 30, y), "#35363D", 4, "gradient at x 30")
+            nearRgb(rgbAt(img, 355, y), "#646772", 4, "gradient at x 355")
+            var t = sw._thumb.mapToItem(h, sw._thumb.width / 2, sw._thumb.height / 2)
+            near(sw._thumb.mapToItem(h, 0, 0).x, 308, 1, "on thumb from x 309")
+            nearRgb(rgbAt(img, t.x, t.y), "#D4C7FF", 4, "on thumb")
+            nearRgb(rgbAt(img, sw.mapToItem(h, 4, 0).x, t.y), "#8985A1", 6, "on track")
+            rgb(c.button.label.color, "#e8e7ee", "the label stays onSurface")
+
+            // Battery > Battery Saver, off: the grey thumb at x 288-315 on a
+            // 48 x 20 track (S20-b)
+            h.home(this)
+            open(["batteryItem"])
+            var item = settled("batterySaverItem")
+            img = grabImage(h)
+            h.shot(this, "battery-summary")
+            // the second line in primary: 'Will turn on at 10%' (S20)
+            nearRgb(brightest(img, item.button.secondaryLabel), "#DBE2F9", 4, "second line primary")
+            h.tapName(this, "batterySaverItem")
+            h.settle(this)
+            c = settled("batterySaverSwitch")
+            verify(!c.checked, "Battery Saver off in the mocks")
+            sw = h.find(c, "chipSwitch")
+            compare(sw._track.width, 48)
+            compare(sw._track.height, 20)
+            img = grabImage(h)
+            t = sw._thumb.mapToItem(h, sw._thumb.width / 2, sw._thumb.height / 2)
+            near(sw._thumb.mapToItem(h, 0, 0).x, 288, 1, "off thumb from x 288")
+            nearRgb(rgbAt(img, t.x, t.y), "#8B8B8F", 4, "off thumb")
+            nearRgb(rgbAt(img, sw.mapToItem(h, sw.width - 4, 0).x, t.y), "#74757C", 6, "off track")
+            y = c.mapToItem(h, 0, c.height / 2).y
+            nearRgb(rgbAt(img, 30, y), "#2F3036", 3, "no gradient when off")
+
+            // System > Date & time, automatic on: 'Set time' greyed (S23-b)
+            h.home(this)
+            open(["systemItem", "dateTimeItem"])
+            c = settled("setTimeItem")
+            verify(!c.active, "Set time is off while the time is automatic")
+            img = grabImage(h)
+            h.shot(this, "disabled-set-time")
+            y = c.mapToItem(h, 0, c.height / 2).y
+            nearRgb(rgbAt(img, 30, y), "#2F3036", 3, "the disabled container")
+            nearRgb(brightest(img, c.button.label), "#80868B", 4, "the disabled label")
+            nearRgb(brightest(img, c.button.secondaryLabel), "#80868B", 4, "the disabled second line")
         }
     }
 }
