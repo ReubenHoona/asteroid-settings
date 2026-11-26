@@ -63,10 +63,10 @@ SettingsHarness {
                      "Safety & Emergency", "Accessibility", "Security", "System"])
             compare(h.find(h.current(), "batteryItem").summary, "57%")
             verify(!h.shown(h.find(h.current(), "developerItem")), "Developer options hidden until the 7 taps")
-            // the title is the first row and scrolls with the list
+            // the title is the first item of the list and scrolls with it
             var title = h.find(h.current(), "settingsTitle")
             compare(title.text, "Settings")
-            compare(title.parent.objectName, "settingsColumn")
+            compare(title.parent, h.find(h.current(), "settingsFlickable").contentItem)
         }
 
         // every row of every settings page does something: opens a page or

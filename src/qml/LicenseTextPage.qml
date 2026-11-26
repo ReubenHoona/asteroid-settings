@@ -39,6 +39,9 @@ import org.asteroid.controls
 SettingsPage {
     id: page
     objectName: "licenseTextPage"
+    // a legacy list screen in stock: the list at 16.64 %, as About's (no
+    // title: the Wear OS 6 pages with no title start lower, at y 84)
+    legacyHeader: true
 
     property string heading: ""
     property string body: ""

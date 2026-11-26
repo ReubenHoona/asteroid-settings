@@ -10,9 +10,12 @@ import org.asteroid.controls
  * A list of choices, one radio row each (stock RadioButtonItem rows,
  * SettingsChip control "radio"), under a title and an optional message.
  * Two layouts:
- * - a page (dialog: false; Language, Time zone): the Settings list padding
- *   (5.2 % of the width at each side, the title as the ListHeader of
- *   SettingsPage at 16.64 % of the height, 36.46 % of room at the end);
+ * - a page (dialog: false; Language, System licenses): the Settings list
+ *   padding (5.2 % of the width at each side, 36.46 % of room at the end)
+ *   and the title as SettingsPage's: labelMedium (15 sp) in onSurface on a
+ *   1.1 em line, its box from 12.5 % of the height down to the first row,
+ *   so its cap top is at y 69 and the first row at y 123 (the Wear OS 6
+ *   emulator's System licenses list, S35-b; NEWLOOK-61 N61-40);
  * - the selection dialog (dialog: true; ChoicePage, SelectionDialogKt.java):
  *   an M3 AlertDialog with no buttons: padding ceil(5.2 %) of the width at
  *   the sides (20 px), ceil(10 %) of the height at the top (39 px) and
@@ -72,27 +75,31 @@ ListView {
     header: Item {
         id: headerBox
         width: list.width
-        readonly property real topGap: list.dialog ? Math.ceil(list.height * 0.10) : Math.round(list.height * 0.1664)
-        height: topGap + titleBox.height + (messageLabel.visible ? messageLabel.height : 0) + list.rowSpacing
+        readonly property real topGap: list.dialog ? Math.ceil(list.height * 0.10) : Math.round(list.height * 0.125)
+        // a page's title box reaches the first row (as SettingsPage's)
+        height: topGap + titleBox.height + (messageLabel.visible ? messageLabel.height : 0)
+                + (list.dialog || messageLabel.visible ? list.rowSpacing : 0)
 
         Item {
             id: titleBox
             y: headerBox.topGap
             x: list.sidePadding
             width: list.width - 2 * x
+            // a page: 7 dp above the title, 12 dp under it, whole pixels
             height: list.dialog ? titleLabel.height
-                                : Math.max(Theme.size.listHeader, titleLabel.height + Theme.dp(4) + Theme.space.l)
+                                : Math.round(titleLabel.height + Theme.dp(7) + Theme.space.l)
             Label {
                 id: titleLabel
                 objectName: "choiceTitle"
                 // a dialog title is 12 % of the width from the screen edge,
                 // a list header 12 % inside the list
                 x: list.dialog ? Math.round(list.width * 0.12) - list.sidePadding : Math.round(list.width * 0.12)
-                y: list.dialog ? 0 : Theme.dp(4)
+                y: list.dialog ? 0 : Theme.dp(7)
                 width: titleBox.width - 2 * x
                 text: list.title
-                role: "titleMedium"
-                color: Theme.color.onBackground
+                role: list.dialog ? "titleMedium" : "labelMedium"
+                lineHeight: list.dialog ? Theme.type.titleMedium.lineHeight : font.pixelSize * 1.1
+                color: list.dialog ? Theme.color.onBackground : Theme.color.onSurface
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.Wrap
                 maximumLineCount: 3

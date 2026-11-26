@@ -146,7 +146,10 @@ SettingsHarness {
             verify(tt.length > 0 && h.shown(tt[0]), "a TimeText is shown")
             var page = h.current()
             var col = h.find(page, "settingsColumn")
-            compare(col.y, 64)            // round(16.64 % of 384)
+            // the title box 12.5 % down (48 px) reaches the first row, which is
+            // at y 123 as the Wear OS 6 emulator draws it (N61-40)
+            compare(h.find(page, "settingsTitle").y, 48)
+            compare(col.y, 123)
             compare(col.x, 20)            // round(5.2 % of 384)
             compare(col.width, 344)
             compare(col.spacing, 8)       // 4 dp (controls-components-13)
@@ -154,29 +157,30 @@ SettingsHarness {
             compare(f.contentHeight - (col.y + col.height), 140)   // round(36.46 % of 384)
         }
 
-        // controls-components-10: the page title as a ListHeader
+        // controls-components-10: the page title as a ListHeader, in the
+        // Wear OS 6 emulator's size and colour (N61-40)
         function test_03_page_title() {
             var title = h.find(h.current(), "settingsTitle")
             compare(title.text, "Settings")
-            compare(title.parent.objectName, "settingsColumn")
+            // in the list: it scrolls with the rows
+            compare(title.parent, h.find(h.current(), "settingsFlickable").contentItem)
             compare(title.horizontalPadding, 46)
-            compare(title.topPadding, 8)
+            compare(title.topPadding, 14)
             compare(title.bottomPadding, 24)
-            verify(title.height >= 96, "at least 48 dp")
+            compare(title.minimumHeight, 0)
+            compare(title.height, 75)
             var l = title.label
-            compare(l.font.pixelSize, 32)
-            // CP3A's titleMedium is weight 550 in Google Sans Flex (Settings v2
-            // TypeScaleTokens.java:206); the image's static Noto Sans has no 550
-            // face (Qt took SemiBold), so the Theme asks for Medium (500) and
-            // keeps 550 as axes.wght for a variable font (D60-37)
+            // labelMedium: 15 sp, weight 500 (the Medium face, as D60-37 asks
+            // for titleMedium; Theme keeps titleMedium's CP3A 550 as axes.wght)
+            compare(l.font.pixelSize, 30)
             compare(l.font.weight, 500)
             compare(l.fontInfo.styleName, "Medium", "title drawn in the Medium face")
             compare(Theme.type.titleMedium.weight, 500)
             compare(Theme.type.titleMedium.axes.wght, 550)
-            rgb(l.color, "#ffffff", "title colour")
+            rgb(l.color, "#e8e7ee", "title colour onSurface")
             compare(l.horizontalAlignment, Text.AlignHCenter)
             compare(l.maximumLineCount, 3)
-            near(l.lineHeight, 35.2, 0.01, "line height 1.1 em")
+            near(l.lineHeight, 33, 0.01, "line height 1.1 em")
             compare(l.width, 344 - 2 * 46)
         }
 

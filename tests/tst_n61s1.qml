@@ -93,5 +93,73 @@ SettingsHarness {
             near(drawnTop(r) - drawnBottom(rows[bestTop.i - 1]), 8, 1, "gap above it")
             h.shot(this, "packed-main")
         }
+
+        // the title's ink: first and last row, the first letter's rows, the
+        // x range, the brightest pixel
+        function lum(p) { return (p.r + p.g + p.b) / 3 }
+        function titleInk(img) {
+            var y0 = -1, y1 = -1, x0 = 999, x1 = -1, best = null
+            for (var y = 45; y < 122; y++) {
+                var any = false
+                for (var x = 60; x < 324; x++) {
+                    var p = img.pixel(x, y)
+                    if (lum(p) > 0.35) {
+                        any = true
+                        x0 = Math.min(x0, x); x1 = Math.max(x1, x)
+                        if (!best || lum(p) > lum(best))
+                            best = p
+                    }
+                }
+                if (any) { if (y0 < 0) y0 = y; y1 = y }
+            }
+            // the first letter (a capital): its own rows
+            var c0 = -1, c1 = -1
+            for (y = 45; y < 122; y++)
+                for (x = x0; x < x0 + 10; x++)
+                    if (lum(img.pixel(x, y)) > 0.35) { if (c0 < 0) c0 = y; c1 = y }
+            return { top: y0, bottom: y1, left: x0, right: x1, capTop: c0, capBottom: c1, color: best }
+        }
+        // N61-40: the title as the Wear OS 6 emulator draws it on every
+        // Settings page (S16-S23): cap top y 69, cap 21 px (a flat letter),
+        // onSurface #E8E7EE, first row at y 123; 'Connectivity' 183 px wide
+        function test_02_titles() {
+            var pages = [[], ["connectivityItem"], ["displayItem"], ["batteryItem"], ["systemItem"],
+                         ["systemItem", "languageItem"]]
+            for (var i = 0; i < pages.length; i++) {
+                h.home(this)
+                open(pages[i])
+                var page = h.current()
+                var name = page.objectName
+                wait(300)
+                var img = grabImage(h)
+                h.shot(this, "title-" + name)
+                var ink = titleInk(img)
+                near(ink.top, 69, 2, name + " title cap top")
+                near(ink.capBottom - ink.capTop, 21, 1, name + " cap height")
+                var c = ink.color
+                // the brightest title pixel: the title is whole at rest but
+                // for the edge effect's 0.99 (its box reaches y 123)
+                near(c.r * 255, 232, 5, name + " title red")
+                near(c.g * 255, 231, 5, name + " title green")
+                near(c.b * 255, 238, 5, name + " title blue")
+                verify(c.b > c.r && c.r > c.g - 0.01, name + " the onSurface hue")
+                // the first row under it (a SettingsPage or a ChoiceList page)
+                var first = name === "languagePage" ? h.listItem(this, h.find(page, "choiceList"), 0).children[0]
+                                                    : rowsOf(page)[0]
+                if (name === "languagePage") {
+                    h.find(page, "choiceList").positionViewAtBeginning()
+                    wait(100)
+                }
+                near(drawnTop(first), 123, 2, name + " first row top")
+                if (name === "connectivityPage")
+                    near(ink.right - ink.left + 1, 183, 3, "'Connectivity' width")
+            }
+            // a page with no title: the first row at y 84 (the emulator's Brightness, S24)
+            var comp = Qt.createComponent(Qt.resolvedUrl("../src/qml/SettingsPage.qml"))
+            var p = comp.createObject(h.app, { width: 384, height: 384 })
+            compare(h.find(p, "settingsColumn").y, 84)
+            verify(!h.find(p, "settingsTitle").visible)
+            p.destroy()
+        }
     }
 }
