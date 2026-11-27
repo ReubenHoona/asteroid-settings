@@ -29,10 +29,16 @@ SettingsHarness {
         function near(a, b, tol, what) {
             verify(Math.abs(a - b) <= (tol === undefined ? 0.5 : tol), what + ": " + a + " is not " + b)
         }
-        function rgb(c, hex, what) {
+        function rgbIs(c, hex) {
             var want = Qt.color(hex)
-            verify(Math.abs(c.r - want.r) < 0.003 && Math.abs(c.g - want.g) < 0.003 && Math.abs(c.b - want.b) < 0.003,
-                   what + ": " + c + " is not " + hex)
+            return Math.abs(c.r - want.r) < 0.003 && Math.abs(c.g - want.g) < 0.003 && Math.abs(c.b - want.b) < 0.003
+        }
+        function rgb(c, hex, what) {
+            verify(rgbIs(c, hex), what + ": " + c + " is not " + hex)
+        }
+        // a value the springs move, once at rest (waited for, not timed: test files run together load the machine)
+        function settled(get, want, tol, what) {
+            tryVerify(function () { return Math.abs(get() - want) <= tol }, h.rest, what + ": " + get() + " is not " + want)
         }
         function chip(name) { return h.find(h.current(), name) }
         function chipsOf(page) {
@@ -244,21 +250,22 @@ SettingsHarness {
             var end = sw.mapToItem(b, sw.width, 0).x
             compare(end, b.width - 28)
             verify(c.checked, "tilt-to-wake on in the mocks")
-            wait(500)
-            // on: the container stays, the gradient over it, the label onSurface
+            // on: the container stays, the gradient over it (its spring at rest: waited for, not timed),
+            // the label onSurface
+            tryCompare(b, "checkedGradient", 1, h.rest)
             rgb(b.containerColor, "#2f3036", "on: surfaceContainer")
-            compare(b.checkedGradient, 1)
             rgb(b.label.color, "#e8e7ee", "on: onSurface")
             compare(sw.thumbSize, 28)
             compare(sw.thumbCenter, 34)
             h.tap(this, c)
             wait(600)
             if (!c.checked) {
+                // the gradient's spring and the thumb at rest (waited for: late under load)
+                tryCompare(b, "checkedGradient", 0, h.rest)
+                tryCompare(sw, "thumbCenter", 14, h.rest)
                 rgb(b.containerColor, "#2f3036", "off: surfaceContainer")
-                compare(b.checkedGradient, 0)
                 rgb(b.label.color, "#e8e7ee", "off: onSurface")
                 compare(sw.thumbSize, 28)
-                compare(sw.thumbCenter, 14)
             }
             if (h.find(h.app, "confirmDialog").shown)
                 h.tap(this, h.find(h.app, "dialogNo"))
@@ -271,6 +278,8 @@ SettingsHarness {
             var c = Qt.createQmlObject('import QtQuick; import "../src/qml"; SettingsChip { title: "T"; summary: "S"; control: "toggle"; checked: true }', col)
             var r = Qt.createQmlObject('import QtQuick; import "../src/qml"; SettingsChip { title: "T"; summary: "S"; control: "radio"; checked: true }', col)
             wait(500)
+            tryVerify(function () { return rgbIs(c.button.secondaryLabel.color, "#dbe2f9") && rgbIs(r.button.secondaryLabel.color, "#d9e0f7")
+                                           && Math.abs(r.button.secondaryLabel.color.a - 0.9) <= 0.01 }, h.rest, "the rows at rest")
             rgb(c.button.secondaryLabel.color, "#dbe2f9", "switch row summary primary")
             near(c.button.secondaryLabel.color.a, 1, 0.01, "switch row summary opaque")
             rgb(r.button.secondaryLabel.color, "#d9e0f7", "radio row summary hue")
@@ -285,6 +294,9 @@ SettingsHarness {
             var off = Qt.createQmlObject('import QtQuick; import "../src/qml"; SettingsChip { title: "B"; control: "radio"; checked: false }', col)
             wait(500)
             var ring = h.find(on, "chipRadioRing"), dot = h.find(on, "chipRadioDot")
+            tryVerify(function () { return dot.scale === 1 && rgbIs(ring.border.color, "#dbe2f9") && rgbIs(on.button.containerColor, "#404759")
+                                           && rgbIs(h.find(off, "chipRadioRing").border.color, "#a5a5ac")
+                                           && rgbIs(off.button.containerColor, "#2f3036") }, h.rest, "the rows at rest")
             compare(ring.width, 40)
             compare(ring.border.width, 4)
             compare(dot.width, 20)
@@ -408,8 +420,7 @@ SettingsHarness {
             rgb(un.color, "#202124", "the rest")
             compare(un.radius, 6)
             compare(un.width, bar.width)
-            wait(300)
-            near(sel.width, bar.width * s.position, 0.5, "selected length")
+            settled(function () { return sel.width }, bar.width * s.position, 0.5, "selected length")
             // segmented: 1 px black gaps between the steps, no dots
             var gaps = h.findAll(h.find(s, "sliderGaps").parent, function (o) {
                 return o.hasOwnProperty("index") && o.width === 1 })
@@ -421,19 +432,16 @@ SettingsHarness {
             // the selected length moves over 150 ms
             var before = sel.width
             h.tap(this, minus)
-            wait(40)
-            verify(sel.width < before && sel.width > bar.width * s.position - 0.5, "moving at 40 ms")
-            wait(300)
-            near(sel.width, bar.width * s.position, 0.5, "settled")
+            // on its way down, then at the new step (waited for: under load the first frame can be late)
+            tryVerify(function () { return sel.width < before && sel.width > bar.width * s.position - 0.5 }, h.rest, "moving")
+            settled(function () { return sel.width }, bar.width * s.position, 0.5, "settled")
             // the top step fills the bar, the bottom one leaves it empty; a
             // glyph at its limit at 38 %
             s.value = s.to
-            wait(300)
-            near(sel.width, bar.width, 0.01, "full")
+            settled(function () { return sel.width }, bar.width, 0.01, "full")
             near(g.children[0].color.a, 0.38, 0.01, "the plus at its limit")
             s.value = s.from
-            wait(300)
-            compare(sel.width, 0)
+            tryCompare(sel, "width", 0, h.rest)
             verify(!sel.visible)
             near(gm.color.a, 0.38, 0.01, "the minus at its limit")
         }
@@ -454,12 +462,10 @@ SettingsHarness {
             }
             compare(gaps().length, 0, "no gaps")
             s.value = 50
-            wait(300)
-            near(sel.width, bar.width * 0.5, 0.5, "half")
+            settled(function () { return sel.width }, bar.width * 0.5, 0.5, "half")
             compare(un.width, bar.width)
             s.value = 100
-            wait(300)
-            near(sel.width, bar.width, 0.01, "full")
+            settled(function () { return sel.width }, bar.width, 0.01, "full")
             // the same slider segmented gets its nine gaps
             s.segmented = true
             compare(s.segments, 10)

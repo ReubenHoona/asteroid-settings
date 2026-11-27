@@ -164,11 +164,31 @@ Item {
             if (!d)
                 continue
             if (d.shown)
-                t.tryVerify(function () { return d.alpha > 0.99 && Math.abs(d.contentScale - 1) < 0.002 }, 3000,
+                t.tryVerify(function () { return d.alpha > 0.99 && Math.abs(d.contentScale - 1) < 0.002 }, rest,
                             "the dialog has settled")
             else if (d.active)
-                t.tryVerify(function () { return !d.active }, 3000, "the dialog has left")
+                t.tryVerify(function () { return !d.active }, rest, "the dialog has left")
         }
+    }
+    // how long the app may take to come to rest (many test files at once on one machine: the springs and
+    // timers take their time; a wait for a state never fails early)
+    readonly property int rest: 20000
+    // the app at rest: no page sliding in or out, no dialog moving or about to close (a choice closes its
+    // dialog 300 ms after the tap, then it fades out)
+    function atRest() {
+        if (stack && (stack.pushing || stack._popActive))
+            return false
+        var ds = [chooser(), find(loader.item, "confirmDialog")]
+        for (var i = 0; i < ds.length; i++) {
+            var d = ds[i]
+            if (!d)
+                continue
+            if (d.closing === true)
+                return false
+            if (d.shown ? d.alpha <= 0.99 : d.active)
+                return false
+        }
+        return true
     }
     function tap(t, item) {
         settleDialogs(t)
@@ -176,7 +196,7 @@ Item {
         if (item.hasOwnProperty("preferredHeight") && item.flickable) {
             var ef = item.flickable
             ef.contentY = Math.max(ef.originY - ef.topMargin, ef.originY + ef.contentHeight + ef.bottomMargin - ef.height)
-            t.tryVerify(function () { return item.visible }, 3000, "the edge button is revealed")
+            t.tryVerify(function () { return item.visible }, rest, "the edge button is revealed")
             t.wait(400)
         }
         bringIntoView(t, item)
@@ -203,7 +223,7 @@ Item {
         var d = chooser()
         if (d && d.shown) {
             d.pop()
-            t.wait(400)
+            settle(t)
             return
         }
         var n = stack.layers.length
@@ -219,7 +239,12 @@ Item {
             stack.pop(stack.currentLayer)
         t.wait(50)
     }
-    function settle(t) { t.wait(400) }
+    // the time a step takes on the watch, then until the app is at rest (waited for, not timed: test files
+    // run together load the machine)
+    function settle(t) {
+        t.wait(400)
+        t.tryVerify(atRest, rest, "the app is at rest")
+    }
     function shot(t, name) {
         t.wait(150)
         var img = t.grabImage(screen)

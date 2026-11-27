@@ -55,6 +55,14 @@ SettingsHarness {
             }
         }
         function title() { return h.find(h.current(), "settingsTitle").text }
+        // a page's single shot of that interval (a page's Timers are in its column's resources)
+        function timerOf(page, ms) {
+            var res = h.find(page, "settingsColumn").resources
+            for (var i = 0; i < res.length; i++)
+                if (res[i].hasOwnProperty("triggeredOnStart") && res[i].interval === ms)
+                    return res[i]
+            return null
+        }
         function dialogText() {
             return [h.find(h.app, "dialogTitle").text, h.find(h.app, "dialogMessage").text]
         }
@@ -133,35 +141,52 @@ SettingsHarness {
 
         function test_02_airplane_mode_timing_and_bluetooth() {
             open(["connectivityItem"])
+            var page = h.current()
             var sw = chip("airplaneSwitch")
+            // stock: the switch is greyed 100 ms after the tap and back 2000 ms after it, Bluetooth back
+            // 1.5 s after it: single shots of those intervals that the tap starts
+            var grey = timerOf(page, 100), ungrey = timerOf(page, 2000), btBack = timerOf(page, 1500)
+            verify(grey !== null && ungrey !== null && btBack !== null, "the 100 ms, 2000 ms and 1500 ms timers")
+            verify(!grey.repeat && !ungrey.repeat && !btBack.repeat, "single shots")
+            // connman powers Bluetooth down with the rest (set before the tap: the 1.5 s shot finds it off
+            // whenever it fires)
+            Backend.btPowered = false
             var t0 = Date.now()
             h.tap(this, sw)
-            // connman powers Bluetooth down with the rest
-            Backend.btPowered = false
             compare(Backend.offline, true)
             compare(calls("connman", "OfflineMode"), [[true]])
             compare(sw.checked, true)
-            // stock: the switch is greyed 100 ms after the tap and back 2000 ms after it
-            tryCompare(sw, "active", false, 1000)
+            // greyed when the first shot fires, enabled when the second does: waited for, not timed (many
+            // test files at once fire them late, never early)
+            tryCompare(sw, "active", false, h.rest)
             var greyed = Date.now() - t0
-            tryCompare(sw, "active", true, 4000)
+            tryCompare(sw, "active", true, h.rest)
             var back = Date.now() - t0
-            verify(greyed >= 90 && greyed < 700, "greyed after about 100 ms: " + greyed)
-            verify(back >= 1900 && back < 3500, "enabled after about 2000 ms: " + back)
+            verify(greyed >= 90, "not greyed before about 100 ms: " + greyed)
+            verify(back >= 1900, "not enabled before about 2000 ms: " + back)
             // it comes back 1.5 s after the tap (as the quick settings tile does), as Wear OS
             // keeps Bluetooth on in airplane mode
-            tryCompare(Backend, "btPowered", true, 3000)
+            tryCompare(Backend, "btPowered", true, h.rest)
             compare(calls("bluez", "Adapter1.Powered").length, 1)
             // off
             h.tap(this, sw)
             compare(Backend.offline, false)
             compare(calls("connman", "OfflineMode"), [[true], [false]])
-            tryCompare(sw, "active", true, 4000)
+            // both shots of this tap over (greyed, then enabled again): the switch was 'active' before the first
+            // fired too, and a tap while it is greyed does nothing
+            tryVerify(function () { return !grey.running && !ungrey.running }, h.rest, "the switch's shots are over")
+            compare(sw.active, true)
             // when the person turned Bluetooth off in airplane mode it stays off the next time
             Backend.confSet(kOffInApm, true)
-            h.tap(this, sw)
             Backend.btPowered = false
-            wait(1900)
+            var fired = 0
+            var count = function () { fired++ }
+            btBack.triggered.connect(count)
+            h.tap(this, sw)
+            compare(Backend.offline, true)
+            // once this tap's 1.5 s shot has fired: Bluetooth stays off
+            tryVerify(function () { return fired === 1 }, h.rest, "the Bluetooth shot fired")
+            btBack.triggered.disconnect(count)
             compare(Backend.btPowered, false)
             h.shot(this, "connectivity-02-airplane-on")
         }
@@ -294,10 +319,14 @@ SettingsHarness {
             compare(chip("bluetoothScanRow").active, false)
             compare(rowsNamed("bluetoothFound")[1].iconName, "ios-musical-notes-outline")
             h.shot(this, "bluetooth-08-scan")
-            // it ends by itself after 12.8 s (Android's inquiry), then the row is back
-            tryCompare(Backend, "btDiscovering", false, 20000)
+            // it ends by itself after 12.8 s (Android's inquiry), then the row is back: a single shot of
+            // 12.8 s from the page's start; its end is waited for, not timed (late under load, never early)
+            compare(h.current().scanMs, 12800)
+            var scan = timerOf(h.current(), 12800)
+            verify(scan !== null && scan.running && !scan.repeat, "the 12.8 s scan shot runs")
+            tryCompare(Backend, "btDiscovering", false, 20000 + h.rest)
             var took = Date.now() - tStart
-            verify(took >= 12500 && took < 17000, "the scan lasts about 12.8 s: " + took + " ms from opening the page")
+            verify(took >= 12160, "the scan lasts about 12.8 s: " + took + " ms from opening the page")
             compare(calls("bluez", "Adapter1.StopDiscovery").length, 1)
             compare(chip("bluetoothScanRow").title, "Scan for nearby devices")
             compare(chip("bluetoothScanRow").active, true)
