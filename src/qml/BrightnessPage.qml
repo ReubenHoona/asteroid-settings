@@ -6,6 +6,7 @@
 import QtQuick
 import org.asteroid.controls
 import org.asteroid.settings
+import Nemo.Configuration
 
 // Display > Brightness (stock prefs_adaptive_brightness.xml and the
 // Brightness slider, SliderController.java:350-420): one segmented slider,
@@ -27,11 +28,17 @@ import org.asteroid.settings
 // as stock's SliderUiState (min 0, max n, value i + 1), so the first step
 // already fills a part of the bar. mce's display_brightness is the level in
 // percent of max_display_brightness_levels (100 on this watch): with
-// adaptive brightness off it is the panel level, with it on mce scales its
-// light sensor curve by it, so the three adaptive steps are three levels of
-// that scale (20, 50, 85 %; the stock curve is the vendor's, so these are
-// to be tuned on the watch; Normal is the image default of 50). What is
-// stored reads back as the nearest step.
+// adaptive brightness off it is the panel level, with it on it picks one of
+// mce's light sensor curves (/etc/mce/20als-defaults.ini, lux to percent),
+// so the three adaptive steps are three levels of that scale. Stock's three
+// curves are in the vendor display config, out of reach (wake-sleep-display
+// E28), so the levels are data, not code (C-06): the dconf key
+// /org/asteroidos/settings/adaptive-brightness-levels, three whole percents
+// from Dim to Bright ("[20, 50, 85]" or "20,50,85"), which the image can
+// set in its dconf defaults once they are tuned on the panel (R5-settings
+// TEST.txt); anything else (not three, not rising, outside 1 to 100) is
+// the built-in 20, 50, 85. Normal is the image default of mce's
+// display_brightness (50). What is stored reads back as the nearest step.
 SettingsPage {
     id: page
     objectName: "brightnessPage"
@@ -42,8 +49,38 @@ SettingsPage {
     readonly property bool adaptive: displaySettings.ambientLightSensorEnabled
     // brightness_percentages of ClockworkSettingsOverlayPixelWatch, reversed
     readonly property var fixedPercents: [6, 12, 24, 48, 100]
-    // Dim, Normal, Bright: levels of mce's brightness scale
-    readonly property var adaptivePercents: [20, 50, 85]
+    // Dim, Normal, Bright: levels of mce's brightness scale, from the
+    // dconf key when it holds three rising percents (C-06)
+    readonly property var defaultAdaptivePercents: [20, 50, 85]
+    ConfigurationValue {
+        id: adaptiveLevels
+        key: "/org/asteroidos/settings/adaptive-brightness-levels"
+        defaultValue: page.defaultAdaptivePercents
+    }
+    function parseLevels(v) {
+        var parts = []
+        if (Array.isArray(v) || (v && typeof v === "object" && v.length !== undefined)) {
+            for (var i = 0; i < v.length; i++)
+                parts.push(v[i])
+        } else if (typeof v === "string") {
+            parts = v.replace(/[\[\]\s]/g, "").split(/[,;]/)
+        } else {
+            return null
+        }
+        if (parts.length !== 3)
+            return null
+        var out = []
+        for (var j = 0; j < 3; j++) {
+            var n = Number(parts[j])
+            if (String(parts[j]).trim() === "" || !isFinite(n) || Math.round(n) !== n || n < 1 || n > 100)
+                return null
+            if (j > 0 && n <= out[j - 1])
+                return null
+            out.push(n)
+        }
+        return out
+    }
+    readonly property var adaptivePercents: parseLevels(adaptiveLevels.value) || defaultAdaptivePercents
     readonly property var adaptiveLabels: [
         //% "Dim"
         qsTrId("id-brightness-dim"),
