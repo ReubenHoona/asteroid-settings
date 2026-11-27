@@ -37,7 +37,7 @@ Item {
     DateTimeSettings { id: dtSettings }
 
     // the time shown at first: now
-    readonly property date start: new Date()
+    readonly property date start: new Date(app.clock())
 
     TimePicker {
         id: picker

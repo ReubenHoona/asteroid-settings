@@ -118,6 +118,8 @@ Item {
         t.verify(stack !== null, "the LayerStack")
         closeCount = 0
         loader.item.closeApp = function () { harness.closeCount++ }
+        // the date and time pages on the mocks' time (Backend.now, the WallClock's), not the wall clock
+        loader.item.clock = function () { return Backend.now.getTime() }
         if (!cold) {
             loader.item.firstFrameDrawn = true
             t.tryVerify(function () {

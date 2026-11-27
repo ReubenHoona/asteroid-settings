@@ -548,9 +548,10 @@ SettingsHarness {
             page.store(2026, 11, 31)
             d = last("timedate1", "SetDate").args[0]
             compare([d.getFullYear(), d.getMonth(), d.getDate()], [2026, 10, 30])
-            // the time of day stays as it was
-            var now = new Date()
-            verify(Math.abs(d.getHours() * 60 + d.getMinutes() - (now.getHours() * 60 + now.getMinutes())) <= 2)
+            // the time of day stays as it was (the app's clock: the mocks' time; on the wall clock this
+            // failed when midnight passed between the page and the test)
+            var now = Backend.now
+            compare([d.getHours(), d.getMinutes(), d.getSeconds()], [now.getHours(), now.getMinutes(), now.getSeconds()])
             h.shot(this, "datetime-04-set-date")
         }
 

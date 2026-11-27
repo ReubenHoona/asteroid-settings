@@ -40,11 +40,11 @@ Item {
     DateTimeSettings { id: dtSettings }
 
     // the date shown at first: today
-    readonly property date start: new Date()
+    readonly property date start: new Date(app.clock())
 
     // year, month (1-12) and day as picked; the time of day stays as it is
     function store(year, month, day) {
-        var now = new Date()
+        var now = new Date(app.clock())
         var last = new Date(year, month, 0).getDate()
         dtSettings.setDate(new Date(year, month - 1, Math.min(day, last),
                                     now.getHours(), now.getMinutes(), now.getSeconds()))

@@ -196,6 +196,9 @@ Application {
     // face and Touch lock, which the launcher carries on. A property so that
     // the tests can swap it.
     property var closeApp: function () { Qt.quit() }
+    // the wall clock (ms) Set date and Set time start from and keep the time
+    // of day of (the tests set the mocks' time)
+    property var clock: function () { return Date.now() }
 
     /*
      * The selection dialog, the confirmation, the toast and the reset screen
