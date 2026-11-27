@@ -5,7 +5,8 @@
  * R5-settings, on the mocks of tests/mocks (Backend records every dconf,
  * mce and D-Bus write): the items of AUDIT-72 area C that Settings closes.
  * C-06 the adaptive brightness levels from dconf; C-07 Text-to-speech
- * output (System, Accessibility, the engine's page).
+ * output (System, Accessibility, the engine's page); C-09 Sound > Audio
+ * adjustment.
  */
 
 import QtQuick
@@ -264,6 +265,28 @@ SettingsHarness {
             h.settle(this)
             tryVerify(function () { return last("org.asteroidos.assistant", "org.asteroidos.assistant.StopSpeaking") !== null },
                       5000, "the sample stops with the page")
+        }
+
+        // C-09: Sound has stock's Audio adjustment row after Charging
+        // sounds, behind the same gate as Accessibility's (CR-33)
+        function test_c09_sound_audio_adjustment() {
+            open(["soundItem"])
+            var rows = shownRows(h.current())
+            verify(rows.indexOf("row:Audio adjustment") < 0, "hidden behind its gate: " + JSON.stringify(rows))
+            Backend.confSet("/org/asteroidos/a11y/audio-adjust-supported", true)
+            rows = shownRows(h.current())
+            var i = rows.indexOf("row:Charging sounds")
+            verify(i >= 0, JSON.stringify(rows))
+            compare(rows[i + 1], "row:Audio adjustment")
+            compare(rows[i + 2], "row:Wireless emergency alerts")
+            compare(chip("soundAudioAdjustmentItem").summary, "Mono audio, Audio balance")
+            h.scrollToEnd(this)
+            h.shot(this, "c09-sound-audio-adjustment")
+            open(["soundAudioAdjustmentItem"])
+            compare(h.current().objectName, "audioAdjustPage")
+            h.back(this)
+            h.settle(this)
+            compare(h.current().objectName, "soundPage")
         }
     }
 }

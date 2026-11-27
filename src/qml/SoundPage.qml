@@ -33,6 +33,12 @@ import Nemo.Configuration
  *   screen_unlock_sound_enabled and wear_charging_sounds_enabled, both on)
  *   on /org/asteroidos/sound/screen-unlock and .../charging, read by whatever
  *   plays them;
+ * - Audio adjustment (prefs_sound.xml pref_audio_adjustment, after Charging
+ *   sounds), "Mono audio, Audio balance" as its second line
+ *   (SoundSettingsFragment.java:235-241 with the balance feature, which the
+ *   page has), opening the page Accessibility opens; hidden, as there,
+ *   until the audio helper sets /org/asteroidos/a11y/audio-adjust-supported
+ *   (CR-33);
  * - Wireless emergency alerts, the LTE watch's last row (below).
  * Hidden until /org/asteroidos/sound/volume-control-supported is true (CR-31):
  * Ring, Notification and Alarm volume and Mute alarm, which no reader honours
@@ -97,6 +103,8 @@ SettingsPage {
     ConfigurationValue { id: muteAlarm; key: "/org/asteroidos/sound/mute-alarm"; defaultValue: false }
     ConfigurationValue { id: unlockSound; key: "/org/asteroidos/sound/screen-unlock"; defaultValue: true }
     ConfigurationValue { id: chargingSounds; key: "/org/asteroidos/sound/charging"; defaultValue: true }
+    // the gate of Audio adjustment (CR-33), as on Accessibility
+    ConfigurationValue { id: audioAdjustSupported; key: "/org/asteroidos/a11y/audio-adjust-supported"; defaultValue: false }
 
     SettingsChip {
         objectName: "muteRingSwitch"
@@ -215,8 +223,15 @@ SettingsPage {
         checked: page.on(chargingSounds.value)
         onClicked: chargingSounds.value = !page.on(chargingSounds.value)
     }
+    SettingsChip {
+        objectName: "soundAudioAdjustmentItem"
+        visible: page.on(audioAdjustSupported.value)
+        title: qsTrId("id-audio-adjustment")
+        summary: qsTrId("id-audio-adjustment-summary")
+        onClicked: layerStack.push(audioAdjustLayer)
+    }
 
-    // Stock's last rows are Audio adjustment (here on Accessibility, CR-33),
+    // Stock's last rows are Audio adjustment (above, C-09),
     // Watch ringtone and Wireless emergency alerts (D60-43). No Watch
     // ringtone: its row shows only with config_enableRingtoneSelection
     // (DefaultRingtonePreference.java, ButtonUiState visible = that bool),
