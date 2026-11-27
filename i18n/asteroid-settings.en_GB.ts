@@ -2625,6 +2625,26 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Set as default</source>
         <translation>Set as default</translation>
     </message>
+    <message id="id-location-off-explain">
+        <source>Location is off</source>
+        <translation>Location is off</translation>
+    </message>
+    <message id="id-location-time-zone-explain">
+        <source>Location may be used to set time zone</source>
+        <translation>Location may be used to set time zone</translation>
+    </message>
+    <message id="id-location-auto-zone-off-explain">
+        <source>Automatic time zone is off</source>
+        <translation>Automatic time zone is off</translation>
+    </message>
+    <message id="id-location-needed-title">
+        <source>Device location needed</source>
+        <translation>Device location needed</translation>
+    </message>
+    <message id="id-location-needed-message">
+        <source>To set the time zone using your location, turn on location, then update time zone settings</source>
+        <translation>To set the time zone using your location, turn on location, then update time zone settings</translation>
+    </message>
 </context>
 <context>
     <name>AboutPage</name>

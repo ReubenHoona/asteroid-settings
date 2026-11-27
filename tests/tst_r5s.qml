@@ -6,7 +6,7 @@
  * mce and D-Bus write): the items of AUDIT-72 area C that Settings closes.
  * C-06 the adaptive brightness levels from dconf; C-07 Text-to-speech
  * output (System, Accessibility, the engine's page); C-09 Sound > Audio
- * adjustment.
+ * adjustment; C-12 Date & time > Use location.
  */
 
 import QtQuick
@@ -287,6 +287,62 @@ SettingsHarness {
             h.back(this)
             h.settle(this)
             compare(h.current().objectName, "soundPage")
+        }
+
+        // C-12: Date & time > Use location and its caption, after Automatic
+        // time zone, behind the gate of the package that sets the zone
+        function test_c12_use_location() {
+            var kLoc = "/org/asteroidos/settings/location-time-zone"
+            var kOn = "/org/asteroidos/settings/location-enabled"
+            var kZone = "/org/asteroidos/settings/auto-time-zone"
+            open(["systemItem", "dateTimeItem"])
+            var rows = shownRows(h.current())
+            verify(rows.indexOf("row:Use location") < 0, "hidden behind its gate: " + JSON.stringify(rows))
+            Backend.confSet("/org/asteroidos/settings/location-time-zone-supported", true)
+            rows = shownRows(h.current())
+            var i = rows.indexOf("row:Automatic time zone")
+            verify(i >= 0, JSON.stringify(rows))
+            compare(rows[i + 1], "row:Use location")
+            compare(rows[i + 2], "text:Location may be used to set time zone")
+            compare(rows[i + 3], "row:Automatic time format")
+            var sw = chip("locationTimeZoneSwitch")
+            verify(sw.active && !sw.checked, "stock default: off")
+            wait(200)
+            h.bringIntoView(this, sw)
+            h.shot(this, "c12-use-location")
+            h.tap(this, sw)
+            h.settle(this)
+            compare(conf(kLoc), true)
+            verify(sw.checked)
+            h.tap(this, sw)
+            h.settle(this)
+            compare(conf(kLoc), false)
+            // Automatic time zone off: greyed, unchecked, its caption
+            Backend.confSet(kLoc, true)
+            Backend.confSet(kZone, false)
+            verify(!sw.active && !sw.checked)
+            compare(chip("locationTimeZoneCaption").text, "Automatic time zone is off")
+            h.tap(this, sw)
+            h.settle(this)
+            compare(conf(kLoc), true, "a greyed switch does nothing")
+            // Location off: unchecked, "Location is off"; turning it on asks
+            Backend.confSet(kZone, true)
+            verify(sw.checked)
+            Backend.confSet(kOn, false)
+            verify(sw.active && !sw.checked)
+            compare(chip("locationTimeZoneCaption").text, "Location is off")
+            Backend.confSet(kLoc, false)
+            h.tap(this, sw)
+            h.settle(this)
+            var d = h.find(h.app, "confirmDialog")
+            tryVerify(function () { return d.shown })
+            compare(d.title, "Device location needed")
+            compare(d.message, "To set the time zone using your location, turn on location, then update time zone settings")
+            h.shot(this, "c12-location-needed")
+            compare(conf(kLoc), false, "nothing is set while location is off")
+            h.tap(this, h.find(h.app, "dialogYes"))
+            h.settle(this)
+            compare(h.current().objectName, "locationPage")
         }
     }
 }

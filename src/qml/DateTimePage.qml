@@ -40,8 +40,23 @@ import Nemo.DBus
  * - Automatic time zone (settings-b-25; AutoTimeZonePreference:127-129):
  *   /org/asteroidos/settings/auto-time-zone, on by default; Gadgetbridge
  *   sends the phone's zone and btsyncd sets it while the key is on. Set time
- *   zone is greyed while it is on (ManualTimeZonePreference:143-145). Use
- *   location waits for location time zone detection (settings-b-08).
+ *   zone is greyed while it is on (ManualTimeZonePreference:143-145).
+ * - Use location (C-12; prefs_date_time.xml pref_locationTimeZoneDetection,
+ *   order 30, android:dependency pref_autoTimeZone): a switch on
+ *   /org/asteroidos/settings/location-time-zone (stock
+ *   clockwork_location_time_zone_detection_enabled, default false), greyed
+ *   while Automatic time zone is off; checked only while location is on,
+ *   Automatic time zone is on and the key is set
+ *   (DateTimeSettingsFragment.updateLocationTimeZonePreference:239-244).
+ *   Under it the caption (pref_locationExplanation, order 40;
+ *   updateLocationExplanation:221-237): "Location is off" while Location
+ *   is off (/org/asteroidos/settings/location-enabled), "Automatic time
+ *   zone is off" while that is off, else "Location may be used to set time
+ *   zone". Turning it on while Location is off asks "Device location
+ *   needed" and offers the Location page. Both stay hidden until the
+ *   package that sets the zone from a location fix sets
+ *   /org/asteroidos/settings/location-time-zone-supported (the gate: today
+ *   only first run sets it from GPS).
  * - Summaries (settings-b-26): Set date is the locale's long date without
  *   the weekday (DateTimeSettingsHelper:24-40, "2 November 2026", "November
  *   2, 2026"), Set time zone is "GMT+13:00" and the zone's short name when it
@@ -80,6 +95,21 @@ SettingsPage {
         key: "/org/asteroidos/settings/auto-time-zone"
         defaultValue: true
     }
+    ConfigurationValue {
+        id: locationZone
+        key: "/org/asteroidos/settings/location-time-zone"
+        defaultValue: false
+    }
+    ConfigurationValue {
+        id: locationZoneSupported
+        key: "/org/asteroidos/settings/location-time-zone-supported"
+        defaultValue: false
+    }
+    ConfigurationValue {
+        id: locationEnabled
+        key: "/org/asteroidos/settings/location-enabled"
+        defaultValue: true
+    }
     DBusInterface {
         id: connmanClock
         bus: DBus.SystemBus
@@ -99,6 +129,8 @@ SettingsPage {
     readonly property bool formatFromPhone: on(fromPhone.value)
     readonly property bool autoDateTime: on(autoTime.value)
     readonly property bool autoTimeZone: on(autoZone.value)
+    readonly property bool locationOn: locationEnabled.value !== false && locationEnabled.value !== "false"
+    readonly property bool locationZoneShown: on(locationZoneSupported.value)
     // the 24-hour switch's sample time: 13:00 on 31 December this year
     readonly property var hourSample: new Date(clock.time.getFullYear(), 11, 31, 13, 0, 0)
 
@@ -166,6 +198,40 @@ SettingsPage {
         control: "toggle"
         checked: page.autoTimeZone
         onClicked: autoZone.value = !page.autoTimeZone
+    }
+    SettingsChip {
+        objectName: "locationTimeZoneSwitch"
+        visible: page.locationZoneShown
+        active: page.autoTimeZone
+        title: qsTrId("id-use-location")
+        control: "toggle"
+        checked: page.locationOn && page.autoTimeZone && page.on(locationZone.value)
+        // turning it on with Location off asks first, as stock
+        // (DateTimeSettingsFragment$$ExternalSyntheticLambda0 case 3: "Device
+        // location needed", Location settings / Cancel; here ✓ opens Location)
+        onClicked: {
+            if (!checked && !page.locationOn) {
+                //% "Device location needed"
+                confirm.ask(qsTrId("id-location-needed-title"),
+                            //% "To set the time zone using your location, turn on location, then update time zone settings"
+                            qsTrId("id-location-needed-message"),
+                            function () { layerStack.push(locationLayer) })
+                return
+            }
+            locationZone.value = !checked
+        }
+    }
+    SettingsText {
+        objectName: "locationTimeZoneCaption"
+        visible: page.locationZoneShown
+        text: !page.locationOn
+              //% "Location is off"
+              ? qsTrId("id-location-off-explain")
+              : page.autoTimeZone
+                //% "Location may be used to set time zone"
+                ? qsTrId("id-location-time-zone-explain")
+                //% "Automatic time zone is off"
+                : qsTrId("id-location-auto-zone-off-explain")
     }
     SettingsChip {
         objectName: "autoTimeFormatSwitch"
