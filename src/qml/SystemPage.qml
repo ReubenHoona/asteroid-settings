@@ -13,7 +13,9 @@ import "LanguageNames.js" as LanguageNames
 
 // Settings > System (stock prefs_system.xml, in its order): System updates,
 // Power off and Restart (each asks "Are you sure?" as stock), Date & time,
-// Input methods, Language (the current language in its second line, as the
+// Input methods, Text-to-speech output (order 55, removed while there is no
+// speech engine: SystemSettingsFragment.java:158-161), Language (the
+// current language in its second line, as the
 // Wear OS 6 emulator: "English"; CP3A had none), About,
 // Disconnect & reset (setup-wizard-07; FactoryResetPreference:29-36,
 // FactoryResetDialogFragment:67-290): the question, then the full-screen
@@ -97,6 +99,12 @@ SettingsPage {
         //% "Input methods"
         title: qsTrId("id-input-methods-page")
         onClicked: layerStack.push(inputMethodsLayer)
+    }
+    SettingsChip {
+        objectName: "ttsItem"
+        visible: app.ttsInstalled()
+        title: qsTrId("id-tts-page")
+        onClicked: layerStack.push(ttsLayer)
     }
     SettingsChip {
         objectName: "languageItem"

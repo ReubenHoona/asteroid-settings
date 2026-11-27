@@ -4,7 +4,8 @@
  *
  * R5-settings, on the mocks of tests/mocks (Backend records every dconf,
  * mce and D-Bus write): the items of AUDIT-72 area C that Settings closes.
- * C-06 the adaptive brightness levels from dconf.
+ * C-06 the adaptive brightness levels from dconf; C-07 Text-to-speech
+ * output (System, Accessibility, the engine's page).
  */
 
 import QtQuick
@@ -59,6 +60,39 @@ SettingsHarness {
         function plus(name) { h.tap(this, h.find(chip(name), "sliderPlus")) }
         function minus(name) { h.tap(this, h.find(chip(name), "sliderMinus")) }
         function brightness() { return last("mce", "display_brightness").args[0] }
+        function choices() {
+            var list = h.find(h.current(), "choiceList")
+            var out = []
+            for (var i = 0; i < list.model; i++)
+                out.push(list.textOf(i))
+            return out
+        }
+        function pick(item, index) {
+            h.tap(this, chip(item))
+            h.settle(this)
+            h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), index))
+            h.settle(this)
+        }
+        function toastText() { return h.find(h.find(h.app, "toast"), "toastText").text }
+        function request(route) {
+            Backend.confSet("/org/asteroidos/settings/ui/open", route + "@" + Date.now())
+            wait(500)
+            h.settle(this)
+        }
+        function scrollTo(name) {
+            h.bringIntoView(this, chip(name))
+        }
+
+        readonly property string kHelper: "/usr/libexec/asteroid-assistant/asteroid-assistant-tts"
+        readonly property string kSpeed: "/org/asteroidos/assistant/tts-speed"
+        readonly property string kTtsLang: "/org/asteroidos/assistant/tts-language"
+        readonly property string kSample: "/org/asteroidos/assistant/tts-sample-supported"
+        function engine(on) {
+            var f = {}
+            if (on)
+                f[kHelper] = true
+            Backend.files = f
+        }
 
         // C-06: Dim / Normal / Bright are the three percents of the dconf
         // key when it holds three rising whole percents, else 20, 50, 85
@@ -117,6 +151,119 @@ SettingsHarness {
             verify(!page.adaptive)
             compare(page.percents, [6, 12, 24, 48, 100])
             compare(s.to, 5)
+        }
+
+        // C-07: Text-to-speech output in System (after Input methods) and
+        // Accessibility (General, after Gestures), only with a speech engine
+        function test_c07_rows_need_an_engine() {
+            engine(false)
+            open(["systemItem"])
+            verify(!h.shown(chip("ttsItem")), "no engine: no System row")
+            h.home(this)
+            open(["accessibilityItem"])
+            verify(!h.shown(chip("ttsA11yItem")), "no engine: no Accessibility row")
+            h.home(this)
+            request("text_to_speech_output")
+            compare(h.current().objectName, "mainPage")
+
+            engine(true)
+            open(["systemItem"])
+            var rows = shownRows(h.current())
+            var i = rows.indexOf("row:Input methods")
+            verify(i >= 0, JSON.stringify(rows))
+            compare(rows[i + 1], "row:Text-to-speech output")
+            compare(rows[i + 2], "row:Language")
+            h.home(this)
+            open(["accessibilityItem"])
+            rows = shownRows(h.current())
+            i = rows.indexOf("row:Gestures")
+            verify(i >= 0, JSON.stringify(rows))
+            compare(rows[i + 1], "row:Text-to-speech output")
+            open(["ttsA11yItem"])
+            compare(h.current().objectName, "ttsPage")
+            h.home(this)
+            request("text_to_speech_output")
+            compare(h.current().objectName, "ttsPage")
+            h.back(this)
+            compare(h.current().objectName, "systemPage")
+        }
+
+        // the page: the engine (accent chip, the default) and Speech rate,
+        // stock's nine rates on the assistant's tts-speed factor
+        function test_c07_speech_rate() {
+            engine(true)
+            open(["systemItem", "ttsItem"])
+            compare(title(), "Text-to-speech output")
+            compare(shownRows(h.current()), ["row:Flite", "row:Speech rate"])
+            var e = chip("ttsEngineItem")
+            compare(e.control, "select")
+            verify(e.checked, "the default engine is the accent chip")
+            compare(chip("ttsRateItem").summary, "Normal")
+            h.shot(this, "c07-tts-page")
+            h.tap(this, chip("ttsRateItem"))
+            h.settle(this)
+            compare(choices(), ["Very slow", "Slow", "Normal", "Fast", "Faster", "Very fast", "Rapid",
+                                "Very rapid", "Fastest"])
+            compare(h.find(h.current(), "choiceList").currentIndex, 2)
+            h.shot(this, "c07-tts-rates")
+            h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 4))
+            h.settle(this)
+            compare(conf(kSpeed), 2)
+            compare(chip("ttsRateItem").summary, "Faster")
+            pick("ttsRateItem", 0)
+            compare(conf(kSpeed), 0.6)
+            compare(chip("ttsRateItem").summary, "Very slow")
+            pick("ttsRateItem", 8)
+            compare(conf(kSpeed), 4)
+            // a factor set elsewhere reads as the nearest rate
+            Backend.confSet(kSpeed, 1.4)
+            compare(chip("ttsRateItem").summary, "Fast")
+            Backend.confSet(kSpeed, "x")
+            compare(chip("ttsRateItem").summary, "Normal")
+        }
+
+        // the engine's page: the status toast, Language, Listen to an
+        // example (behind its gate), Set as default (one engine: greyed on)
+        function test_c07_engine_page() {
+            engine(true)
+            open(["systemItem", "ttsItem", "ttsEngineItem"])
+            compare(h.current().objectName, "ttsEnginePage")
+            compare(title(), "Engine settings")
+            tryCompare(h.find(h.app, "toast"), "visible", true)
+            compare(toastText(), "English (United States) is fully supported")
+            compare(shownRows(h.current()), ["row:Language", "row:Set as default"])
+            compare(chip("ttsLanguageItem").summary, "Use system language")
+            var d = chip("ttsDefaultSwitch")
+            verify(d.checked && !d.active, "the one engine is the default, greyed")
+            h.shot(this, "c07-tts-engine")
+            h.tap(this, chip("ttsLanguageItem"))
+            h.settle(this)
+            compare(choices(), ["Use system language", "English (United States)"])
+            compare(h.find(h.current(), "choiceList").currentIndex, 0)
+            h.tap(this, h.listItem(this, h.find(h.current(), "choiceList"), 1))
+            h.settle(this)
+            compare(conf(kTtsLang), "en_US")
+            compare(chip("ttsLanguageItem").summary, "English (United States)")
+            pick("ttsLanguageItem", 0)
+            compare(conf(kTtsLang), "")
+
+            // Listen to an example once the assistant can speak it
+            verify(!h.shown(chip("ttsListenItem")), "hidden behind its gate")
+            Backend.confSet(kSample, true)
+            verify(h.shown(chip("ttsListenItem")))
+            verify(chip("ttsListenItem").active)
+            compare(shownRows(h.current()), ["row:Language", "row:Listen to an example", "row:Set as default"])
+            Backend.clearCalls()
+            h.tap(this, chip("ttsListenItem"))
+            var c = last("org.asteroidos.assistant", "org.asteroidos.assistant.Speak")
+            verify(c !== null, "Speak was called")
+            compare(c.args, ["This is an example of speech synthesis"])
+            h.shot(this, "c07-tts-engine-listen")
+            // leaving the page stops the sample, as stock's onDestroy
+            h.back(this)
+            h.settle(this)
+            tryVerify(function () { return last("org.asteroidos.assistant", "org.asteroidos.assistant.StopSpeaking") !== null },
+                      5000, "the sample stops with the page")
         }
     }
 }

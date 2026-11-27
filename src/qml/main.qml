@@ -158,6 +158,17 @@ Application {
     PageType { id: magnificationLayer;         page: "MagnificationPage" }
     PageType { id: colorCorrectionLayer;       page: "ColorCorrectionPage" }
     PageType { id: vibrationWatchLayer;        page: "VibrationWatchPage" }
+    PageType { id: ttsLayer;                   page: "TextToSpeechPage" }
+    PageType { id: ttsEngineLayer;             page: "TextToSpeechEnginePage" }
+
+    // Text-to-speech output (C-07): the speech engine is flite through
+    // asteroid-assistant's speech helper; without it stock removes the rows
+    // that open the page (SystemSettingsFragment.java:158-161)
+    readonly property string ttsHelper: "/usr/libexec/asteroid-assistant/asteroid-assistant-tts"
+    function ttsInstalled() { return FileInfo.exists(ttsHelper) }
+    // the engine's name (stock: the engine app's label)
+    //% "Flite"
+    readonly property string ttsEngineName: qsTrId("id-tts-engine-flite")
 
     // Developer options appear at the end of the list once Build number
     // (About > Versions) was tapped seven times, as on Wear OS
@@ -525,19 +536,23 @@ Application {
         "whats_new": [generalLayer, whatsNewLayer],
         "system": [systemLayer],
         "date_time": [systemLayer, dateTimeLayer],
+        "text_to_speech_output": [systemLayer, ttsLayer],
         "language": [systemLayer, languageLayer],
         "device_info": [systemLayer, aboutLayer],
         "updates": [systemLayer, updatesLayer],
         "developer_options": [developerLayer]
     })
     // the pages a route opens: none (the main list) for an unknown route,
-    // Sound without a speaker, or Developer options while they are off
+    // Sound without a speaker, Text-to-speech output without an engine, or
+    // Developer options while they are off
     function routeOf(page) {
         if (!deepLinks.hasOwnProperty(page))
             return []
         if (page === "sound" && !DeviceSpecs.hasSpeaker)
             return []
         if (page === "developer_options" && !developerOptions.value)
+            return []
+        if (page === "text_to_speech_output" && !ttsInstalled())
             return []
         return deepLinks[page]
     }

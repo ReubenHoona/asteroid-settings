@@ -15,9 +15,10 @@ import Nemo.Configuration
 // On or Off under it), Text size (the font size of Display size & text),
 // Color correction, Reduce animations with "Reduce movement on the screen";
 // General: Audio adjustment ("Mono audio, Audio balance"), Gestures,
-// Vibration watch (shown while vibration is on, vibrate_on) and Power
-// button ends call (a switch, with an audio output). Text-to-speech output
-// and RTT have no engine or dialer here: no rows. The keys are the
+// Text-to-speech output (order 40, removed while there is no speech
+// engine: AccessibilityFragment.java:128-131), Vibration watch (shown while
+// vibration is on, vibrate_on) and Power button ends call (a switch, with
+// an audio output). RTT has no dialer here: no row. The keys are the
 // launcher's (CR-34, src/qml/a11y and KeyRouter): a11y/magnification,
 // -scale, -edge-haptic (MagnificationPage), a11y/color-correction, -mode
 // (ColorCorrectionPage), a11y/vibration-watch, -type, -speed
@@ -166,6 +167,12 @@ SettingsPage {
         objectName: "gesturesItem"
         title: qsTrId("id-gestures-page")
         onClicked: layerStack.push(gesturesLayer)
+    }
+    SettingsChip {
+        objectName: "ttsA11yItem"
+        visible: app.ttsInstalled()
+        title: qsTrId("id-tts-page")
+        onClicked: layerStack.push(ttsLayer)
     }
     SettingsChip {
         objectName: "vibrationWatchItem"

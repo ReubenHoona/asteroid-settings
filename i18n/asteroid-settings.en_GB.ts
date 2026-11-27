@@ -2545,6 +2545,86 @@ If you turn Wi-Fi off here, it stays off.</translation>
         <source>Vibration speed</source>
         <translation>Vibration speed</translation>
     </message>
+    <message id="id-tts-engine-flite">
+        <source>Flite</source>
+        <translation>Flite</translation>
+    </message>
+    <message id="id-tts-page">
+        <source>Text-to-speech output</source>
+        <translation>Text-to-speech output</translation>
+    </message>
+    <message id="id-tts-rate-very-slow">
+        <source>Very slow</source>
+        <translation>Very slow</translation>
+    </message>
+    <message id="id-tts-rate-slow">
+        <source>Slow</source>
+        <translation>Slow</translation>
+    </message>
+    <message id="id-tts-rate-normal">
+        <source>Normal</source>
+        <translation>Normal</translation>
+    </message>
+    <message id="id-tts-rate-fast">
+        <source>Fast</source>
+        <translation>Fast</translation>
+    </message>
+    <message id="id-tts-rate-faster">
+        <source>Faster</source>
+        <translation>Faster</translation>
+    </message>
+    <message id="id-tts-rate-very-fast">
+        <source>Very fast</source>
+        <translation>Very fast</translation>
+    </message>
+    <message id="id-tts-rate-rapid">
+        <source>Rapid</source>
+        <translation>Rapid</translation>
+    </message>
+    <message id="id-tts-rate-very-rapid">
+        <source>Very rapid</source>
+        <translation>Very rapid</translation>
+    </message>
+    <message id="id-tts-rate-fastest">
+        <source>Fastest</source>
+        <translation>Fastest</translation>
+    </message>
+    <message id="id-tts-speech-rate">
+        <source>Speech rate</source>
+        <translation>Speech rate</translation>
+    </message>
+    <message id="id-tts-engine-settings">
+        <source>Engine settings</source>
+        <translation>Engine settings</translation>
+    </message>
+    <message id="id-tts-lang-en-us">
+        <source>English (United States)</source>
+        <translation>English (United States)</translation>
+    </message>
+    <message id="id-tts-use-system-language">
+        <source>Use system language</source>
+        <translation>Use system language</translation>
+    </message>
+    <message id="id-tts-status-ok">
+        <source>%1 is fully supported</source>
+        <translation>%1 is fully supported</translation>
+    </message>
+    <message id="id-tts-status-not-supported">
+        <source>%1 is not supported</source>
+        <translation>%1 is not supported</translation>
+    </message>
+    <message id="id-tts-sample">
+        <source>This is an example of speech synthesis</source>
+        <translation>This is an example of speech synthesis</translation>
+    </message>
+    <message id="id-tts-listen">
+        <source>Listen to an example</source>
+        <translation>Listen to an example</translation>
+    </message>
+    <message id="id-tts-set-default">
+        <source>Set as default</source>
+        <translation>Set as default</translation>
+    </message>
 </context>
 <context>
     <name>AboutPage</name>
