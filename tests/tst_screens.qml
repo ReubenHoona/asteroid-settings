@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2026 Reuben Horner <reubarb.scons@gmail.com>
+ * Copyright (C) 2026 eos
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * A screenshot of every page of Settings at 384x384 inside the round mask

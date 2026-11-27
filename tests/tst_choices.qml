@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2026 Reuben Horner <reubarb.scons@gmail.com>
+ * Copyright (C) 2026 eos
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * W1-settings-choices: the user's five choices as Settings rows (PLAN.md

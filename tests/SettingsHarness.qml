@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2026 Reuben Horner <reubarb.scons@gmail.com>
+ * Copyright (C) 2026 eos
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * The real main.qml at 384x384 inside the round mask of the display, and

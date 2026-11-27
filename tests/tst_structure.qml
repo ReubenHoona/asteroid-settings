@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2026 Reuben Horner <reubarb.scons@gmail.com>
+ * Copyright (C) 2026 eos
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * W1-settings-structure: the Settings frame as stock CP3A, on the mocks of
